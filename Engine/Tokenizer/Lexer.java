@@ -3,21 +3,43 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/** Takes in code in the form of a String, outputs a list of Tokens that catagorize and order each piece of code.
+ *  These tokens will be used for comparisons for plagiarism detection.
+ *  These tokens will be used to reconstruct the report later.
+ *
+ *  TODO add Python and C support
+ *  TODO add String support
+ *
+ *  Based on Enzo Jade's Tokenizer from the linked tutorial: https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f
+ *  Modified to support comments, Strings, and non-Java languages.
+ *
+ * @Version 1.0 (Feb 11th, 2026)
+ */
 public class Lexer {
     private String input;
     private int index;
     FiniteStateMachine currentState;
 
+    /** Creates a Lexer (also known as a tokenizer,) that can be used to tokenize the given String input
+     *
+     * @param input Code to be tokenized
+     */
     public Lexer(String input){
         this.input = input;
         this.index = 0;
     }
 
+    /** Creates the list of tokens from the given text from construction
+     *  TODO I'm pretty sure a double whitespace breaks it. That needs to be fixed at some point.
+     *
+     * @return  List of Tokens
+     */
     public List<Token> tokenize() {
         List<Token> tokens = new ArrayList<>();
         while (index < input.length()) {
             char currentChar = input.charAt(index);
 
+            //Handles whitespaces, ignoring them and ending single line comments if relevant.
             if (Character.isWhitespace(currentChar)) {
                 if(currentChar == '\n' && currentState == FiniteStateMachine.SINGLE_LINE_COMMENT) currentState = FiniteStateMachine.CODE;
                 index++;
@@ -36,7 +58,12 @@ public class Lexer {
     }
 
 
-
+    /** Creates the next Token beginning at the current index
+     *  Compares the current string to the regular expressions representing the different types of Tokens
+     *  TODO Need to make this more resilient. Currently handles errors poorly
+     *
+     * @return  Null if something fails,
+     */
     private Token nextToken() {
         if (index >= input.length()) {
             return null;
