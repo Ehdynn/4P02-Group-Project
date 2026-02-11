@@ -6,7 +6,7 @@ public class StringTiling {
     /** Takes in two different lists of tokens, outputs a list containing sequences of identical tokens greater than a certain length.
      *
      *  TODO make compatible with list of submissions rather than single list of tokens
-     *  TODO make algorithm not count redundant sequences (i,e a sequence from submission A that appears multiple times in submission B)
+     *  TODO make algorithm not count redundant sequences (i.e. a sequence from submission A that appears multiple times in submission B)
      *  TODO make compatible with plagiarismValue found in token class
      *
      *  Based on the Greedy-String-Tiling algorithm described on Louis Tarvin's linked website: https://louistarvin.uk/projects/plagiarism/
