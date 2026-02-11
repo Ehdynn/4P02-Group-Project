@@ -67,7 +67,7 @@ public class Token implements Comparable<Token>{
      */
     @Override
     public int compareTo(Token token) {
-        if(this.getType() == token.getType() && this.getValue() == token.getValue()) return 1;
+        if(this.getType() == token.getType() && this.getValue().compareTo(token.getValue()) == 0) return 1;
         if(this.getType() == token.getType()) return 0;
         return -1;
     }
