@@ -1,0 +1,13 @@
+public enum TokenType {
+    KEYWORD,
+    IDENTIFIER,
+    LITERAL,
+    OPERATOR,
+    PUNCTUATION,
+    WHITESPACE,
+    COMMENT,
+    SINGLE_LINE_COMMENT,
+    MULTI_LINE_COMMENT,
+    COMMENT_END,
+    UNKNOWN
+}
