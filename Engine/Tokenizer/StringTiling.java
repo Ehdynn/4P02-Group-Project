@@ -6,7 +6,6 @@ public class StringTiling {
     /** Takes in two different lists of tokens, outputs a list containing sequences of identical tokens greater than a certain length.
      *
      *  TODO make compatible with list of submissions rather than single list of tokens
-     *  TODO make algorithm not count redundant sequences (i.e. a sequence from submission A that appears multiple times in submission B)
      *  TODO make compatible with plagiarismValue found in token class
      *
      *  Based on the Greedy-String-Tiling algorithm described on Louis Tarvin's linked website: https://louistarvin.uk/projects/plagiarism/
@@ -22,6 +21,8 @@ public class StringTiling {
         // Iterative loop which finds the largest remaining common sequences
         while(numMatches != 0){
             List<Sequence> subMatches = new ArrayList<>();
+            //array for keeping track of sequence starts, so two sequences of the same start and length aren't reused
+            List<Integer> matchStarts = new ArrayList<>();
             int lcs = minLength;
 
             for (int i = 0; i < A.length; i++) {
@@ -42,10 +43,13 @@ public class StringTiling {
                     // Adds largest sequence(s) to matches list
                     if(n > lcs){
                         subMatches.clear();
+                        matchStarts.clear();
                         lcs = n;
                         subMatches.add(new Sequence(i, n));
-                    } else if(n == lcs){
+                        matchStarts.add(i);
+                    } else if(n == lcs && !matchStarts.contains(i)){
                         subMatches.add(new Sequence(i, n));
+                        matchStarts.add(i);
                     }
                 }
             }
