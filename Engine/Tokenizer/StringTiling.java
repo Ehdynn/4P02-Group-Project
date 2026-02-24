@@ -11,7 +11,7 @@ public class StringTiling {
      *  Based on the Greedy-String-Tiling algorithm described on Louis Tarvin's linked website: https://louistarvin.uk/projects/plagiarism/
      *  Modified to only return the similar sequences of the first submission being compared.
      *
-     * @Version 1.0 (Feb 11th, 2026)
+     * @Version 1.1 (Feb 20th, 2026)
      */
     public static List<Sequence> tile(Token[] A, Token[] B, int minLength){
         List<Sequence> matches = new ArrayList<>();
