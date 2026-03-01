@@ -44,7 +44,7 @@ export default function SignUpForm() {
         return;
       }
 
-      setUser(data?.user_id ?? null);
+      setUser(data?.user?? null);
       navigate("/");
     } finally {
       setLoading(false);
