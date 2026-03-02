@@ -70,7 +70,9 @@ const CreateCourse = () => {
         try {
           const payload = await invokeError.context.json();
           errorMessage = payload?.error || errorMessage;
-        } catch {}
+        } catch {
+          // Keep default message if response is not JSON.
+        }
       }
       setError(errorMessage);
       setSubmitted(false);

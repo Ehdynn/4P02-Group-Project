@@ -16,5 +16,6 @@
 
 # Features
 - [] list of all courses for students and profs
+- [] Restrict page access
 
 

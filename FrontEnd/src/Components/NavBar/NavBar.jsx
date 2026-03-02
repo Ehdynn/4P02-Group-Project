@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import useUser from '../../context/useUser';
 import supabase from '../../utils/supabase';
 import InstructorLinks from './InstructorLinks';
 import StudentLinks from './StudentLinks';
 const Navbar = () => {
+    const navigate = useNavigate();
     const { user, setUser, isProfessor, roleReady } = useUser();
     const handleLogout = async () => {
       await supabase.auth.signOut();
       setUser(null);
+      navigate("/");
     };
 
   return (
