@@ -9,7 +9,11 @@
    - [] Create A Course
         - [] Update Success and Error Messages
         - [] Redirect to Overview on success
-   - [] view all assignments
+
+   - [] overview
+        - top has a 
+   - [] view all assignments (per course)
+   - [] view all courses
    - [] Drop down list to switch between courses
  ## Student
    - [] Join a course

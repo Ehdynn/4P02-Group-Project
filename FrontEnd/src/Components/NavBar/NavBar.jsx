@@ -18,9 +18,12 @@ const Navbar = () => {
       <div className="w-full px-4">
         <div className="flex items-center">
           <div className="hidden md:flex items-center w-full">
-            <Link to="/" className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300">
-              Home
-            </Link>
+
+            <Link 
+                to={roleReady ? (isProfessor ? "/InstructorOverview" : "/StudentOverview") : "/"} 
+                className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300"
+            >{roleReady ? "Overview" : "Home"}</Link>
+
             <div className="ml-auto flex items-center gap-1">
               <Link to="/about" className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300">
                 About
