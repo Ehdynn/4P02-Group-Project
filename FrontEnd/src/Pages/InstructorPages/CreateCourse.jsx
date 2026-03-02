@@ -29,7 +29,7 @@ const CreateCourse = () => {
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-      setError("Course end date must be on or after the start date.");
+      setError("Course end date must be after the start date.");
       return;
     }
 
@@ -70,9 +70,7 @@ const CreateCourse = () => {
         try {
           const payload = await invokeError.context.json();
           errorMessage = payload?.error || errorMessage;
-        } catch {
-          // Keep default message when response is not JSON.
-        }
+        } catch {}
       }
       setError(errorMessage);
       setSubmitted(false);
@@ -143,7 +141,7 @@ const CreateCourse = () => {
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {submitted ? <p className="text-sm text-emerald-700">Course form is valid and ready to submit.</p> : null}
+        {submitted ? <p className="text-sm text-emerald-700">Course Created!</p> : null}
 
         <button
           type="submit"
