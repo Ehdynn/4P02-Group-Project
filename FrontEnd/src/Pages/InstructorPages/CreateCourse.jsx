@@ -91,7 +91,7 @@ const CreateCourse = () => {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8">
       <h1 className="text-3xl font-semibold text-slate-900">Create Course</h1>
-      <p className="mt-2 text-sm text-slate-600">Set the course schedule and a code students can use to join.</p>
+      <p className="mt-2 text-sm text-slate-600">Set the course name and a code students can use to join.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <label className="block space-y-1">

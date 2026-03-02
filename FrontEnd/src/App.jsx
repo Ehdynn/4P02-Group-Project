@@ -7,6 +7,7 @@ import UserProvider from './context/UserProvider';
 
 import { BrowserRouter as Router, Routes,Route } from 'react-router-dom';
 import CreateCourse from './Pages/InstructorPages/CreateCourse';
+import CreateAssignment from './Pages/InstructorPages/CreateAssignment'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
                   <Route path="/about" element = {<About />} />
                   <Route path="/login" element = {<Login/>} />
                   <Route path="/CreateCourse" element = {<CreateCourse/>}/>
+                  <Route path="/CreateAssignment" element = {<CreateAssignment/>}/>
                   {/* TODO Add Rest of the Routes Here */}
                   <Route path="*" element={<PageNotFound />} />
               </Routes>

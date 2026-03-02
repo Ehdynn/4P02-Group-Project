@@ -1,6 +1,9 @@
 # Pages Required:
  ## Prof
    - [] Create Assignment
+    - [] ensure only the primary prof can make an assignment.
+    - [] add a start date for the assingment
+    - [] add time zone to date
    - [] Run Comparison
    - [] View Results
    - [] Create A Course
