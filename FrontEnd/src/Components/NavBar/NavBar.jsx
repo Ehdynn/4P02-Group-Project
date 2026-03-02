@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import useUser from '../../context/useUser';
 import supabase from '../../utils/supabase';
+import InstructorLinks from './InstructorLinks';
+import StudentLinks from './StudentLinks';
 const Navbar = () => {
-    const { user, setUser } = useUser();
+    const { user, setUser, isProfessor, roleReady } = useUser();
     const handleLogout = async () => {
       await supabase.auth.signOut();
       setUser(null);
@@ -25,13 +27,16 @@ const Navbar = () => {
                     Login
                 </Link> 
                 :
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300"
-                >
-                  Logout
-                </button>
+                <>
+                  {roleReady ? (isProfessor ? <InstructorLinks /> : <StudentLinks />) : null}
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300"
+                  >
+                    Logout
+                  </button>
+                </>
                 }
               
             </div>

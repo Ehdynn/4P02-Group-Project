@@ -6,6 +6,7 @@ import NavBar from './Components/NavBar/NavBar';
 import UserProvider from './context/UserProvider';
 
 import { BrowserRouter as Router, Routes,Route } from 'react-router-dom';
+import CreateCourse from './Pages/InstructorPages/CreateCourse';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
                   <Route path="/" element = {<Landing />} />
                   <Route path="/about" element = {<About />} />
                   <Route path="/login" element = {<Login/>} />
+                  <Route path="/CreateCourse" element = {<CreateCourse/>}/>
                   {/* TODO Add Rest of the Routes Here */}
                   <Route path="*" element={<PageNotFound />} />
               </Routes>
