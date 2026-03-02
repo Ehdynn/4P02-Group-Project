@@ -1,17 +1,25 @@
-import Landing from './Pages/Landing'
-import About from './Pages/About'
+import InstructorRoute from './utils/Routes/InstructorRoute';
+import StudentRoute from './utils/Routes/StudentRoute';
+
+// Public Pages
+import Landing from './Pages/Landing';
+import About from './Pages/About';
 import PageNotFound from './Pages/PageNotFound';
 import Login from './Pages/Login';
-import NavBar from './Components/NavBar/NavBar';
-import UserProvider from './context/UserProvider';
-import InstructorOverview from './Pages/InstructorPages/InstructorOverview'
-import StudentOverview from './Pages/StudentPages/StudentOverview'
-import StudentRoute from './utils/Routes/StudentRoute'
-
-import { BrowserRouter as Router, Routes,Route } from 'react-router-dom';
+// Instructor Pages
+import InstructorOverview from './Pages/InstructorPages/InstructorOverview';
 import CreateCourse from './Pages/InstructorPages/CreateCourse';
-import CreateAssignment from './Pages/InstructorPages/CreateAssignment'
-import InstructorRoute from './utils/Routes/InstructorRoute';
+import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
+import InstructorAssignment from './Pages/InstructorPages/InstructorAssignment';
+// Student Pages
+import StudentOverview from './Pages/StudentPages/StudentOverview';
+import StudentAssignment from './Pages/StudentPages/StudentAssignment';
+import JoinCourse from './Pages/StudentPages/JoinCourse';
+// Components
+import NavBar from './Components/NavBar/NavBar';
+// Utils
+import UserProvider from './context/UserProvider';
+import { BrowserRouter as Router, Routes,Route } from 'react-router-dom';
 
 function App() {
   return (
@@ -20,9 +28,19 @@ function App() {
           <div>
               <NavBar/>
               <Routes>
+                  {/* Public Routes */}
                   <Route path="/" element = {<Landing />} />
                   <Route path="/about" element = {<About />} />
                   <Route path="/login" element = {<Login/>} />
+                  {/* Instructor Routes */}
+                  <Route
+                    path="/InstructorOverview"
+                    element={
+                      <InstructorRoute>
+                        <InstructorOverview />
+                      </InstructorRoute>
+                    }
+                  />
                   <Route
                     path="/CreateCourse"
                     element={
@@ -40,13 +58,14 @@ function App() {
                     }
                   />
                   <Route
-                    path="/InstructorOverview"
+                    path = "/InstructorAssignment"
                     element={
-                      <InstructorRoute>
-                        <InstructorOverview />
-                      </InstructorRoute>
+                        <InstructorRoute>
+                          <InstructorAssignment />
+                        </InstructorRoute>
                     }
                   />
+                  {/* Student Routes */}
                   <Route
                     path="/StudentOverview"
                     element={
@@ -55,7 +74,22 @@ function App() {
                       </StudentRoute>
                     }
                   />
-                  {/* TODO Add Rest of the Routes Here */}
+                  <Route
+                    path="/StudentAssignment"
+                    element={
+                      <StudentRoute>
+                        <StudentAssignment />
+                      </StudentRoute>
+                    }
+                  />
+                  <Route
+                    path="/JoinCourse"
+                    element={
+                      <StudentRoute>
+                        <JoinCourse />
+                      </StudentRoute>
+                    }
+                  />
                   <Route path="*" element={<PageNotFound />} />
               </Routes>
           </div>
