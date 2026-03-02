@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import supabase from "../../utils/supabase";
+import { getInstructorsCourses } from "../../utils/api";
 
 const CreateAssignment = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,20 @@ const CreateAssignment = () => {
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [courses, setCourses] = useState([]);
+  var noCoursesMSG = "Loading courses, please wait."
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getInstructorsCourses();
+        setCourses(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unable to load courses.");
+      }
+      noCoursesMSG = "No courses available";
+    })();
+  }, []);
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -90,15 +105,23 @@ const CreateAssignment = () => {
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <label className="block space-y-1">
-          <span className="text-sm font-medium text-slate-700">Course id</span>
-          <input
-            type="integer"
-            name="cid"
-            value={formData.cid}
-            onChange={onChange}
-            placeholder=""
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
-          />
+            <span className="text-sm font-medium text-slate-700">Course id</span>
+            <select name="cid" value={formData.cid} onChange={onChange} className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200">
+                {courses.length === 0 ? <option value="">{noCoursesMSG}</option> : 
+                    courses.map((course, index) => {
+                    const courseId = course?.cid;
+                    if (courseId == null) {
+                        return null;
+                    }
+                    const courseName = course?.name;
+                    return (
+                        <option key={`course-${courseId}-${index}`} value={String(courseId)}>
+                        {courseName}
+                        </option>
+                    );
+                    })
+                }
+            </select>
         </label>
 
         <label className="block space-y-1">
@@ -109,7 +132,7 @@ const CreateAssignment = () => {
             value={formData.name}
             onChange={onChange}
             placeholder="Assignment One"
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 uppercase text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
           />
         </label>
 

@@ -17,8 +17,9 @@
    - [] view their result
 
 
-# Features
-- [] list of all courses for students and profs
+# ToDo
+- [] list of all courses for students and profs (Profs done.)
 - [] Restrict page access
+- [] Consolodate Styling
 
 
