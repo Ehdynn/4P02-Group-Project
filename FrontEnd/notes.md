@@ -16,7 +16,7 @@
    - [] view all courses
    - [] Drop down list to switch between courses
  ## Student
-   - [] Join a course
+   - [] Join a course - Turn this from a page to a modal
    - [] Submit an assignment
    - [] view their result
 
@@ -25,5 +25,6 @@
 - [] list of all courses for students and profs (Profs done.)
 - [] Restrict page access
 - [] Consolodate Styling
+- [] Add Toasts
 
 

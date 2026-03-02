@@ -5,11 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type CreateAssignmentBody = {
-  course_id: BigInt;
-  name: string;
-  due_date: string;
-  description?: string;
+type AddStudentBody = {
+  join_code: string,
 };
 
 Deno.serve(async (req) => {
@@ -58,46 +55,54 @@ Deno.serve(async (req) => {
           global: { headers: { Authorization: `Bearer ${token}` } },
         });
 
-    const body = (await req.json()) as CreateAssignmentBody;
-    const cid = body.course_id;
-    const assignment_name = body.name.trim();
-    const due_date = body.due_date;
-    const desc = body.description?.trim() ?? null;
+    const body = (await req.json()) as AddStudentBody;
+    const join_code = body.join_code?.trim()??null;
 
 
-    if (!cid || !assignment_name || !due_date) {
-      return new Response(JSON.stringify({ error: ("course id, name, and due date are required. ") }), {
+    if (!join_code) {
+      return new Response(JSON.stringify({ error: ("Join Code Required") }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (Number.isNaN(Date.parse(due_date))) {
-      return new Response(JSON.stringify({ error: "due date must be valid date." }), {
+    const { data: course, error: courseError } = await dbClient
+      .from("Courses")
+      .select("*")
+      .eq("join_code", join_code)
+      .single();
+
+    if (courseError) {
+      return new Response(JSON.stringify({ error: courseError.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data, error } = await dbClient
-      .from("Assignments")
+    if (!course?.cid) {
+      return new Response(JSON.stringify({ error: "Course not found for join code." }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: enrollment, error: enrollmentError } = await dbClient
+      .from("Enrolled")
       .insert({
-        course: cid,
-        name: assignment_name,
-        due_date: due_date,
-        description: desc,
+        cid: course.cid,
+        suid: user.id,
       })
       .select()
       .single();
 
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+    if (enrollmentError) {
+      return new Response(JSON.stringify({ error: enrollmentError.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ assignment: data }), {
+    return new Response(JSON.stringify({ enrolled: enrollment }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
