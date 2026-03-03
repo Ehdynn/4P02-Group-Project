@@ -1,6 +1,6 @@
 import { useState, useEffect} from "react";
-import supabase from "../../utils/supabase";
-import { getInstructorsCourses } from "../../utils/api";
+import supabase from "../../utils/DatabaseInteractions/supabase";
+import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 
 const CreateAssignment = () => {
   const [formData, setFormData] = useState({

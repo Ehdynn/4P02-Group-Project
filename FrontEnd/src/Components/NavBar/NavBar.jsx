@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import useUser from '../../context/useUser';
-import supabase from '../../utils/supabase';
+import supabase from "../../utils/DatabaseInteractions/supabase";
 import InstructorLinks from './InstructorLinks';
 import StudentLinks from './StudentLinks';
 const Navbar = () => {

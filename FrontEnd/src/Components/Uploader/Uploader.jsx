@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { submitAssignment } from "../../utils/api";
+import { submitAssignment } from "../../utils/DatabaseInteractions/Student/submitAssignment";
 import useUser from "../../context/useUser";
 
 const Uploader = () => {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import UserContext from "./UserContext";
-import supabase from "../utils/supabase";
-import { isProfessorAccount } from "../utils/api";
+import supabase from "../utils/DatabaseInteractions/supabase";
+import { isProfessorAccount } from "../utils/DatabaseInteractions/common/isProfessorAccount";
 
 export default function UserProvider({ children }) {
   const [user, setUser] = useState(null);

@@ -1,5 +1,5 @@
 import { useState, useEffect} from "react";
-import supabase from "../../utils/supabase";
+import supabase from "../../utils/DatabaseInteractions/supabase";
 import Uploader from "../../Components/Uploader/Uploader";
 
 const StudentOverview = () => {

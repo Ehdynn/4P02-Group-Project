@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useUser from "../../context/useUser";
-import supabase from "../../utils/supabase";
+import supabase from "../../utils/DatabaseInteractions/supabase";
 
 export default function SignUpForm() {
   const navigate = useNavigate();
