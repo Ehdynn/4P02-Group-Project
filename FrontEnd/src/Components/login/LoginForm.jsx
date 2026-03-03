@@ -35,7 +35,7 @@ export default function LoginForm() {
     }
 
     setUser(data?.user ?? null);
-    navigate("/");
+    navigate("/Overview");
   };
 
   return (

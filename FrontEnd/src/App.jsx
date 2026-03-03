@@ -6,13 +6,12 @@ import Landing from './Pages/Landing';
 import About from './Pages/About';
 import PageNotFound from './Pages/PageNotFound';
 import Login from './Pages/Login';
+import Overview from './Pages/Overview';
 // Instructor Pages
-import InstructorOverview from './Pages/InstructorPages/InstructorOverview';
 import CreateCourse from './Pages/InstructorPages/CreateCourse';
 import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
 import InstructorAssignment from './Pages/InstructorPages/InstructorAssignment';
 // Student Pages
-import StudentOverview from './Pages/StudentPages/StudentOverview';
 import StudentAssignment from './Pages/StudentPages/StudentAssignment';
 import JoinCourse from './Pages/StudentPages/JoinCourse';
 // Components
@@ -32,15 +31,8 @@ function App() {
                   <Route path="/" element = {<Landing />} />
                   <Route path="/about" element = {<About />} />
                   <Route path="/login" element = {<Login/>} />
+                  <Route path="/Overview" element={<Overview/>}/>
                   {/* Instructor Routes */}
-                  <Route
-                    path="/InstructorOverview"
-                    element={
-                      <InstructorRoute>
-                        <InstructorOverview />
-                      </InstructorRoute>
-                    }
-                  />
                   <Route
                     path="/CreateCourse"
                     element={
@@ -66,14 +58,6 @@ function App() {
                     }
                   />
                   {/* Student Routes */}
-                  <Route
-                    path="/StudentOverview"
-                    element={
-                      <StudentRoute>
-                        <StudentOverview />
-                      </StudentRoute>
-                    }
-                  />
                   <Route
                     path="/StudentAssignment/:aid"
                     element={

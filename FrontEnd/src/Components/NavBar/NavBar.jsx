@@ -20,9 +20,9 @@ const Navbar = () => {
           <div className="hidden md:flex items-center w-full">
 
             <Link 
-                to={roleReady ? (isProfessor ? "/InstructorOverview" : "/StudentOverview") : "/"} 
+                to={user && roleReady ? "/Overview" : "/"} 
                 className="link-default"
-            >{roleReady ? "Overview" : "Home"}</Link>
+            >{user && roleReady ? "Overview" : "Home"}</Link>
 
             <div className="ml-auto flex items-center gap-1">
               <Link to="/about" className="link-default">

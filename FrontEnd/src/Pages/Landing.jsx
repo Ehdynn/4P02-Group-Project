@@ -1,11 +1,9 @@
-import useUser from "../context/useUser";
+import useUser from "../context/useUser"
 
 const Landing = () => {
-  const { isProfessor } = useUser();
+  const {isProfessor, roleReady } = useUser();
+  return (<p>{isProfessor ? "Prof": "not prof"}</p>)
 
-  return (
-    <p>{isProfessor ? "Prof": "not prof"}</p>
-  );
-};
+}
 
-export default Landing;
+export default Landing
