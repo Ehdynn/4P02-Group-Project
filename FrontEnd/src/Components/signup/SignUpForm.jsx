@@ -52,7 +52,7 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="box-wrapper">
+    <>
       <h1 className="h1-default">Sign Up</h1>
 
       <form
@@ -161,6 +161,6 @@ export default function SignUpForm() {
         </div>
         {error ? <p className="error">{error}</p> : null}
       </form>
-    </div>
+    </>
   );
 }

@@ -7,17 +7,17 @@ const Login = () => {
 
   return (
     <>
-    <div className="absolute top-[20%] left-1/2 transform -translate-x-1/2 -translate-y-1">
-        <div className='box-border min-w-64 p-4 bg-gray-500 rounded-2xl'>
+    <div className="center-box">
+        <div className='box-wrapper'>
             <div className="flex justify-end">
               <button
                 onClick={() => setLoginMode(!loginMode)}
-                className="box-border border border-white rounded px-2 py-1 text-sm font-semibold text-white hover:bg-blue-950"
+                className="text-button"
               >
                 {loginMode ? "signup" : "login"}
               </button>
             </div>
-            <div className="mt-3 flex justify-center text-center">
+            <div className="justify-center text-center">
               {loginMode ? <LoginForm /> : <SignupForm />}
             </div>
         </div>

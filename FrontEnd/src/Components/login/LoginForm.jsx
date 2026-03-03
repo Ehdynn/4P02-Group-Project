@@ -39,7 +39,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="box-wrapper">
+    <>
       <h1 className="h1-default">Sign In</h1>
 
       <form className="form-default " onSubmit={handleSubmit}>
@@ -99,12 +99,12 @@ export default function LoginForm() {
 
       </form>
 
-      <div>
+      <div className="py-3">
         Need a hand?{" "}
         <button onClick={onForgot} className="text-button">
           Restore access
         </button>
       </div>
-    </div>
+    </>
   );
 }

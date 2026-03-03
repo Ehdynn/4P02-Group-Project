@@ -34,4 +34,7 @@
     .text-button{
         @apply font-semibold text-slate-700 underline-offset-4 hover:underline;
     }
+    .center-box{
+        @apply absolute top-[15%] left-1/2 transform -translate-x-1/2 -translate-y-1;
+    }
 }
