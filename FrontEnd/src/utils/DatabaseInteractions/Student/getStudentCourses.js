@@ -1,6 +1,6 @@
 import supabase from "../supabase";
 
-export async function getCourses(suid) {
+export default async function getCourses(suid) {
     if (!suid) throw new Error("Missing user id.");
     const {data, error} = await supabase
       .from("Enrolled")

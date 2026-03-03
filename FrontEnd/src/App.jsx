@@ -75,7 +75,7 @@ function App() {
                     }
                   />
                   <Route
-                    path="/StudentAssignment"
+                    path="/StudentAssignment/:aid"
                     element={
                       <StudentRoute>
                         <StudentAssignment />

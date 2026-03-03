@@ -1,6 +1,6 @@
 import supabase from "../common/supabase";
 
-export async function uploadSubmission(file, suid, fid) {
+export default async function uploadSubmission(file, suid, fid) {
   const filePath = (suid + '/' + fid + '/' + file.name);
   const { data, error } = await supabase.storage.from('student_submissions').upload(filePath, file)
   if (error) {

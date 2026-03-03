@@ -1,6 +1,6 @@
 import supabase from "../supabase";
 
-export async function getAssignmentDetails(aid){
+export default async function getAssignmentDetails(aid){
     if (!aid) throw new Error("Missing assignment id.");
     const {data, error} = await supabase
       .from("Assignments")
