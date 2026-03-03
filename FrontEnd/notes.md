@@ -23,7 +23,7 @@
 
 # ToDo
 - [] list of all courses for students and profs (Profs done.)
-- [] Restrict page access
+- [x] Restrict page access
 - [] Consolodate Styling
 - [] Add Toasts
 - [] Add the option to allow / disallow resubmission
