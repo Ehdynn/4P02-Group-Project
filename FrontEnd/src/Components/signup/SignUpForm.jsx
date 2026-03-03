@@ -52,11 +52,11 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/70 bg-white/90 shadow-2xl backdrop-blur">
+    <div className="box-wrapper">
       <h1 className="h1-default">Sign Up</h1>
 
       <form
-        className="space-y-8 px-6 py-6"
+        className="form-default"
         onSubmit={async (e) => {
           e.preventDefault();
           await onSubmit();
