@@ -22,6 +22,12 @@
     .h1-default{
         @apply text-3xl font-semibold text-slate-900;
     }
+    .h2-default{
+        @apply mt-2 text-sm text-slate-600;
+    }
+    .h2-large{
+        @apply text-xl font-semibold text-slate-900;
+    }
     .form-default{
         @apply mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm;
     }
@@ -36,5 +42,14 @@
     }
     .center-box{
         @apply absolute top-[15%] left-1/2 transform -translate-x-1/2 -translate-y-1;
+    }
+    .link-default{
+        @apply py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300;
+    }
+    .span-default{
+        @apply text-sm font-medium text-slate-700;
+    }
+    .field-default{
+        @apply w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200;
     }
 }

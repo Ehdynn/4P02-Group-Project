@@ -52,7 +52,7 @@ const StudentAssignment = () => {
 
   return (
     <div className="absolute top-[20%] justify-self-center section-default">
-      <h1 className="text-center text-2xl font-bold">{details.name ?? "Assignment"}</h1>
+      <h1 className="h1-default">{details.name ?? "Assignment"}</h1>
       <p>Description:{details.description ?? "No description provided."}</p>
       <p>Due Date: {details.due_date ?? "No Due Date Provided"}</p>
       <Uploader/>

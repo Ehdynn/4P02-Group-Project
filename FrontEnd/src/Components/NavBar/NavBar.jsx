@@ -21,15 +21,15 @@ const Navbar = () => {
 
             <Link 
                 to={roleReady ? (isProfessor ? "/InstructorOverview" : "/StudentOverview") : "/"} 
-                className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300"
+                className="link-default"
             >{roleReady ? "Overview" : "Home"}</Link>
 
             <div className="ml-auto flex items-center gap-1">
-              <Link to="/about" className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300">
+              <Link to="/about" className="link-default">
                 About
               </Link>
               {user == null ? 
-                <Link to="/login" className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300">
+                <Link to="/login" className="link-default">
                     Login
                 </Link> 
                 :
@@ -38,7 +38,7 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="py-5 px-3 text-gray-300 hover:bg-gray-700 hover:text-white transition duration-300"
+                    className="link-default"
                   >
                     Logout
                   </button>

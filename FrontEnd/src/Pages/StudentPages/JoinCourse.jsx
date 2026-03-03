@@ -80,14 +80,14 @@ const JoinCourse = () => {
       <h1 className="h1-default">Join Course</h1>
       <form onSubmit={handleSubmit} className="form-default">
         <label className="label-default">
-          <span className="text-sm font-medium text-slate-700">Join Code</span>
+          <span className="span-default">Join Code</span>
           <input
             type="text"
             name="joinCode"
             value={formData.joinCode}
             onChange={onChange}
             placeholder=""
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="field-default"
           />
         </label>
         {error ? <p className="error">{error}</p> : null}

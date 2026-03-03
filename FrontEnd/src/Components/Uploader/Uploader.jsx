@@ -45,11 +45,11 @@ const Uploader = () => {
       <form onSubmit={onFileUpload} className="box-wrapper">
         <h1 className="h1-default">Submit Assignment</h1>
         <label className="label-default">
-          <span className="text-sm font-medium text-slate-700">Assignment File</span>
+          <span className="span-default">Assignment File</span>
           <input
             type="file"
             onChange={onFileChange}
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="field-default file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800"
           />
         </label>
 

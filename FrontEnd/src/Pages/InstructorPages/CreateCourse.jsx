@@ -91,53 +91,53 @@ const CreateCourse = () => {
   return (
     <main className="outer-container">
       <h1 className="h1-default">Create Course</h1>
-      <p className="mt-2 text-sm text-slate-600">Set the course name and a code students can use to join.</p>
+      <h2 className="h2-default">Set the course name and a code students can use to join.</h2>
 
       <form onSubmit={handleSubmit} className="form-default">
         <label className="label-default">
-          <span className="text-sm font-medium text-slate-700">Course Name</span>
+          <span className="span-default">Course Name</span>
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={onChange}
             placeholder="Software Design 101"
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="field-default"
           />
         </label>
 
         <label className="label-default">
-          <span className="text-sm font-medium text-slate-700">Join Code</span>
+          <span className="span-default">Join Code</span>
           <input
             type="text"
             name="joinCode"
             value={formData.joinCode}
             onChange={onChange}
             placeholder="4P02-W26"
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 uppercase text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="field-default uppercase"
           />
         </label>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <label className="label-default">
-            <span className="text-sm font-medium text-slate-700">Start Date</span>
+            <span className="span-default">Start Date</span>
             <input
               type="date"
               name="startDate"
               value={formData.startDate}
               onChange={onChange}
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              className="field-default"
             />
           </label>
 
           <label className="label-default">
-            <span className="text-sm font-medium text-slate-700">End Date</span>
+            <span className="span-default">End Date</span>
             <input
               type="date"
               name="endDate"
               value={formData.endDate}
               onChange={onChange}
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              className="field-default"
             />
           </label>
         </div>

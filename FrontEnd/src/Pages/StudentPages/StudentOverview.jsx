@@ -82,17 +82,17 @@ const StudentOverview = () => {
   }, [selectedCourse]);
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8">
+    <main className="outer-container">
       <h1 className="h1-default">Student Overview</h1>
 
       <section className="box-wrapper">
         <label className="label-default">
-          <span className="text-sm font-medium text-slate-700">Course</span>
+          <h2 className="h2-large">Course</h2>
           <select
             name="cid"
             value={selectedCourse}
             onChange={(event) => setSelectedCourse(event.target.value)}
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="field-default"
             disabled={loadingCourses || courses.length === 0}
           >
             {loadingCourses ? <option value="">Loading courses...</option> : null}
@@ -111,12 +111,12 @@ const StudentOverview = () => {
       </section>
 
       <section className="box-wrapper">
-        <h2 className="text-xl font-semibold text-slate-900">Assignments</h2>
+        <h2 className="h2-large">Assignments</h2>
 
-        {loadingAssignments ? <p className="mt-3 text-slate-600">Loading assignments...</p> : null}
+        {loadingAssignments ? <h2 className="h2-default">Loading assignments...</h2> : null}
 
         {!loadingAssignments && assignments.length === 0 ? (
-          <p className="mt-3 text-slate-600">No assignments found for this course.</p>
+          <h2 className="h2-default">No assignments found for this course.</h2>
         ) : null}
 
         {!loadingAssignments && assignments.length > 0 ? (

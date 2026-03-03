@@ -101,12 +101,12 @@ const CreateAssignment = () => {
   return (
     <main className="outer-container">
       <h1 className="h1-default">Create Assignment</h1>
-      <p className="mt-2 text-sm text-slate-600">FILL IN TEXT HERE</p>
+      <h2 className="h2-default">FILL IN TEXT HERE</h2>
 
       <form onSubmit={handleSubmit} className="form-default">
         <label className="label-default">
-            <span className="text-sm font-medium text-slate-700">Course id</span>
-            <select name="cid" value={formData.cid} onChange={onChange} className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200">
+            <span className="span-default">Course id</span>
+            <select name="cid" value={formData.cid} onChange={onChange} className="field-default">
                 {courses.length === 0 ? <option value="">{noCoursesMSG}</option> : 
                     courses.map((course, index) => {
                     const courseId = course?.cid;
@@ -125,30 +125,30 @@ const CreateAssignment = () => {
         </label>
 
         <label className="label-default">
-          <span className="text-sm font-medium text-slate-700">Assignment Name</span>
+          <span className="span-default">Assignment Name</span>
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={onChange}
             placeholder="Assignment One"
-            className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="field-default"
           />
         </label>
 
           <label className="label-default">
-            <span className="text-sm font-medium text-slate-700">Due Date</span>
+            <span className="span-default">Due Date</span>
             <input
               type="date"
               name="dueDate"
               value={formData.dueDate}
               onChange={onChange}
-              className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              className="field-default"
             />
           </label>
 
           <label className="label-default">
-            <span className="text-sm font-medium text-slate-700">Description</span>
+            <span className="span-default">Description</span>
             <textarea
                 name="description"
                 value={formData.description}
@@ -158,12 +158,12 @@ const CreateAssignment = () => {
                     e.target.style.height = e.target.scrollHeight + "px";
                 }}
                 rows={1}
-                className="w-full overflow-hidden resize-none rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="field-default overflow-hidden resize-none"
             />
           </label>
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {submitted ? <p className="text-sm text-emerald-700">Assignment Created!</p> : null}
+        {error ? <p className="error">{error}</p> : null}
+        {submitted ? <p className="success">Assignment Created!</p> : null}
 
         <button
           type="submit"
