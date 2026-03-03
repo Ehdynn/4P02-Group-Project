@@ -13,10 +13,11 @@ So far the following features have basic implementations, while they are far fro
 - Assignment Creation
 - Course Joining for students
 - File uploading
+- Overview Pages for both instructors and students
+- Assignment Pages for both instructors and students
 
 ## Planned Features
 Here are some of the items on the every growing list of todos:
 - Manually Triggering Comparisions
 - Viewing Comparision results as both the instructor and student
-- Overview Pages for both instructors and students
-- Assignment Pages for both instructors and students
+
