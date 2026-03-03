@@ -99,12 +99,12 @@ const CreateAssignment = () => {
   };
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold text-slate-900">Create Assignment</h1>
+    <main className="outer-container">
+      <h1 className="h1-default">Create Assignment</h1>
       <p className="mt-2 text-sm text-slate-600">FILL IN TEXT HERE</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <label className="block space-y-1">
+        <label className="label-default">
             <span className="text-sm font-medium text-slate-700">Course id</span>
             <select name="cid" value={formData.cid} onChange={onChange} className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200">
                 {courses.length === 0 ? <option value="">{noCoursesMSG}</option> : 
@@ -124,7 +124,7 @@ const CreateAssignment = () => {
             </select>
         </label>
 
-        <label className="block space-y-1">
+        <label className="label-default">
           <span className="text-sm font-medium text-slate-700">Assignment Name</span>
           <input
             type="text"
@@ -136,7 +136,7 @@ const CreateAssignment = () => {
           />
         </label>
 
-          <label className="block space-y-1">
+          <label className="label-default">
             <span className="text-sm font-medium text-slate-700">Due Date</span>
             <input
               type="date"
@@ -147,7 +147,7 @@ const CreateAssignment = () => {
             />
           </label>
 
-          <label className="block space-y-1">
+          <label className="label-default">
             <span className="text-sm font-medium text-slate-700">Description</span>
             <textarea
                 name="description"
@@ -168,7 +168,7 @@ const CreateAssignment = () => {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="submit-button"
         >
           {loading ? "Creating..." : "Create Assignment"}
         </button>

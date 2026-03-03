@@ -89,12 +89,12 @@ const CreateCourse = () => {
   };
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold text-slate-900">Create Course</h1>
+    <main className="outer-container">
+      <h1 className="h1-default">Create Course</h1>
       <p className="mt-2 text-sm text-slate-600">Set the course name and a code students can use to join.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <label className="block space-y-1">
+        <label className="label-default">
           <span className="text-sm font-medium text-slate-700">Course Name</span>
           <input
             type="text"
@@ -106,7 +106,7 @@ const CreateCourse = () => {
           />
         </label>
 
-        <label className="block space-y-1">
+        <label className="label-default">
           <span className="text-sm font-medium text-slate-700">Join Code</span>
           <input
             type="text"
@@ -119,7 +119,7 @@ const CreateCourse = () => {
         </label>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <label className="block space-y-1">
+          <label className="label-default">
             <span className="text-sm font-medium text-slate-700">Start Date</span>
             <input
               type="date"
@@ -130,7 +130,7 @@ const CreateCourse = () => {
             />
           </label>
 
-          <label className="block space-y-1">
+          <label className="label-default">
             <span className="text-sm font-medium text-slate-700">End Date</span>
             <input
               type="date"
@@ -142,13 +142,13 @@ const CreateCourse = () => {
           </label>
         </div>
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {submitted ? <p className="text-sm text-emerald-700">Course Created!</p> : null}
+        {error ? <p className="error">{error}</p> : null}
+        {submitted ? <p className="success">Course Created!</p> : null}
 
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="submit-button"
         >
           {loading ? "Creating..." : "Create Course"}
         </button>

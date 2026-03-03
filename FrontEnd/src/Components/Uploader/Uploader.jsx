@@ -41,10 +41,10 @@ const Uploader = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <form onSubmit={onFileUpload} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-semibold text-slate-900">Submit Assignment</h1>
-        <label className="block space-y-1">
+    <div className="outer-container">
+      <form onSubmit={onFileUpload} className="box-wrapper">
+        <h1 className="h1-default">Submit Assignment</h1>
+        <label className="label-default">
           <span className="text-sm font-medium text-slate-700">Assignment File</span>
           <input
             type="file"
@@ -60,13 +60,13 @@ const Uploader = () => {
           </div>
         ) : null}
 
-        {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
-        {successMessage ? <p className="text-sm text-emerald-700">{successMessage}</p> : null}
+        {errorMessage ? <p className="error">{errorMessage}</p> : null}
+        {successMessage ? <p className="success">{successMessage}</p> : null}
 
         <button
           type="submit"
           disabled={isUploading}
-          className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-500"
+          className="submit-button disabled:cursor-not-allowed disabled:bg-slate-500"
         >
           {isUploading ? "Uploading..." : "Upload Submission"}
         </button>

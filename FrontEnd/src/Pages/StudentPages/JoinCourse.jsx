@@ -76,10 +76,10 @@ const JoinCourse = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-3xl font-semibold text-slate-900">Join Course</h1>
+    <div className="outer-container">
+      <h1 className="h1-default">Join Course</h1>
       <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <label className="block space-y-1">
+        <label className="label-default">
           <span className="text-sm font-medium text-slate-700">Join Code</span>
           <input
             type="text"
@@ -90,13 +90,13 @@ const JoinCourse = () => {
             className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
           />
         </label>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        {submitted ? <p className="text-sm text-emerald-700">Course Joined!</p> : null}
+        {error ? <p className="error">{error}</p> : null}
+        {submitted ? <p className="success">Course Joined!</p> : null}
 
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="submit-button"
         >
           {loading ? "Creating..." : "Join Course"}
         </button>

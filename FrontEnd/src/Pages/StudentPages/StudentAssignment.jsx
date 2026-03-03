@@ -51,7 +51,7 @@ const StudentAssignment = () => {
   }
 
   return (
-    <div className="absolute top-[20%] w-full max-w-md justify-self-center overflow-hidden rounded-2xl border border-white/70 bg-white/90 shadow-2xl backdrop-blur">
+    <div className="absolute top-[20%] justify-self-center section-default">
       <h1 className="text-center text-2xl font-bold">{details.name ?? "Assignment"}</h1>
       <p>Description:{details.description ?? "No description provided."}</p>
       <p>Due Date: {details.due_date ?? "No Due Date Provided"}</p>

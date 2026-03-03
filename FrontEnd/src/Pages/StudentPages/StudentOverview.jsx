@@ -83,10 +83,10 @@ const StudentOverview = () => {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="text-3xl font-semibold text-slate-900">Student Overview</h1>
+      <h1 className="h1-default">Student Overview</h1>
 
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <label className="block space-y-1">
+      <section className="box-wrapper">
+        <label className="label-default">
           <span className="text-sm font-medium text-slate-700">Course</span>
           <select
             name="cid"
@@ -107,10 +107,10 @@ const StudentOverview = () => {
           </select>
         </label>
 
-        {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="error">{error}</p> : null}
       </section>
 
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="box-wrapper">
         <h2 className="text-xl font-semibold text-slate-900">Assignments</h2>
 
         {loadingAssignments ? <p className="mt-3 text-slate-600">Loading assignments...</p> : null}
