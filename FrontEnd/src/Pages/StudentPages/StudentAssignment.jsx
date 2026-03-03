@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Student/getAssignmentDetails";
+import { getSubmissions } from "../../utils/DatabaseInteractions/Student/getSubmissions";
 import Uploader from '../../Components/Uploader/Uploader'
+import useUser from "../../context/useUser";
 
 const StudentAssignment = () => {
   const { aid } = useParams();
   const [details, setDetails] = useState(null);
+  const [submissions, setSubmissions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const {user} = useUser();
+  const [showUploader, setShowUploader] = useState(false);
   useEffect(() => {
     let cancelled = false;
 
@@ -31,8 +35,27 @@ const StudentAssignment = () => {
       }
     }
 
-    loadAssignment();
+    async function loadSubmissions() {
+      try {
+        setLoading(true);
+        setError("");
+        const result = await getSubmissions(aid, user.id);
+        if (!cancelled) {
+          setSubmissions(result);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load submissions.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
 
+    loadAssignment();
+    loadSubmissions();
     return () => {
       cancelled = true;
     };
@@ -55,7 +78,10 @@ const StudentAssignment = () => {
       <h1 className="h1-default">{details.name ?? "Assignment"}</h1>
       <p>Description:{details.description ?? "No description provided."}</p>
       <p>Due Date: {details.due_date ?? "No Due Date Provided"}</p>
-      <Uploader/>
+      {(submissions && submissions.length > 0) ?
+        (<p>{submissions.length} Submission(s) made.</p>)
+        : setShowUploader(true)} 
+      {showUploader ? <Uploader/> : <button onClick={() => setShowUploader(true)}>Upload More</button>}
     </div>
   );
 };
