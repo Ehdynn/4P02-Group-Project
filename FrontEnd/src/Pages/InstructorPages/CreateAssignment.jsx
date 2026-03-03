@@ -103,7 +103,7 @@ const CreateAssignment = () => {
       <h1 className="h1-default">Create Assignment</h1>
       <p className="mt-2 text-sm text-slate-600">FILL IN TEXT HERE</p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="form-default">
         <label className="label-default">
             <span className="text-sm font-medium text-slate-700">Course id</span>
             <select name="cid" value={formData.cid} onChange={onChange} className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200">

@@ -27,5 +27,6 @@
 - [] Consolodate Styling
 - [] Add Toasts
 - [] Add the option to allow / disallow resubmission
+- [] forgot password
 
 

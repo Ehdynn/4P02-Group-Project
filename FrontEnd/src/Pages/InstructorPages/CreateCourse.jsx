@@ -93,7 +93,7 @@ const CreateCourse = () => {
       <h1 className="h1-default">Create Course</h1>
       <p className="mt-2 text-sm text-slate-600">Set the course name and a code students can use to join.</p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="form-default">
         <label className="label-default">
           <span className="text-sm font-medium text-slate-700">Course Name</span>
           <input

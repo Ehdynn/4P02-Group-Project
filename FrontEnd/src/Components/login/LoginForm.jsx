@@ -14,7 +14,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   const onForgot = () => {
-    // Placeholder for forgot-password flow.
+    // Placeholder for forgot password.
     console.log("Forgot password clicked");
   };
 
@@ -39,24 +39,22 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md justify-self-center overflow-hidden rounded-2xl border border-white/70 bg-white/90 shadow-2xl backdrop-blur">
-      <div className="flex items-center justify-center border-b border-slate-100 px-6 py-4">
-        <p className="text-body-strong">Sign in</p>
-      </div>
+    <div className="box-wrapper">
+      <h1 className="h1-default">Sign In</h1>
 
-      <form className="space-y-4 px-6 py-5" onSubmit={handleSubmit}>
-        <label className="space-y-1 text-sm font-medium text-slate-700">
+      <form className="form-default " onSubmit={handleSubmit}>
+        <label className="label-default">
           Email
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="you@example.com"
-            className="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+            className="account-form-default"
           />
         </label>
 
-        <label className="space-y-1 text-sm font-medium text-slate-700">
+        <label className="label-default">
           Password
           <div className="relative">
             <input
@@ -64,13 +62,13 @@ export default function LoginForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="••••••••"
-              className="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 pr-12 text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              className="account-form-default"
             />
             <button
               type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              onClick={() => setShowPassword((previous) => !previous)}
-              className="absolute inset-y-0 right-0 grid w-12 place-items-center text-slate-500 hover:text-slate-700"
+              className="show-hide"
             >
               {showPassword ? "Hide" : "Show"}
             </button>
@@ -87,25 +85,23 @@ export default function LoginForm() {
             />
             Remember me
           </label>
-          <button type="button" className="font-semibold text-slate-700 underline-offset-4 hover:underline">
-            Forgot?
-          </button>
+          <button type="button" className="text-button">Forgot?</button>
         </div>
 
         <button
           type="submit"
           disabled={loading || !email.trim() || !password.trim()}
-          className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
+          className="submit-button"
         >
           {loading ? "Signing in…" : "Continue"}
         </button>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="error">{error}</p> : null}
 
       </form>
 
-      <div className="border-t border-slate-100 px-6 py-4 text-center text-body-muted">
+      <div>
         Need a hand?{" "}
-        <button onClick={onForgot} className="font-semibold text-slate-800 underline-offset-4 hover:underline">
+        <button onClick={onForgot} className="text-button">
           Restore access
         </button>
       </div>
