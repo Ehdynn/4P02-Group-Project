@@ -1,7 +1,7 @@
 import useUser from "../context/useUser"
 import { Navigate } from "react-router-dom";
-import InstructorOverview from './InstructorPages/InstructorOverview';
-import StudentOverview from './StudentPages/StudentOverview';
+import InstructorOverview from '../Components/Overview/InstructorOverview';
+import StudentOverview from '../Components/Overview/StudentOverview';
 
 const Overview = () => {
   const { user, isProfessor, roleReady } = useUser();
