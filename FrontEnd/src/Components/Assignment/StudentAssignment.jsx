@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Student/getAssignmentDetails";
 import { getSubmissions } from "../../utils/DatabaseInteractions/Student/getSubmissions";
@@ -41,7 +41,9 @@ const StudentAssignment = () => {
         setError("");
         const result = await getSubmissions(aid, user.id);
         if (!cancelled) {
-          setSubmissions(result);
+          const normalized = Array.isArray(result) ? result : [];
+          setSubmissions(normalized);
+          setShowUploader(normalized.length === 0);
         }
       } catch (err) {
         if (!cancelled) {
@@ -73,15 +75,16 @@ const StudentAssignment = () => {
     return <div>Assignment not found.</div>;
   }
 
+  const submissionCount = submissions?.length ?? 0;
+
   return (
     <div className="absolute top-[20%] justify-self-center section-default">
       <h1 className="h1-default">{details.name ?? "Assignment"}</h1>
       <p>Description:{details.description ?? "No description provided."}</p>
       <p>Due Date: {details.due_date ?? "No Due Date Provided"}</p>
-      {(submissions && submissions.length > 0) ?
-        (<p>{submissions.length} Submission(s) made.</p>)
-        : setShowUploader(true)} 
-      {showUploader ? <Uploader/> : <button onClick={() => setShowUploader(true)}>Upload More</button>}
+      {submissionCount > 0 ? <p>{submissionCount} Submission(s) made.</p> : null}
+      {!showUploader && submissionCount > 0 ? <button onClick={() => setShowUploader(true)}>Upload More</button> : null}
+      {showUploader ? <Uploader/> : null}
     </div>
   );
 };

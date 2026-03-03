@@ -7,12 +7,11 @@ import About from './Pages/About';
 import PageNotFound from './Pages/PageNotFound';
 import Login from './Pages/Login';
 import Overview from './Pages/Overview';
+import Assignment from './Pages/Assignment';
 // Instructor Pages
 import CreateCourse from './Pages/InstructorPages/CreateCourse';
 import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
-import InstructorAssignment from './Pages/InstructorPages/InstructorAssignment';
 // Student Pages
-import StudentAssignment from './Pages/StudentPages/StudentAssignment';
 import JoinCourse from './Pages/StudentPages/JoinCourse';
 // Components
 import NavBar from './Components/NavBar/NavBar';
@@ -32,6 +31,7 @@ function App() {
                   <Route path="/about" element = {<About />} />
                   <Route path="/login" element = {<Login/>} />
                   <Route path="/Overview" element={<Overview/>}/>
+                  <Route path="/Assignment/:aid" element={<Assignment/>}/>
                   {/* Instructor Routes */}
                   <Route
                     path="/CreateCourse"
@@ -49,23 +49,7 @@ function App() {
                       </InstructorRoute>
                     }
                   />
-                  <Route
-                    path = "/InstructorAssignment"
-                    element={
-                        <InstructorRoute>
-                          <InstructorAssignment />
-                        </InstructorRoute>
-                    }
-                  />
                   {/* Student Routes */}
-                  <Route
-                    path="/StudentAssignment/:aid"
-                    element={
-                      <StudentRoute>
-                        <StudentAssignment />
-                      </StudentRoute>
-                    }
-                  />
                   <Route
                     path="/JoinCourse"
                     element={

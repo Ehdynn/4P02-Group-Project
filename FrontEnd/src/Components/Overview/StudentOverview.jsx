@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useUser from "../../context/useUser";
 import getStudentCourses from "../../utils/DatabaseInteractions/Student/getStudentCourses";
-import getStudentAssignments from "../../utils/DatabaseInteractions/Student/getStudentAssingments";
+import getStudentAssignments from "../../utils/DatabaseInteractions/Student/getStudentAssignments";
 
 const StudentOverview = () => {
   const { user } = useUser();
@@ -123,7 +123,7 @@ const StudentOverview = () => {
           <ul className="mt-3 space-y-2">
             {assignments.map((assignment) => (
               <li key={assignment.id}>
-                <Link to={`/StudentAssignment/${assignment.id}`} className="text-slate-900 underline hover:text-slate-700">
+                <Link to={`/Assignment/${assignment.id}`} className="text-slate-900 underline hover:text-slate-700">
                   {assignment.name ?? `Assignment ${assignment.id}`}
                 </Link>
               </li>
