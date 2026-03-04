@@ -17,7 +17,5 @@ So far the following features have basic implementations, while they are far fro
 - Assignment Pages for both instructors and students
 
 ## Planned Features
-Here are some of the items on the every growing list of todos:
-- Manually Triggering Comparisions
-- Viewing Comparision results as both the instructor and student
+Please see the [progress tracker](./ProgressTracker.md) for in progress features and todos.
 
