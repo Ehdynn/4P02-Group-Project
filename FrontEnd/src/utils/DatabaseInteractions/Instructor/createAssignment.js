@@ -7,7 +7,7 @@ export async function createAssignment(courseId, name, dueDate, description){
     const { data, error } = await supabase
       .from("Assignments")
       .insert({
-        course: cid,
+        course: courseId,
         name: name.trim(),
         due_date: dueDate,
         description: description?.trim() ?? "",

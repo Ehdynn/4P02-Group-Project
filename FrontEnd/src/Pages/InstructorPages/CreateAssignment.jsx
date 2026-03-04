@@ -23,7 +23,13 @@ const CreateAssignment = () => {
     (async () => {
       try {
         const data = await getInstructorsCourses(user.id);
-        setCourses(Array.isArray(data) ? data : []);
+        const loadedCourses = Array.isArray(data) ? data : [];
+        setCourses(loadedCourses);
+
+        const firstCourseId = loadedCourses[0]?.cid;
+        if (firstCourseId != null) {
+          setFormData((previous) => ({ ...previous, cid: String(firstCourseId) }));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to load courses.");
       }
@@ -43,6 +49,7 @@ const CreateAssignment = () => {
     const { cid, dueDate, description } = formData;
 
     if (!cid || !formData.name.trim()) {
+      {console.log(cid + formData.name)}
       setError("Please fill in all fields.");
       return;
     }
