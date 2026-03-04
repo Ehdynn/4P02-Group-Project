@@ -2,6 +2,7 @@ import { useState, useEffect} from "react";
 import supabase from "../../utils/DatabaseInteractions/supabase";
 import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 import useUser from "../../context/useUser";
+import { createAssignment } from "../../utils/DatabaseInteractions/Instructor/createAssignment";
 
 const CreateAssignment = () => {
   const [formData, setFormData] = useState({
@@ -66,14 +67,7 @@ const CreateAssignment = () => {
       return;
     }
 
-    const { error: invokeError } = await supabase.functions.invoke("createAssignment", {
-      body: {
-        course_id: cid,
-        name: formData.name.trim(),
-        due_date: dueDate,
-        description: description?.trim() ?? null,
-      },
-    });
+    const { error: invokeError } = await createAssignment(cid, formData.name, dueDate, description)
 
     setLoading(false);
 
