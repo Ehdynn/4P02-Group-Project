@@ -34,3 +34,4 @@
 - [ ] Fill out the about us page
 - [ ] Add a footer
 - [ ] Log user in after creating account
+- [ ] Update page not found page
