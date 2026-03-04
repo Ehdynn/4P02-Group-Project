@@ -44,7 +44,18 @@ export default function SignUpForm() {
         return;
       }
 
-      setUser(data?.user?? null);
+      const { data: user, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+
+      if (signInError) {
+        setError(signInError.message || "Unable to sign in");
+        return;
+      }
+
+      setUser(user?.user?? null);
       navigate("/Overview");
     } finally {
       setLoading(false);

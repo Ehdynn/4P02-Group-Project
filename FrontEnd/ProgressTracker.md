@@ -21,7 +21,6 @@
 - [ ] create course
 - [ ] create assignment
 - [ ] get instructors courses
-- [ ] add student to course
 
 # MSC
 - [ ] Add a timezone for the assingment due date
@@ -34,3 +33,4 @@
 - [ ] Fill out the landing page
 - [ ] Fill out the about us page
 - [ ] Add a footer
+- [ ] Log user in after creating account
