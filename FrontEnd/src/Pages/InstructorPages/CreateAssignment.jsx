@@ -1,6 +1,7 @@
 import { useState, useEffect} from "react";
 import supabase from "../../utils/DatabaseInteractions/supabase";
 import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
+import useUser from "../../context/useUser";
 
 const CreateAssignment = () => {
   const [formData, setFormData] = useState({
@@ -13,12 +14,14 @@ const CreateAssignment = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState([]);
+  const {user} = useUser();
   var noCoursesMSG = "Loading courses, please wait."
 
   useEffect(() => {
+    if (!user?.id) return;
     (async () => {
       try {
-        const data = await getInstructorsCourses();
+        const data = await getInstructorsCourses(user.id);
         setCourses(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to load courses.");

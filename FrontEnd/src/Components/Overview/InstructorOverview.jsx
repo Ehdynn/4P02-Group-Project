@@ -25,7 +25,7 @@ const InstructorOverview = () => {
       try {
         setLoadingCourses(true);
         setError("");
-        const data = await getInstructorsCourses();
+        const data = await getInstructorsCourses(user.id);
         const normalized = Array.isArray(data) ? data : [];
         if (!cancelled) {
           setCourses(normalized);
