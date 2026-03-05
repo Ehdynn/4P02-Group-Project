@@ -46,7 +46,7 @@ const JoinCourse = () => {
       return;
     }
 
-    const { error: invokeError } = await supabase.functions.invoke("addStudentToCourse", {
+    const { data: invokeData, error: invokeError } = await supabase.functions.invoke("addStudentToCourse", {
       body: {
         join_code: joinCode.trim(),
       },
@@ -55,8 +55,9 @@ const JoinCourse = () => {
     setLoading(false);
 
     if (invokeError) {
-      let errorMessage = invokeError.message || "Unable to join course.";
-      if (invokeError.context) {
+      const isInvalidCourseCode = invokeError.message?.includes("Cannot coerce the result to a single JSON object");
+      let errorMessage = isInvalidCourseCode? "Invalid course code.": invokeError.message || "Unable to join course.";
+      if (invokeError.context && !isInvalidCourseCode) {
         try {
           const payload = await invokeError.context.json();
           errorMessage = payload?.error || errorMessage;
@@ -87,7 +88,7 @@ const JoinCourse = () => {
             value={formData.joinCode}
             onChange={onChange}
             placeholder=""
-            className="field-default"
+            className="field-default uppercase"
           />
         </label>
         {error ? <p className="error">{error}</p> : null}
@@ -98,7 +99,7 @@ const JoinCourse = () => {
           disabled={loading}
           className="submit-button"
         >
-          {loading ? "Creating..." : "Join Course"}
+          {loading ? "Joining..." : "Join Course"}
         </button>
       </form>
     </div>
