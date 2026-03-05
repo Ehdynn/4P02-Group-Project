@@ -24,8 +24,13 @@ const CreateCourse = () => {
     event.preventDefault();
     const { name, joinCode, startDate, endDate } = formData;
 
-    if (!name.trim() || !joinCode.trim() || !startDate || !endDate) {
-      setError("Please fill in all fields.");
+    if (!name.trim()) {
+      setError("Course name required.");
+      return;
+    }
+
+    if (!startDate) {
+      setError("Start date required.");
       return;
     }
 

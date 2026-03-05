@@ -9,6 +9,9 @@ export async function createCourse(uuid, name, joinCode, startDate, endDate) {
         throw new Error("endDate must be on or after startDate.");
     }
 
+    if(joinCode === ""){joinCode = null}
+    if(endDate === ""){endDate = null}
+
     const { data, error } = await supabase
       .from("Courses")
       .insert({
