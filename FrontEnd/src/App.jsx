@@ -4,6 +4,7 @@ import StudentRoute from './utils/Routes/StudentRoute';
 // Public Pages
 import Landing from './Pages/Landing';
 import About from './Pages/About';
+import ForgotPassword from './Pages/ForgotPassword';
 import PageNotFound from './Pages/PageNotFound';
 import Login from './Pages/Login';
 import Overview from './Pages/Overview';
@@ -31,6 +32,7 @@ function App() {
                   <Route path="/about" element = {<About />} />
                   <Route path="/login" element = {<Login/>} />
                   <Route path="/Overview" element={<Overview/>}/>
+                  <Route path="/ForgotPassword" element={<ForgotPassword/>}/>
                   <Route path="/Assignment/:aid" element={<Assignment/>}/>
                   {/* Instructor Routes */}
                   <Route
