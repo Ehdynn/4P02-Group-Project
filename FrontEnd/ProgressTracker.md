@@ -18,8 +18,8 @@
 # Student Comparison Page
 
 # Convert Edge Functions to front end querries
-- [ ] create course (Might have to stay as an edge function, due to current rls rules, revisit later, since the edge function is still functional)
-- [ ] create assignment (Created but not tested)
+- [-] create course (Might have to stay as an edge function, due to current rls rules, revisit later, since the edge function is still functional)
+- [x] create assignment (Created but not tested)
 - [x] get instructors courses
 
 # MSC

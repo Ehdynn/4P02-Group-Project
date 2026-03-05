@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createCourse } from "../../utils/DatabaseInteractions/Instructor/createCourse";
 import supabase from "../../utils/DatabaseInteractions/supabase";
 
 const CreateCourse = () => {
@@ -53,18 +54,11 @@ const CreateCourse = () => {
       return;
     }
 
-    const { error: invokeError } = await supabase.functions.invoke("createCourse", {
-      body: {
-        name: name.trim(),
-        joinCode: joinCode.trim().toUpperCase(),
-        startDate,
-        endDate,
-      },
-    });
+    const { error: createError } = await createCourse(user.id, formData.name, joinCode, startDate, endDate);
 
     setLoading(false);
 
-    if (invokeError) {
+    if (createError) {
       let errorMessage = invokeError.message || "Unable to create course";
       if (invokeError.context) {
         try {
@@ -114,7 +108,7 @@ const CreateCourse = () => {
             value={formData.joinCode}
             onChange={onChange}
             placeholder="4P02-W26"
-            className="field-default uppercase"
+            className="field-default"
           />
         </label>
 
