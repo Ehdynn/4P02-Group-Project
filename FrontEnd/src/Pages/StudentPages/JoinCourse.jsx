@@ -87,7 +87,7 @@ const JoinCourse = () => {
             value={formData.joinCode}
             onChange={onChange}
             placeholder=""
-            className="field-default"
+            className="field-default uppercase"
           />
         </label>
         {error ? <p className="error">{error}</p> : null}
