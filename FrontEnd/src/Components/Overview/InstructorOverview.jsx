@@ -5,6 +5,8 @@ import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instruct
 import getInstructorAssignments from "../../utils/DatabaseInteractions/Instructor/getInstructorAssignments";
 import { getEnrolled } from "../../utils/DatabaseInteractions/Instructor/getEnrolled";
 import ClassList from "./ClassList";
+import { removeStudent } from "../../utils/DatabaseInteractions/Instructor/removeStudent";
+import ConfirmPopup from "../common/ConfirmPopup";
 
 const InstructorOverview = () => {
   const { user } = useUser();
@@ -16,6 +18,7 @@ const InstructorOverview = () => {
   const [loadingAssignments, setLoadingAssignments] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [error, setError] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +77,6 @@ const InstructorOverview = () => {
 
         if (!cancelled) {
           setStudents(studentList);
-          console.log("Enrolled students for course:", selectedCourse, studentList);
         }
       } catch (err) {
         if (!cancelled) {
@@ -93,6 +95,46 @@ const InstructorOverview = () => {
       cancelled = true;
     };
   }, [selectedCourse]);
+
+  const reloadStudents = async () => {
+    if (!selectedCourse || !user?.id) {
+      setStudents([]);
+      return;
+    }
+
+    try {
+      const data = await getEnrolled(selectedCourse, user.id);
+      const studentList = Array.isArray(data?.students)
+        ? data.students
+        : Array.isArray(data)
+        ? data
+        : [];
+      setStudents(studentList);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load enrolled students.");
+      setStudents([]);
+    }
+  };
+
+  const handleRequestRemove = (studentInfo) => {
+    setPendingRemoval(studentInfo || null);
+  };
+
+  const handleConfirmRemove = async (confirmed) => {
+    if (!confirmed || !pendingRemoval) {
+      setPendingRemoval(null);
+      return;
+    }
+
+    try {
+      await removeStudent(selectedCourse, pendingRemoval.studentId, user?.id);
+      await reloadStudents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to remove student.");
+    } finally {
+      setPendingRemoval(null);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -179,7 +221,19 @@ const InstructorOverview = () => {
         ) : null}
       </section>
 
-      <ClassList studentList={students} />
+      <ClassList studentList={students} onRemoveRequest={handleRequestRemove} />
+      <ConfirmPopup
+        isOpen={Boolean(pendingRemoval)}
+        title="Remove Student"
+        message={
+          pendingRemoval
+            ? `Remove ${pendingRemoval.studentName} (${pendingRemoval.studentNumber}) from this class?`
+            : "Remove this student from this class?"
+        }
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        onResponse={handleConfirmRemove}
+      />
     </main>
   );
 };
