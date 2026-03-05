@@ -5,7 +5,7 @@ const InstructorRoute = ({children}) => {
   const {isProfessor, roleReady } = useUser();
 
   if (!roleReady) {
-    return null;
+    return children
   }
 
   if (isProfessor){
