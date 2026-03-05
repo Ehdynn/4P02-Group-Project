@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import getStudentCourses from "../../../utils/DatabaseInteractions/Student/getStudentCourses";
 
+const normalizeCourseId = (value) => String(value ?? "");
+
 export function useStudentCourses(userId, onError) {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -25,7 +27,13 @@ export function useStudentCourses(userId, onError) {
           onError("");
         }
         const data = await getStudentCourses(userId);
-        const normalized = Array.isArray(data) ? data : [];
+        const normalized = Array.isArray(data)
+          ? data.map((course) => ({
+              cid: normalizeCourseId(course?.cid ?? course),
+              name: course?.name,
+            }))
+          : [];
+        const courseIds = normalized.map((course) => course.cid);
 
         if (cancelled) {
           return;
@@ -33,10 +41,11 @@ export function useStudentCourses(userId, onError) {
 
         setCourses(normalized);
         setSelectedCourse((currentSelection) => {
-          if (normalized.includes(currentSelection)) {
-            return currentSelection;
+          const normalizedSelection = normalizeCourseId(currentSelection);
+          if (courseIds.includes(normalizedSelection)) {
+            return normalizedSelection;
           }
-          return normalized.length > 0 ? String(normalized[0]) : "";
+          return normalized.length > 0 ? String(normalized[0].cid) : "";
         });
       } catch (err) {
         if (!cancelled) {

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getInstructorsCourses } from "../../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 
+const normalizeCourseId = (value) => String(value ?? "");
+
 export function useInstructorCourses(userId, onError) {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -22,16 +24,20 @@ export function useInstructorCourses(userId, onError) {
       try {
         setLoadingCourses(true);
         const data = await getInstructorsCourses(userId);
-        const normalized = Array.isArray(data) ? data : [];
+        const normalized = Array.isArray(data)
+          ? data.map((course) => ({
+              ...course,
+              cid: normalizeCourseId(course?.cid),
+            }))
+          : [];
 
         if (cancelled) return;
 
         setCourses(normalized);
         setSelectedCourse((currentSelection) => {
-          if (
-            normalized.some((course) => course?.cid === currentSelection)
-          ) {
-            return currentSelection;
+          const normalizedSelection = normalizeCourseId(currentSelection);
+          if (normalized.some((course) => String(course?.cid) === normalizedSelection)) {
+            return normalizedSelection;
           }
           return normalized.length > 0 ? String(normalized[0].cid) : "";
         });
