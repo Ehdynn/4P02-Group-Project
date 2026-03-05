@@ -4,6 +4,7 @@ import useUser from "../../context/useUser";
 import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 import getInstructorAssignments from "../../utils/DatabaseInteractions/Instructor/getInstructorAssignments";
 import { getEnrolled } from "../../utils/DatabaseInteractions/Instructor/getEnrolled";
+import ClassList from "./ClassList";
 
 const InstructorOverview = () => {
   const { user } = useUser();
@@ -177,6 +178,8 @@ const InstructorOverview = () => {
           </ul>
         ) : null}
       </section>
+
+      <ClassList studentList={students} />
     </main>
   );
 };

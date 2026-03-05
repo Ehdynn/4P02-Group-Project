@@ -7,7 +7,7 @@
 # Instructor Comparison Page
 
 # Instructor Course Overview
-- [ ] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer secuirity level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
+- [x] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer secuirity level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
 - [ ] Add the ability to remove students from the course
 - [ ] Allow them to update things like the join code
 
