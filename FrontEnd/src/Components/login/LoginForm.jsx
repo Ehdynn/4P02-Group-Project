@@ -101,7 +101,9 @@ export default function LoginForm() {
 
       <div className="py-3">
         Need a hand?{" "}
-        <button onClick={onForgot} className="text-button">
+        <button 
+        disabled={loading || !email.trim()}
+        onClick={onForgot} className="text-button">
           Restore access
         </button>
       </div>
