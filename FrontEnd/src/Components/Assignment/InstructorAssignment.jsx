@@ -1,7 +1,6 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
-import Uploader from '../../Components/Uploader/Uploader'
 import useUser from "../../context/useUser";
 
 const InstructorAssignment = () => {
@@ -9,8 +8,6 @@ const InstructorAssignment = () => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const {user} = useUser();
-  const [showUploader, setShowUploader] = useState(false);
   useEffect(() => {
     let cancelled = false;
 
