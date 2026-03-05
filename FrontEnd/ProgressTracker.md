@@ -7,8 +7,8 @@
 # Instructor Comparison Page
 
 # Instructor Course Overview
-- [ ] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer secuirity level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
-- [ ] Add the ability to remove students from the course
+- [x] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer secuirity level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
+- [x] Add the ability to remove students from the course
 - [ ] Allow them to update things like the join code
 
 # Students Assignment Page
@@ -18,9 +18,11 @@
 # Student Comparison Page
 
 # Convert Edge Functions to front end querries
-- [ ] create course (Might have to stay as an edge function, due to current rls rules, revisit later, since the edge function is still functional)
-- [ ] create assignment (Created but not tested)
+- [x] create course
+- [x] create assignment
 - [x] get instructors courses
+- [ ] Add student to course
+- [ ] create user account
 
 # MSC
 - [ ] Add a timezone for the assingment due date
@@ -37,3 +39,4 @@
 - [ ] Update page not found page
 - [ ] Form persistence in order to fully secure pages without losing form data on browser tab switching. Current version may result in the form being shown briefly while the usersstatus is verified. However, since no information is present on the forms until the user is authenticated anyways this is more of a cosmetic thing than a security thing.
 - [ ] Update error msgs to be more user friendly once testing is done
+- [ ] Create a spinning wheel for loading and add it to pages

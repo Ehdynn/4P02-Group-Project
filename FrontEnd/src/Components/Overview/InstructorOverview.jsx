@@ -1,182 +1,76 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import useUser from "../../context/useUser";
-import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
-import getInstructorAssignments from "../../utils/DatabaseInteractions/Instructor/getInstructorAssignments";
-import { getEnrolled } from "../../utils/DatabaseInteractions/Instructor/getEnrolled";
+import ClassList from "./ClassList";
+import CourseList from "./CourseList";
+import { removeStudent } from "../../utils/DatabaseInteractions/Instructor/removeStudent";
+import ConfirmPopup from "../common/ConfirmPopup";
+import AssignmentList from "./AssignmentList";
+import { useInstructorCourses } from "./hooks/useInstructorCourses";
+import { useInstructorAssignments } from "./hooks/useInstructorAssignments";
+import { useInstructorStudents } from "./hooks/useInstructorStudents";
 
 const InstructorOverview = () => {
   const { user } = useUser();
-  const [courses, setCourses] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [assignments, setAssignments] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [loadingAssignments, setLoadingAssignments] = useState(false);
-  const [loadingStudents, setLoadingStudents] = useState(false);
   const [error, setError] = useState("");
+  const [pendingRemoval, setPendingRemoval] = useState(null);
+  const { courses, selectedCourse, setSelectedCourse, loadingCourses } =
+    useInstructorCourses(user?.id, setError);
+  const { assignments, loadingAssignments } = useInstructorAssignments(
+    selectedCourse,
+    setError
+  );
+  const { students, loadingStudents, loadStudents } = useInstructorStudents(
+    selectedCourse,
+    user?.id,
+    setError
+  );
+  const handleRequestRemove = (studentInfo) => {
+    setPendingRemoval(studentInfo || null);
+  };
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadCourses() {
-      if (!user?.id) {
-        setLoadingCourses(false);
-        return;
-      }
-
-      try {
-        setLoadingCourses(true);
-        setError("");
-        const data = await getInstructorsCourses(user.id);
-        const normalized = Array.isArray(data) ? data : [];
-        if (!cancelled) {
-          setCourses(normalized);
-          setSelectedCourse(normalized.length > 0 ? String(normalized[0].cid) : "");
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load courses.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingCourses(false);
-        }
-      }
+  const handleConfirmRemove = async (confirmed) => {
+    if (!confirmed || !pendingRemoval) {
+      setPendingRemoval(null);
+      return;
     }
 
-    loadCourses();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadEnrolledStudents() {
-      if (!selectedCourse) {
-        if (!cancelled) {
-          setStudents([]);
-        }
-        return;
-      }
-
-      try {
-        setLoadingStudents(true);
-        const data = await getEnrolled(selectedCourse, user.id);
-        const studentList = Array.isArray(data?.students)
-          ? data.students
-          : Array.isArray(data)
-          ? data
-          : [];
-
-        if (!cancelled) {
-          setStudents(studentList);
-          console.log("Enrolled students for course:", selectedCourse, studentList);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load enrolled students.");
-          setStudents([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingStudents(false);
-        }
-      }
+    try {
+      await removeStudent(selectedCourse, pendingRemoval.studentId, user?.id);
+      await loadStudents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to remove student.");
+    } finally {
+      setPendingRemoval(null);
     }
-
-    loadEnrolledStudents();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCourse]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAssignments() {
-      if (!selectedCourse) {
-        setAssignments([]);
-        return;
-      }
-
-      try {
-        setLoadingAssignments(true);
-        setError("");
-        const data = await getInstructorAssignments(selectedCourse);
-        if (!cancelled) {
-          setAssignments(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load assignments.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingAssignments(false);
-        }
-      }
-    }
-
-    loadAssignments();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCourse]);
-
+  };
   return (
     <main className="outer-container">
       <h1 className="h1-default">Instructor Overview</h1>
 
-      <section className="box-wrapper">
-        <label className="label-default">
-          <h2 className="h2-large">Course</h2>
-          <select
-            name="cid"
-            value={selectedCourse}
-            onChange={(event) => setSelectedCourse(event.target.value)}
-            className="field-default"
-            disabled={loadingCourses || courses.length === 0}
-          >
-            {loadingCourses ? <option value="">Loading courses...</option> : null}
-            {!loadingCourses && courses.length === 0 ? <option value="">No courses available</option> : null}
-            {!loadingCourses
-              ? courses.map((course) => (
-                  <option key={`course-${course.cid}`} value={String(course.cid)}>
-                    {course.name ?? `Course ${course.cid}`}
-                  </option>
-                ))
-              : null}
-          </select>
-        </label>
+      <CourseList
+        courses={courses}
+        selectedCourse={selectedCourse}
+        setSelectedCourse={setSelectedCourse}
+        loadingCourses={loadingCourses}
+        error={error}
+      />
 
-        {error ? <p className="error">{error}</p> : null}
-      </section>
+      {loadingStudents ? <h2 className="h2-default">Loading class list...</h2> : null}
+      <AssignmentList assignments={assignments} loadingAssignments={loadingAssignments}/>
 
-      <section className="box-wrapper">
-        <h2 className="h2-large">Assignments</h2>
-
-        {loadingAssignments ? <h2 className="h2-default">Loading assignments...</h2> : null}
-        {!loadingAssignments && assignments.length === 0 ? (
-          <h2 className="h2-default">No assignments found for this course.</h2>
-        ) : null}
-        {!loadingAssignments && assignments.length > 0 ? (
-          <ul className="mt-3 space-y-2">
-            {assignments.map((assignment) => (
-              <li key={assignment.id}>
-                <Link
-                  to={`/Assignment/${assignment.id}`}
-                  className="text-slate-900 underline hover:text-slate-700"
-                >
-                  {assignment.name ?? `Assignment ${assignment.id}`}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </section>
+      <ClassList studentList={students} onRemoveRequest={handleRequestRemove} />
+      <ConfirmPopup
+        isOpen={Boolean(pendingRemoval)}
+        title="Remove Student"
+        message={
+          pendingRemoval
+            ? `Remove ${pendingRemoval.studentName} (${pendingRemoval.studentNumber}) from this class?`
+            : "Remove this student from this class?"
+        }
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        onResponse={handleConfirmRemove}
+      />
     </main>
   );
 };
