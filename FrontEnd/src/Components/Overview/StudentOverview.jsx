@@ -1,85 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useUser from "../../context/useUser";
-import getStudentCourses from "../../utils/DatabaseInteractions/Student/getStudentCourses";
-import getStudentAssignments from "../../utils/DatabaseInteractions/Student/getStudentAssignments";
 import AssignmentList from "./AssignmentList";
+import { useStudentCourses } from "./hooks/useStudentCourses";
+import { useStudentAssignments } from "./hooks/useStudentAssignments";
 
 const StudentOverview = () => {
   const { user } = useUser();
-  const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [assignments, setAssignments] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(true);
-  const [loadingAssignments, setLoadingAssignments] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadCourses() {
-      if (!user?.id) {
-        setLoadingCourses(false);
-        return;
-      }
-
-      try {
-        setLoadingCourses(true);
-        setError("");
-        const data = await getStudentCourses(user.id);
-        const normalized = Array.isArray(data) ? data : [];
-        if (!cancelled) {
-          setCourses(normalized);
-          setSelectedCourse(normalized.length > 0 ? String(normalized[0]) : "");
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load courses.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingCourses(false);
-        }
-      }
-    }
-
-    loadCourses();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAssignments() {
-      if (!selectedCourse) {
-        setAssignments([]);
-        return;
-      }
-
-      try {
-        setLoadingAssignments(true);
-        setError("");
-        const data = await getStudentAssignments(selectedCourse);
-        if (!cancelled) {
-          setAssignments(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unable to load assignments.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingAssignments(false);
-        }
-      }
-    }
-
-    loadAssignments();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCourse]);
+  const { courses, selectedCourse, setSelectedCourse, loadingCourses } =
+    useStudentCourses(user?.id, setError);
+  const { assignments, loadingAssignments } = useStudentAssignments(
+    selectedCourse,
+    setError
+  );
 
   return (
     <main className="outer-container">
