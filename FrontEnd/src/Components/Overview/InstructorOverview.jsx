@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useUser from "../../context/useUser";
-import {getInstructorsCourses} from '../../utils/DatabaseInteractions/Instructor/getInstructorCourses';
+import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 import getInstructorAssignments from "../../utils/DatabaseInteractions/Instructor/getInstructorAssignments";
+import { getEnrolled } from "../../utils/DatabaseInteractions/Instructor/getEnrolled";
 
 const InstructorOverview = () => {
   const { user } = useUser();
   const [courses, setCourses] = useState([]);
+  const [students, setStudents] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [assignments, setAssignments] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingAssignments, setLoadingAssignments] = useState(false);
+  const [loadingStudents, setLoadingStudents] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -47,6 +50,48 @@ const InstructorOverview = () => {
       cancelled = true;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEnrolledStudents() {
+      if (!selectedCourse) {
+        if (!cancelled) {
+          setStudents([]);
+        }
+        return;
+      }
+
+      try {
+        setLoadingStudents(true);
+        const data = await getEnrolled(selectedCourse, user.id);
+        const studentList = Array.isArray(data?.students)
+          ? data.students
+          : Array.isArray(data)
+          ? data
+          : [];
+
+        if (!cancelled) {
+          setStudents(studentList);
+          console.log("Enrolled students for course:", selectedCourse, studentList);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unable to load enrolled students.");
+          setStudents([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingStudents(false);
+        }
+      }
+    }
+
+    loadEnrolledStudents();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCourse]);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,16 +159,17 @@ const InstructorOverview = () => {
         <h2 className="h2-large">Assignments</h2>
 
         {loadingAssignments ? <h2 className="h2-default">Loading assignments...</h2> : null}
-
         {!loadingAssignments && assignments.length === 0 ? (
           <h2 className="h2-default">No assignments found for this course.</h2>
         ) : null}
-
         {!loadingAssignments && assignments.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {assignments.map((assignment) => (
               <li key={assignment.id}>
-                <Link to={`/Assignment/${assignment.id}`} className="text-slate-900 underline hover:text-slate-700">
+                <Link
+                  to={`/Assignment/${assignment.id}`}
+                  className="text-slate-900 underline hover:text-slate-700"
+                >
                   {assignment.name ?? `Assignment ${assignment.id}`}
                 </Link>
               </li>
