@@ -43,7 +43,6 @@ const InstructorOverview = () => {
       setPendingRemoval(null);
     }
   };
-
   return (
     <main className="outer-container">
       <h1 className="h1-default">Instructor Overview</h1>

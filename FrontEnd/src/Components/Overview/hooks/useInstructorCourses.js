@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { getInstructorsCourses } from "../../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
+import { useLocation } from "react-router-dom";
 
 const normalizeCourseId = (value) => String(value ?? "");
 
 export function useInstructorCourses(userId, onError) {
+  const { state } = useLocation();
+  const createdCourseId = state?.courseId ?? "";
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState(createdCourseId);
   const [loadingCourses, setLoadingCourses] = useState(true);
 
   useEffect(() => {
