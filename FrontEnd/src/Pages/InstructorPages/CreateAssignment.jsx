@@ -3,8 +3,10 @@ import supabase from "../../utils/DatabaseInteractions/supabase";
 import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 import useUser from "../../context/useUser";
 import { createAssignment } from "../../utils/DatabaseInteractions/Instructor/createAssignment";
+import { useNavigate } from "react-router-dom";
 
 const CreateAssignment = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     cid: "",
     name: "",
@@ -83,7 +85,6 @@ const CreateAssignment = () => {
     const { cid, dueDate, description } = formData;
 
     if (!cid || !formData.name.trim()) {
-      {console.log(cid + formData.name)}
       setError("Please fill in all fields.");
       return;
     }
@@ -116,13 +117,12 @@ const CreateAssignment = () => {
       return;
     }
 
-    const { error: invokeError } = await createAssignment(cid, formData.name, dueDateWithTimezone, description)
-
-    setLoading(false);
-
-    if (invokeError) {
-      let errorMessage = invokeError.message || "Unable to create assignment";
-      if (invokeError.context) {
+    let assignmentData = null;
+    try {
+      assignmentData = await createAssignment(cid, formData.name, dueDateWithTimezone, description);
+    } catch (invokeError) {
+      let errorMessage = invokeError instanceof Error ? invokeError.message : "Unable to create assignment";
+      if (invokeError?.context) {
         try {
           const payload = await invokeError.context.json();
           errorMessage = payload?.error || errorMessage;
@@ -132,9 +132,17 @@ const CreateAssignment = () => {
       }
       setError(errorMessage);
       setSubmitted(false);
+      setLoading(false);
       return;
     }
 
+    if (!assignmentData?.id) {
+      setLoading(false);
+      setError("Assignment was created, but no assignment id was returned.");
+      return;
+    }
+
+    setLoading(false);
     setSubmitted(true);
     setFormData({
       cid: "",
@@ -142,6 +150,7 @@ const CreateAssignment = () => {
       dueDate: "",
       description: "",
     });
+    navigate(`/Assignment/${assignmentData.id}`);
   };
 
   return (

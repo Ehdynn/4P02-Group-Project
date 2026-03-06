@@ -25,7 +25,7 @@
 - [ ] create user account
 
 # MSC
-- [ ] Add a timezone for the assingment due date
+- [x] Add a timezone for the assingment due date
 - [ ] Add an option to allow/disallow multiple submissions to assignments when creating an assignment
 - [x] Redirect to overview on successfull creation of a course
 - [x] Turn the join a course button from a page to a modal
@@ -42,4 +42,4 @@
 - [ ] Fix reload issue
 - [ ] Due dates should have a time not just a date
 - [ ] Fix error msg when student tries to enroll in the same course twice, also supress the console error
-- [ ] Create assingment should redirect to the assignment page
+- [x] Create assingment should redirect to the assignment page
