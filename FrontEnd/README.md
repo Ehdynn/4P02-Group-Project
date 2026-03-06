@@ -12,7 +12,7 @@
 So far the following features have basic implementations, while they are far from the finished version they serve as an example of how they will work:
 
 - Account Creation for both instructors and students
-- Course Creation 
+- Course Creation
 - Assignment Creation
 - Course Joining for students
 - File uploading / Assignment Submission
