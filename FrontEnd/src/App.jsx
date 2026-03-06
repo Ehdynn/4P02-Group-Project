@@ -3,7 +3,6 @@ import StudentRoute from './utils/Routes/StudentRoute';
 
 // Public Pages
 import Landing from './Pages/Landing';
-import About from './Pages/About';
 import ForgotPassword from './Pages/ForgotPassword';
 import PageNotFound from './Pages/PageNotFound';
 import Login from './Pages/Login';
@@ -29,7 +28,6 @@ function App() {
               <Routes>
                   {/* Public Routes */}
                   <Route path="/" element = {<Landing />} />
-                  <Route path="/about" element = {<About />} />
                   <Route path="/login" element = {<Login/>} />
                   <Route path="/Overview" element={<Overview/>}/>
                   <Route path="/ForgotPassword" element={<ForgotPassword/>}/>

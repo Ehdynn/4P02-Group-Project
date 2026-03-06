@@ -12,7 +12,7 @@
 - [ ] Allow them to update things like the join code
 
 # Students Assignment Page
-- [ ] Improve the look
+- [x] Improve the look
 - [ ] Button to view comparison
 
 # Student Comparison Page
@@ -27,16 +27,15 @@
 # MSC
 - [ ] Add a timezone for the assingment due date
 - [ ] Add an option to allow/disallow multiple submissions to assignments when creating an assignment
-- [ ] Redirect to overview on successfull creation of a course
+- [x] Redirect to overview on successfull creation of a course
 - [ ] Turn the join a course button from a page to a modal
 - [ ] Add Toasts
 - [ ] Email confirmation of submission?
 - [ ] Implement Forgot Password
 - [ ] Fill out the landing page
-- [ ] Fill out the about us page
 - [ ] Add a footer
 - [ ] Log user in after creating account
-- [ ] Update page not found page
+- [x] Update page not found page
 - [ ] Form persistence in order to fully secure pages without losing form data on browser tab switching. Current version may result in the form being shown briefly while the usersstatus is verified. However, since no information is present on the forms until the user is authenticated anyways this is more of a cosmetic thing than a security thing.
 - [ ] Update error msgs to be more user friendly once testing is done
 - [ ] Create a spinning wheel for loading and add it to pages

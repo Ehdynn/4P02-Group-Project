@@ -25,9 +25,6 @@ const Navbar = () => {
             >{user && roleReady ? "Overview" : "Home"}</Link>
 
             <div className="ml-auto flex items-center gap-1">
-              <Link to="/about" className="link-default">
-                About
-              </Link>
               {user == null ? 
                 <Link to="/login" className="link-default">
                     Login
