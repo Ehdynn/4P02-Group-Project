@@ -14,7 +14,7 @@ export function useUpdateCourse(selectedCourse, courses ,setError){
     setFormData({ joinCode: selectedCourseObj?.join_code ?? "" });
     setSubmitted(false);
     setError("");
-  }, [selectedCourse, courses]);
+  },[selectedCourse, courses, selectedCourseObj, setError]);
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -50,9 +50,9 @@ export function useUpdateCourse(selectedCourse, courses ,setError){
     setUpdating(false);
     setSubmitted(true);
     setFormData({
-      joinCode: updatedCode?.join_code ?? updatedCode,
+      joinCode: updatedCode?.join_code,
     });
-    }
+    }, [selectedCourse, formData, setError, updateCourse]
   )
 
   return {
