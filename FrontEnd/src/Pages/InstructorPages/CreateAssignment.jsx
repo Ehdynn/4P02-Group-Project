@@ -4,6 +4,7 @@ import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instruct
 import useUser from "../../context/useUser";
 import { createAssignment } from "../../utils/DatabaseInteractions/Instructor/createAssignment";
 import { useNavigate } from "react-router-dom";
+import toTimestamptzIso from '../../utils/Timestamp/toTimestamptzIso';
 
 const CreateAssignment = () => {
   const navigate = useNavigate();
@@ -19,40 +20,6 @@ const CreateAssignment = () => {
   const [courses, setCourses] = useState([]);
   const {user} = useUser();
   var noCoursesMSG = "Loading courses, please wait."
-
-  const getTimezoneOffset = (date) => {
-    const offsetMinutes = -date.getTimezoneOffset();
-    const sign = offsetMinutes >= 0 ? "+" : "-";
-    const absoluteMinutes = Math.abs(offsetMinutes);
-    const hours = String(Math.floor(absoluteMinutes / 60)).padStart(2, "0");
-    const minutes = String(absoluteMinutes % 60).padStart(2, "0");
-    return `${sign}${hours}:${minutes}`;
-  };
-
-  const toTimestamptzIso = (localDateTime) => {
-    if (!localDateTime) {
-      return null;
-    }
-
-    const [datePart, timePart] = localDateTime.split("T");
-    if (!datePart || !timePart) {
-      return null;
-    }
-
-    const [year, month, day] = datePart.split("-").map(Number);
-    const [hour, minute] = timePart.split(":").map((value) => Number(value));
-
-    if (!year || !month || !day || hour === undefined || minute === undefined) {
-      return null;
-    }
-
-    const localDate = new Date(year, month - 1, day, hour, minute);
-    if (Number.isNaN(localDate.getTime())) {
-      return null;
-    }
-
-    return `${datePart}T${timePart}:00${getTimezoneOffset(localDate)}`;
-  };
 
   useEffect(() => {
     if (!user?.id) return;
