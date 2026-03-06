@@ -18,6 +18,40 @@ const CreateAssignment = () => {
   const {user} = useUser();
   var noCoursesMSG = "Loading courses, please wait."
 
+  const getTimezoneOffset = (date) => {
+    const offsetMinutes = -date.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? "+" : "-";
+    const absoluteMinutes = Math.abs(offsetMinutes);
+    const hours = String(Math.floor(absoluteMinutes / 60)).padStart(2, "0");
+    const minutes = String(absoluteMinutes % 60).padStart(2, "0");
+    return `${sign}${hours}:${minutes}`;
+  };
+
+  const toTimestamptzIso = (localDateTime) => {
+    if (!localDateTime) {
+      return null;
+    }
+
+    const [datePart, timePart] = localDateTime.split("T");
+    if (!datePart || !timePart) {
+      return null;
+    }
+
+    const [year, month, day] = datePart.split("-").map(Number);
+    const [hour, minute] = timePart.split(":").map((value) => Number(value));
+
+    if (!year || !month || !day || hour === undefined || minute === undefined) {
+      return null;
+    }
+
+    const localDate = new Date(year, month - 1, day, hour, minute);
+    if (Number.isNaN(localDate.getTime())) {
+      return null;
+    }
+
+    return `${datePart}T${timePart}:00${getTimezoneOffset(localDate)}`;
+  };
+
   useEffect(() => {
     if (!user?.id) return;
     (async () => {
@@ -74,7 +108,15 @@ const CreateAssignment = () => {
       return;
     }
 
-    const { error: invokeError } = await createAssignment(cid, formData.name, dueDate, description)
+    const dueDateWithTimezone = toTimestamptzIso(dueDate);
+
+    if (dueDate && !dueDateWithTimezone) {
+      setLoading(false);
+      setError("Invalid due date format.");
+      return;
+    }
+
+    const { error: invokeError } = await createAssignment(cid, formData.name, dueDateWithTimezone, description)
 
     setLoading(false);
 
@@ -143,7 +185,7 @@ const CreateAssignment = () => {
           <label className="label-default">
             <span className="span-default">Due Date</span>
             <input
-              type="date"
+              type="datetime-local"
               name="dueDate"
               value={formData.dueDate}
               onChange={onChange}

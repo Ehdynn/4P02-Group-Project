@@ -42,3 +42,4 @@
 - [ ] Fix reload issue
 - [ ] Due dates should have a time not just a date
 - [ ] Fix error msg when student tries to enroll in the same course twice, also supress the console error
+- [ ] Create assingment should redirect to the assignment page
