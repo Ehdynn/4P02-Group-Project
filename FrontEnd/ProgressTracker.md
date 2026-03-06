@@ -40,3 +40,5 @@
 - [ ] Form persistence in order to fully secure pages without losing form data on browser tab switching. Current version may result in the form being shown briefly while the usersstatus is verified. However, since no information is present on the forms until the user is authenticated anyways this is more of a cosmetic thing than a security thing.
 - [ ] Update error msgs to be more user friendly once testing is done
 - [ ] Create a spinning wheel for loading and add it to pages
+- [ ] Fix reload issue
+- [ ] Due dates should have a time not just a date
