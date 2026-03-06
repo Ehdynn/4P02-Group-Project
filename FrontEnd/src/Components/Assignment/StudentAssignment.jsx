@@ -13,6 +13,7 @@ const StudentAssignment = () => {
   const [error, setError] = useState("");
   const {user} = useUser();
   const [showUploader, setShowUploader] = useState(false);
+  const [pastDueDate, setPastDueDate] = useState(true);
   useEffect(() => {
     let cancelled = false;
 
@@ -30,6 +31,8 @@ const StudentAssignment = () => {
         }
       } finally {
         if (!cancelled) {
+          const isPastDueDate = data?.due_date ? new Date(data.due_date).getTime() < Date.now() : false;
+          setPastDueDate(isPastDueDate);
           setLoading(false);
         }
       }
@@ -89,8 +92,8 @@ const StudentAssignment = () => {
         </div>
         
         {submissionCount > 0 ? <p>{submissionCount} Submission(s) made.</p> : null}
-        {!showUploader && submissionCount > 0 ? <button onClick={() => setShowUploader(true)}>Upload More</button> : null}
-        {showUploader ? <Uploader/> : null}
+        {!pastDueDate && !showUploader && submissionCount > 0 ? <button onClick={() => setShowUploader(true)}>Upload More</button> : null}
+        {showUploader ? <Uploader aid={aid}/> : null}
         
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { submitAssignment } from "../../utils/DatabaseInteractions/Student/submitAssignment";
 import useUser from "../../context/useUser";
 
-const Uploader = () => {
+const Uploader = ({aid}) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -31,7 +31,7 @@ const Uploader = () => {
 
     setIsUploading(true);
     try {
-      const result = await submitAssignment(selectedFile, user.id, 1);
+      const result = await submitAssignment(selectedFile, user.id, aid);
       setSuccessMessage(result.message);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Upload failed.");

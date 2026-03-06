@@ -55,5 +55,5 @@
 - [x] [TN] Due dates should have a time not just a date
 - [ ] Fix error msg when student tries to enroll in the same course twice, also suppress the console error
 - [x] [TN] Create assignment should redirect to the assignment page
-- [ ] [TN] Stop students from submitting after the due date, or add an option for the instructor to allow submissions after the due date
+- [ ] [TN] Stop students from submitting after the due date, or add an option for the instructor to allow submissions after the due date (Currently the db restricts the upload but not the front end.)
 - [ ] Restrict file types for upload

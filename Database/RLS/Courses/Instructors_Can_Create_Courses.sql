@@ -3,7 +3,7 @@ on "public"."Courses"
 as PERMISSIVE
 for INSERT
 to authenticated
-using (
+with check (
   ((EXISTS ( SELECT 1
    FROM "Accounts" a
   WHERE ((a.id = auth.uid()) AND (a.is_prof = true)))) AND (primary_instructor = auth.uid()))
