@@ -28,7 +28,7 @@
 - [ ] Add a timezone for the assingment due date
 - [ ] Add an option to allow/disallow multiple submissions to assignments when creating an assignment
 - [x] Redirect to overview on successfull creation of a course
-- [ ] Turn the join a course button from a page to a modal
+- [x] Turn the join a course button from a page to a modal
 - [ ] Add Toasts
 - [ ] Email confirmation of submission?
 - [ ] Implement Forgot Password
@@ -41,3 +41,4 @@
 - [ ] Create a spinning wheel for loading and add it to pages
 - [ ] Fix reload issue
 - [ ] Due dates should have a time not just a date
+- [ ] Fix error msg when student tries to enroll in the same course twice, also supress the console error

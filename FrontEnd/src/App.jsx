@@ -13,6 +13,8 @@ import CreateCourse from './Pages/InstructorPages/CreateCourse';
 import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
 // Student Pages
 import JoinCourse from './Pages/StudentPages/JoinCourse';
+import JoinCourseModal from './Components/JoinCourse/JoinCourse';
+import { useState } from 'react';
 // Components
 import NavBar from './Components/NavBar/NavBar';
 // Utils
@@ -20,11 +22,17 @@ import UserProvider from './context/UserProvider';
 import { BrowserRouter as Router, Routes,Route } from 'react-router-dom';
 
 function App() {
+  const [showJoinCourseModal, setShowJoinCourseModal] = useState(false);
+
   return (
     <UserProvider>
       <Router>
           <div>
-              <NavBar/>
+              <NavBar onJoinCourse={() => setShowJoinCourseModal(true)}/>
+              <JoinCourseModal
+                isOpen={Boolean(showJoinCourseModal)}
+                onClose={() => setShowJoinCourseModal(false)}
+              />
               <Routes>
                   {/* Public Routes */}
                   <Route path="/" element = {<Landing />} />

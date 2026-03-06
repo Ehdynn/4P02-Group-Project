@@ -1,13 +1,26 @@
 import { useState } from "react";
 import supabase from "../../utils/DatabaseInteractions/supabase";
 
-const JoinCourse = () => {
+const JoinCourse = ({
+  isOpen,
+  onClose,
+}) => {
   const [formData, setFormData] = useState({
     joinCode: "",
   });
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const handleClose = () => {
+    setFormData({ joinCode: "" });
+    setError("");
+    setSubmitted(false);
+    setLoading(false);
+    if (onClose) {
+      onClose();
+    }
+  };
 
 
   const onChange = (event) => {
@@ -54,7 +67,7 @@ const JoinCourse = () => {
 
     setLoading(false);
 
-    if (invokeError) {
+  if (invokeError) {
       const isInvalidCourseCode = invokeError.message?.includes("Cannot coerce the result to a single JSON object");
       let errorMessage = isInvalidCourseCode? "Invalid course code.": invokeError.message || "Unable to join course.";
       if (invokeError.context && !isInvalidCourseCode) {
@@ -71,37 +84,53 @@ const JoinCourse = () => {
     }
 
     setSubmitted(true);
-    setFormData({
-      joinCode: "",
-    });
+    setTimeout(handleClose, 1200);
   };
+  if (!isOpen) {
+    return null;
+  }
 
   return (
-    <div className="outer-container">
-      <h1 className="h1-default">Join Course</h1>
-      <form onSubmit={handleSubmit} className="form-default">
-        <label className="label-default">
-          <span className="span-default">Join Code</span>
-          <input
-            type="text"
-            name="joinCode"
-            value={formData.joinCode}
-            onChange={onChange}
-            placeholder=""
-            className="field-default"
-          />
-        </label>
-        {error ? <p className="error">{error}</p> : null}
-        {submitted ? <p className="success">Course Joined!</p> : null}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onMouseDown={handleClose}
+    >
+      <div onMouseDown={(event) => event.stopPropagation()}>
+        
+        <form onSubmit={handleSubmit} className="form-default">
+            <div className="flex items-center justify-end mb-3">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="text-gray-600 hover:text-gray-900"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+          <label className="label-default">
+            {/*<span className="span-default">Join Code</span>*/}
+            <input
+              type="text"
+              name="joinCode"
+              value={formData.joinCode}
+              onChange={onChange}
+              placeholder="Enter join code"
+              className="field-default"
+            />
+          </label>
+          {error ? <p className="error">{error}</p> : null}
+          {submitted ? <p className="success">Course Joined!</p> : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="submit-button"
-        >
-          {loading ? "Joining..." : "Join Course"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="submit-button"
+          >
+            {loading ? "Joining..." : "Join Course"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
