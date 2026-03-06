@@ -3,8 +3,10 @@ import supabase from "../../utils/DatabaseInteractions/supabase";
 import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 import useUser from "../../context/useUser";
 import { createAssignment } from "../../utils/DatabaseInteractions/Instructor/createAssignment";
+import { useNavigate } from "react-router-dom";
 
 const CreateAssignment = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     cid: "",
     name: "",
@@ -17,6 +19,40 @@ const CreateAssignment = () => {
   const [courses, setCourses] = useState([]);
   const {user} = useUser();
   var noCoursesMSG = "Loading courses, please wait."
+
+  const getTimezoneOffset = (date) => {
+    const offsetMinutes = -date.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? "+" : "-";
+    const absoluteMinutes = Math.abs(offsetMinutes);
+    const hours = String(Math.floor(absoluteMinutes / 60)).padStart(2, "0");
+    const minutes = String(absoluteMinutes % 60).padStart(2, "0");
+    return `${sign}${hours}:${minutes}`;
+  };
+
+  const toTimestamptzIso = (localDateTime) => {
+    if (!localDateTime) {
+      return null;
+    }
+
+    const [datePart, timePart] = localDateTime.split("T");
+    if (!datePart || !timePart) {
+      return null;
+    }
+
+    const [year, month, day] = datePart.split("-").map(Number);
+    const [hour, minute] = timePart.split(":").map((value) => Number(value));
+
+    if (!year || !month || !day || hour === undefined || minute === undefined) {
+      return null;
+    }
+
+    const localDate = new Date(year, month - 1, day, hour, minute);
+    if (Number.isNaN(localDate.getTime())) {
+      return null;
+    }
+
+    return `${datePart}T${timePart}:00${getTimezoneOffset(localDate)}`;
+  };
 
   useEffect(() => {
     if (!user?.id) return;
@@ -49,7 +85,6 @@ const CreateAssignment = () => {
     const { cid, dueDate, description } = formData;
 
     if (!cid || !formData.name.trim()) {
-      {console.log(cid + formData.name)}
       setError("Please fill in all fields.");
       return;
     }
@@ -74,13 +109,20 @@ const CreateAssignment = () => {
       return;
     }
 
-    const { error: invokeError } = await createAssignment(cid, formData.name, dueDate, description)
+    const dueDateWithTimezone = toTimestamptzIso(dueDate);
 
-    setLoading(false);
+    if (dueDate && !dueDateWithTimezone) {
+      setLoading(false);
+      setError("Invalid due date format.");
+      return;
+    }
 
-    if (invokeError) {
-      let errorMessage = invokeError.message || "Unable to create assignment";
-      if (invokeError.context) {
+    let assignmentData = null;
+    try {
+      assignmentData = await createAssignment(cid, formData.name, dueDateWithTimezone, description);
+    } catch (invokeError) {
+      let errorMessage = invokeError instanceof Error ? invokeError.message : "Unable to create assignment";
+      if (invokeError?.context) {
         try {
           const payload = await invokeError.context.json();
           errorMessage = payload?.error || errorMessage;
@@ -90,9 +132,17 @@ const CreateAssignment = () => {
       }
       setError(errorMessage);
       setSubmitted(false);
+      setLoading(false);
       return;
     }
 
+    if (!assignmentData?.id) {
+      setLoading(false);
+      setError("Assignment was created, but no assignment id was returned.");
+      return;
+    }
+
+    setLoading(false);
     setSubmitted(true);
     setFormData({
       cid: "",
@@ -100,6 +150,7 @@ const CreateAssignment = () => {
       dueDate: "",
       description: "",
     });
+    navigate(`/Assignment/${assignmentData.id}`);
   };
 
   return (
@@ -143,7 +194,7 @@ const CreateAssignment = () => {
           <label className="label-default">
             <span className="span-default">Due Date</span>
             <input
-              type="date"
+              type="datetime-local"
               name="dueDate"
               value={formData.dueDate}
               onChange={onChange}

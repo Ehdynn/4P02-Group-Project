@@ -1,4 +1,4 @@
-import supabase from "../common/supabase";
+import supabase from "../supabase";
 
 export default async function uploadSubmission(file, suid, fid) {
   const filePath = (suid + '/' + fid + '/' + file.name);

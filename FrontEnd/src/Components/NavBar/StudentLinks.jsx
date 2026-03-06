@@ -1,11 +1,21 @@
 import { Link } from 'react-router-dom';
 
-const StudentLinks = () => {
+const StudentLinks = ({ onJoinCourse }) => {
+  const handleJoinClick = () => {
+    if (onJoinCourse) {
+      onJoinCourse();
+    }
+  };
+
   return (
     <>
-      <Link to={'/JoinCourse'} className="link-default">
-      Join Course
-      </Link>
+      <button
+        type="button"
+        className='link-default'
+        onClick={handleJoinClick}
+      >
+        Join Course
+      </button>
     </>
   )
 }

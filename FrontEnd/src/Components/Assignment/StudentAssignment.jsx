@@ -13,6 +13,7 @@ const StudentAssignment = () => {
   const [error, setError] = useState("");
   const {user} = useUser();
   const [showUploader, setShowUploader] = useState(false);
+  const [pastDueDate, setPastDueDate] = useState(true);
   useEffect(() => {
     let cancelled = false;
 
@@ -30,6 +31,8 @@ const StudentAssignment = () => {
         }
       } finally {
         if (!cancelled) {
+          const isPastDueDate = data?.due_date ? new Date(data.due_date).getTime() < Date.now() : false;
+          setPastDueDate(isPastDueDate);
           setLoading(false);
         }
       }
@@ -78,13 +81,21 @@ const StudentAssignment = () => {
   const submissionCount = submissions?.length ?? 0;
 
   return (
-    <div className="absolute top-[20%] justify-self-center section-default">
-      <h1 className="h1-default">{details.name ?? "Assignment"}</h1>
-      <p>Description:{details.description ?? "No description provided."}</p>
-      <p>Due Date: {details.due_date ?? "No Due Date Provided"}</p>
-      {submissionCount > 0 ? <p>{submissionCount} Submission(s) made.</p> : null}
-      {!showUploader && submissionCount > 0 ? <button onClick={() => setShowUploader(true)}>Upload More</button> : null}
-      {showUploader ? <Uploader/> : null}
+    <div className="center-box outer-container">
+      <div className="box-wrapper">
+        <h1 className="h1-default text-center">{details.name ?? "Assignment"}</h1>
+        <p className="">Due on {details.due_date ? (new Date(details.due_date).toLocaleString('en-US', {dateStyle: "medium"}) + " " + new Date(details.due_date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })) : "No Due Date Provided"}</p>
+        <div className="box-wrapper-square">
+          <h2 className="h2-large text-center">Description</h2>
+          <hr className="h-px my-8 bg-neutral-quaternary border-sm border-gray-500"/>
+          <p>{details.description ?? "No description provided."}</p>
+        </div>
+        
+        {submissionCount > 0 ? <p>{submissionCount} Submission(s) made.</p> : null}
+        {!pastDueDate && !showUploader && submissionCount > 0 ? <button onClick={() => setShowUploader(true)}>Upload More</button> : null}
+        {showUploader ? <Uploader aid={aid}/> : null}
+        
+      </div>
     </div>
   );
 };

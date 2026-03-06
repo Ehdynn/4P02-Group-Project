@@ -1,7 +1,10 @@
 import { useState } from "react";
-import supabase from "../../utils/DatabaseInteractions/supabase";
-
+import { useNavigate } from "react-router-dom";
+import { createCourse } from "../../utils/DatabaseInteractions/Instructor/createCourse";
+import useUser from "../../context/useUser"
 const CreateCourse = () => {
+  const {user} = useUser();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     joinCode: "",
@@ -23,8 +26,13 @@ const CreateCourse = () => {
     event.preventDefault();
     const { name, joinCode, startDate, endDate } = formData;
 
-    if (!name.trim() || !joinCode.trim() || !startDate || !endDate) {
-      setError("Please fill in all fields.");
+    if (!name.trim()) {
+      setError("Course name required.");
+      return;
+    }
+
+    if (!startDate) {
+      setError("Start date required.");
       return;
     }
 
@@ -36,48 +44,19 @@ const CreateCourse = () => {
     setLoading(true);
     setError("");
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) {
-      setLoading(false);
-      setError(userError.message || "Unable to validate current user");
-      return;
-    }
-
-    if (!user) {
-      setLoading(false);
-      setError("You must be logged in to create a course.");
-      return;
-    }
-
-    const { error: invokeError } = await supabase.functions.invoke("createCourse", {
-      body: {
-        name: name.trim(),
-        joinCode: joinCode.trim().toUpperCase(),
-        startDate,
-        endDate,
-      },
-    });
-
-    setLoading(false);
-
-    if (invokeError) {
-      let errorMessage = invokeError.message || "Unable to create course";
-      if (invokeError.context) {
-        try {
-          const payload = await invokeError.context.json();
-          errorMessage = payload?.error || errorMessage;
-        } catch {
-          // Keep default message if response is not JSON.
-        }
-      }
+    let createdCourse = null;
+    try {
+      createdCourse = await createCourse(user.id, formData.name, joinCode, startDate, endDate);
+    } catch (createError) {
+      const errorMessage =
+        createError instanceof Error ? createError.message : "Unable to create course.";
       setError(errorMessage);
       setSubmitted(false);
+      setLoading(false);
       return;
     }
+
+    setLoading(false);
 
     setSubmitted(true);
     setFormData({
@@ -86,6 +65,7 @@ const CreateCourse = () => {
       startDate: "",
       endDate: "",
     });
+    navigate("/Overview", { state: { courseId: createdCourse?.cid ?? null } });
   };
 
   return (
@@ -114,7 +94,7 @@ const CreateCourse = () => {
             value={formData.joinCode}
             onChange={onChange}
             placeholder="4P02-W26"
-            className="field-default uppercase"
+            className="field-default"
           />
         </label>
 

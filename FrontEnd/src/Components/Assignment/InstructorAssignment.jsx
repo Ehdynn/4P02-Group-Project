@@ -1,7 +1,6 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
-import Uploader from '../../Components/Uploader/Uploader'
 import useUser from "../../context/useUser";
 
 const InstructorAssignment = () => {
@@ -9,8 +8,6 @@ const InstructorAssignment = () => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const {user} = useUser();
-  const [showUploader, setShowUploader] = useState(false);
   useEffect(() => {
     let cancelled = false;
 
@@ -52,10 +49,16 @@ const InstructorAssignment = () => {
   }
 
   return (
-    <div className="absolute top-[20%] justify-self-center section-default">
-      <h1 className="h1-default">{details.name ?? "Assignment"}</h1>
-      <p>Description:{details.description ?? "No description provided."}</p>
-      <p>Due Date: {details.due_date ?? "No Due Date Provided"}</p>
+    <div className="center-box outer-container">
+      <div className="box-wrapper">
+        <h1 className="h1-default text-center">{details.name ?? "Assignment"}</h1>
+        <p className="">Due on {details.due_date ? (new Date(details.due_date).toLocaleString('en-US', {dateStyle: "medium"}) + " " + new Date(details.due_date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })) : "No Due Date Provided"}</p>
+        <div className="box-wrapper-square">
+          <h2 className="h2-large text-center">Description</h2>
+          <hr className="h-px my-8 bg-neutral-quaternary border-sm border-gray-500"/>
+          <p>{details.description ?? "No description provided."}</p>
+        </div>
+      </div>
     </div>
   );
 };

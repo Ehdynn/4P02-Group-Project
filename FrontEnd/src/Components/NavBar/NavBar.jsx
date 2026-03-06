@@ -4,7 +4,7 @@ import useUser from '../../context/useUser';
 import supabase from "../../utils/DatabaseInteractions/supabase";
 import InstructorLinks from './InstructorLinks';
 import StudentLinks from './StudentLinks';
-const Navbar = () => {
+const Navbar = ({ onJoinCourse }) => {
     const navigate = useNavigate();
     const { user, setUser, isProfessor, roleReady } = useUser();
     const handleLogout = async () => {
@@ -25,16 +25,13 @@ const Navbar = () => {
             >{user && roleReady ? "Overview" : "Home"}</Link>
 
             <div className="ml-auto flex items-center gap-1">
-              <Link to="/about" className="link-default">
-                About
-              </Link>
               {user == null ? 
                 <Link to="/login" className="link-default">
                     Login
                 </Link> 
                 :
                 <>
-                  {roleReady ? (isProfessor ? <InstructorLinks /> : <StudentLinks />) : null}
+                  {roleReady ? (isProfessor ? <InstructorLinks /> : <StudentLinks onJoinCourse={onJoinCourse} />) : null}
                   <button
                     type="button"
                     onClick={handleLogout}

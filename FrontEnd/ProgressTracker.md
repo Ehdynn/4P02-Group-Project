@@ -1,39 +1,59 @@
-# Instructors Assingment Page
+# Progress Tracker
+
+## Instructors Assignment Page
+
 - [ ] Track the % of the class who has submitted
 - [ ] Run Comparison Button
 - [ ] Download All Submission Button
 - [ ] View Comparison Button
 
-# Instructor Comparison Page
+## Instructor Comparison Page
 
-# Instructor Course Overview
-- [ ] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer secuirity level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
-- [ ] Add the ability to remove students from the course
+- [ ] View a user submission
+- [ ] Show were it was similar to other submissions
+- [ ] Link to the other submission it was similar to
+- [ ] Possibly show a side by side of the two assignments
+
+## Instructor Course Overview
+
+- [x] [TN] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer security level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
+- [x] [TN] Add the ability to remove students from the course
 - [ ] Allow them to update things like the join code
 
-# Students Assignment Page
-- [ ] Improve the look
+## Students Assignment Page
+
+- [x] [TN] Improve the look
 - [ ] Button to view comparison
 
-# Student Comparison Page
+## Student Comparison Page
 
-# Convert Edge Functions to front end querries
-- [ ] create course (Might have to stay as an edge function, due to current rls rules, revisit later, since the edge function is still functional)
-- [ ] create assignment (Created but not tested)
-- [x] get instructors courses
+## Convert Edge Functions to front end queries or db functions
 
-# MSC
-- [ ] Add a timezone for the assingment due date
+- [x] [TN] create course
+- [x] [TN] create assignment
+- [x] [TN] get instructors courses
+- [ ] Add student to course (db function)
+- [ ] create user account (db function)
+
+## MSC
+
+- [x] [TN] Add a timezone for the assignment due date
 - [ ] Add an option to allow/disallow multiple submissions to assignments when creating an assignment
-- [ ] Redirect to overview on successfull creation of a course
-- [ ] Turn the join a course button from a page to a modal
+- [x] Redirect to overview on successful creation of a course
+- [x] Turn the join a course button from a page to a modal
 - [ ] Add Toasts
-- [ ] Email confirmation of submission?
-- [ ] Implement Forgot Password
-- [ ] Fill out the landing page
-- [ ] Fill out the about us page
+- [ ] [L] Email confirmation of submission?
+- [ ] [L] Implement Forgot Password
+- [ ] [L] Fill out the landing page
 - [ ] Add a footer
-- [ ] Log user in after creating account
-- [ ] Update page not found page
-- [ ] Form persistence in order to fully secure pages without losing form data on browser tab switching. Current version may result in the form being shown briefly while the usersstatus is verified. However, since no information is present on the forms until the user is authenticated anyways this is more of a cosmetic thing than a security thing.
+- [x] [TN] Log user in after creating account
+- [x] [TN] Update page not found page
+- [ ] Form persistence in order to fully secure pages without losing form data on browser tab switching. Current version may result in the form being shown briefly while the users status is verified. However, since no information is present on the forms until the user is authenticated anyways this is more of a cosmetic thing than a security thing.
 - [ ] Update error msgs to be more user friendly once testing is done
+- [ ] Create a spinning wheel for loading and add it to pages
+- [ ] Fix reload issue
+- [x] [TN] Due dates should have a time not just a date
+- [ ] Fix error msg when student tries to enroll in the same course twice, also suppress the console error
+- [x] [TN] Create assignment should redirect to the assignment page
+- [ ] [TN] Stop students from submitting after the due date, or add an option for the instructor to allow submissions after the due date (Currently the db restricts the upload but not the front end.)
+- [ ] Restrict file types for upload

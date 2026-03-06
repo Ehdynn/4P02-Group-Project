@@ -12,9 +12,10 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  
 
   const onForgot = () => {
-    // Placeholder for forgot password.
+    navigate("/ForgotPassword")
     console.log("Forgot password clicked");
   };
 
@@ -85,7 +86,7 @@ export default function LoginForm() {
             />
             Remember me
           </label>
-          <button type="button" className="text-button">Forgot?</button>
+          <button type="button" onClick={onForgot} className="text-button">Forgot?</button>
         </div>
 
         <button
@@ -102,7 +103,6 @@ export default function LoginForm() {
       <div className="py-3">
         Need a hand?{" "}
         <button 
-        disabled={loading || !email.trim()}
         onClick={onForgot} className="text-button">
           Restore access
         </button>
