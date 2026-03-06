@@ -3,7 +3,7 @@ const ClassList = ({ studentList, onRemoveRequest }) => {
 
   return (
     <div className="box-wrapper">
-      <h1 className="h1-default">Class List</h1>
+      <h2 className="h2-large">Class List</h2>
       <div className="mt-3 overflow-x-auto">
         <table className="w-full border border-slate-300 text-left">
           <thead className="bg-slate-100">

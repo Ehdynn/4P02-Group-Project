@@ -18,7 +18,8 @@
 
 - [x] [TN] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer security level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
 - [x] [TN] Add the ability to remove students from the course
-- [ ] Allow them to update things like the join code
+- [x] [TN] Allow them to update the join code
+- [ ] Display more info about the course, right now the start date / end date isn't shown.
 
 ## Students Assignment Page
 
@@ -58,3 +59,5 @@
 - [x] [TN] Stop students from submitting after the due date, or add an option for the instructor to allow submissions after the due date.
 - [ ] Restrict file types for upload
 - [ ] Better assignment not found page
+- [ ] Move the course update div to its own component and own hook files.
+- [ ] Add due dates to courses on overview

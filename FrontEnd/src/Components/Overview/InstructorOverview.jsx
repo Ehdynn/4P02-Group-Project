@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useUser from "../../context/useUser";
 import ClassList from "./ClassList";
 import CourseList from "./CourseList";
@@ -8,6 +8,7 @@ import AssignmentList from "./AssignmentList";
 import { useInstructorCourses } from "./hooks/useInstructorCourses";
 import { useInstructorAssignments } from "./hooks/useInstructorAssignments";
 import { useInstructorStudents } from "./hooks/useInstructorStudents";
+import { updateCourse } from '../../utils/DatabaseInteractions/Instructor/updateCourse';
 
 const InstructorOverview = () => {
   const { user } = useUser();
@@ -28,6 +29,58 @@ const InstructorOverview = () => {
     setPendingRemoval(studentInfo || null);
   };
 
+  const [updating, setUpdating] = useState(false);
+  const [formData, setFormData] = useState({ joinCode: "" });
+  const [submitted, setSubmitted] = useState(false);
+
+  const selectedCourseObj = courses.find(
+    (course) => String(course?.cid) === String(selectedCourse)
+  );
+
+  useEffect(() => {
+    setFormData({ joinCode: selectedCourseObj?.join_code ?? "" });
+    setSubmitted(false);
+    setError("");
+  }, [selectedCourse, courses]);
+
+  const onChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((previous) => ({ ...previous, [name]: value }));
+    setError("");
+    setSubmitted(false);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const { joinCode } = formData;
+
+    if (!joinCode.trim()) {
+      setError("New join code required.");
+      return;
+    }
+
+    setUpdating(true);
+    setError("");
+
+    let updatedCode = null;
+    try {
+      updatedCode = await updateCourse(selectedCourse, joinCode);
+    } catch (createError) {
+      const errorMessage =
+        createError instanceof Error ? createError.message : "Unable to update course.";
+      setError(errorMessage);
+      setSubmitted(false);
+      setUpdating(false);
+      return;
+    }
+
+    setUpdating(false);
+    setSubmitted(true);
+    setFormData({
+      joinCode: updatedCode?.join_code ?? updatedCode,
+    });
+  };
+
   const handleConfirmRemove = async (confirmed) => {
     if (!confirmed || !pendingRemoval) {
       setPendingRemoval(null);
@@ -43,6 +96,7 @@ const InstructorOverview = () => {
       setPendingRemoval(null);
     }
   };
+
   return (
     <main className="outer-container">
       <h1 className="h1-default">Instructor Overview</h1>
@@ -59,6 +113,37 @@ const InstructorOverview = () => {
       <AssignmentList assignments={assignments} loadingAssignments={loadingAssignments}/>
 
       <ClassList studentList={students} onRemoveRequest={handleRequestRemove} />
+
+      <div className="box-wrapper">
+        <h2 className="h2-large">Update Course Info</h2>
+        <p className="text-xs">Leave this field blank when you update to turn off course enrollment.</p>
+
+        <form onSubmit={handleSubmit} className="form-no-wrapper">
+
+        <label className="label-default">
+          <span className="span-default">Join Code</span>
+          <input
+            type="text"
+            name="joinCode"
+            value={formData.joinCode}
+            onChange={onChange}
+            className="field-default"
+          />
+        </label>
+
+        {error ? <p className="error">{error}</p> : null}
+        {submitted ? <p className="success">Join code updated!</p> : null}
+
+        <button
+          type="submit"
+          disabled={updating}
+          className="submit-button"
+        >
+          {updating ? "Updating..." : "Update Join Code"}
+        </button>
+      </form>
+      </div>
+
       <ConfirmPopup
         isOpen={Boolean(pendingRemoval)}
         title="Remove Student"
