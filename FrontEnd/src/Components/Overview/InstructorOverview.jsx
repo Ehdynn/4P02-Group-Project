@@ -8,7 +8,7 @@ import AssignmentList from "./AssignmentList";
 import { useInstructorCourses } from "./hooks/useInstructorCourses";
 import { useInstructorAssignments } from "./hooks/useInstructorAssignments";
 import { useInstructorStudents } from "./hooks/useInstructorStudents";
-import { updateCourse } from '../../utils/DatabaseInteractions/Instructor/updateCourse';
+import { useUpdateCourse } from "./hooks/useUpdateCourse";
 
 const InstructorOverview = () => {
   const { user } = useUser();
@@ -25,60 +25,9 @@ const InstructorOverview = () => {
     user?.id,
     setError
   );
+  const {updating, formData, submitted, handleSubmit, onChange} = useUpdateCourse(selectedCourse, courses ,setError);
   const handleRequestRemove = (studentInfo) => {
     setPendingRemoval(studentInfo || null);
-  };
-
-  const [updating, setUpdating] = useState(false);
-  const [formData, setFormData] = useState({ joinCode: "" });
-  const [submitted, setSubmitted] = useState(false);
-
-  const selectedCourseObj = courses.find(
-    (course) => String(course?.cid) === String(selectedCourse)
-  );
-
-  useEffect(() => {
-    setFormData({ joinCode: selectedCourseObj?.join_code ?? "" });
-    setSubmitted(false);
-    setError("");
-  }, [selectedCourse, courses]);
-
-  const onChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((previous) => ({ ...previous, [name]: value }));
-    setError("");
-    setSubmitted(false);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const { joinCode } = formData;
-
-    if (!joinCode.trim()) {
-      setError("New join code required.");
-      return;
-    }
-
-    setUpdating(true);
-    setError("");
-
-    let updatedCode = null;
-    try {
-      updatedCode = await updateCourse(selectedCourse, joinCode);
-    } catch (createError) {
-      const errorMessage =
-        createError instanceof Error ? createError.message : "Unable to update course.";
-      setError(errorMessage);
-      setSubmitted(false);
-      setUpdating(false);
-      return;
-    }
-
-    setUpdating(false);
-    setSubmitted(true);
-    setFormData({
-      joinCode: updatedCode?.join_code ?? updatedCode,
-    });
   };
 
   const handleConfirmRemove = async (confirmed) => {
