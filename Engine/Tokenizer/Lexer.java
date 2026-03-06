@@ -8,13 +8,11 @@ import java.util.regex.Pattern;
  *  These tokens will be used to reconstruct the report later.
  *
  *  TODO add Python and C support
- *  TODO add String support
- *  TODO parse out comments
  *
  *  Based on Enzo Jade's Tokenizer from the linked tutorial: https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f
  *  Modified to support comments, Strings, and non-Java languages.
  *
- * @Version 1.0 (Feb 11th, 2026)
+ * @Version 1.1.0 (Feb 11th, 2026)
  */
 public class Lexer {
     private String input;
@@ -68,6 +66,7 @@ public class Lexer {
 
         correctStrings(tokens);
         correctCharacters(tokens);
+        condenseStringTokens(tokens);
         return tokens;
     }
 
@@ -204,6 +203,49 @@ public class Lexer {
 
             counter++;
         }
+        return tokens;
+    }
+
+    /**Replaces all series of string tokens with and individual token representing all tokens
+     *
+     * @param tokens    List of tokens to be modified
+     * @return  Modified tokens
+     */
+    private List<Token> condenseStringTokens(List<Token> tokens){
+        List<ArrayList<Token>> StringTokens = new ArrayList<>();
+        int l = -1;
+        int r = -1;
+
+        for(int i = 0; i < tokens.size(); i++){
+            Token token = tokens.get(i);
+            if(token.getValue().equals("\"")){
+                if(l == -1) l = i;
+                else{
+                    r = i;
+                    ArrayList<Token> tokensToUpdate = new ArrayList<>();
+                    for(int j = l + 1; j < r; j++){
+                        tokensToUpdate.add(tokens.get(j));
+                    }
+                    StringTokens.add(tokensToUpdate);
+                    l = -1;
+                    r = -1;
+                }
+            }
+        }
+
+        for(ArrayList<Token> list : StringTokens){
+            String tokenValue = "";
+            int index = tokens.indexOf(list.getFirst());
+            for(int i = 0; i < list.size(); i++){
+                Token token = list.get(i);
+                tokens.remove(token);
+                tokenValue += token.getValue();
+                if(i < list.size() - 1) tokenValue += " ";
+            }
+            Token t = new Token(TokenType.LITERAL, tokenValue);
+            tokens.add(index, t);
+        }
+
         return tokens;
     }
 }
