@@ -1,5 +1,5 @@
 import { useState } from "react";
-import supabase from "../../../utils/DatabaseInteractions/supabase";
+import supabase from "../../utils/DatabaseInteractions/supabase";
 
 const JoinCourse = () => {
   const [formData, setFormData] = useState({

@@ -1,5 +1,5 @@
 import InstructorRoute from './utils/Routes/InstructorRoute';
-import StudentRoute from './utils/Routes/StudentRoute';
+//import StudentRoute from './utils/Routes/StudentRoute';
 
 // Public Pages
 import Landing from './Pages/Landing';
@@ -12,7 +12,6 @@ import Assignment from './Pages/Assignment';
 import CreateCourse from './Pages/InstructorPages/CreateCourse';
 import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
 // Student Pages
-import JoinCourse from './Pages/StudentPages/JoinCourse';
 import JoinCourseModal from './Components/JoinCourse/JoinCourse';
 import { useState } from 'react';
 // Components
@@ -58,14 +57,6 @@ function App() {
                     }
                   />
                   {/* Student Routes */}
-                  <Route
-                    path="/JoinCourse"
-                    element={
-                      <StudentRoute>
-                        <JoinCourse />
-                      </StudentRoute>
-                    }
-                  />
                   <Route path="*" element={<PageNotFound />} />
               </Routes>
           </div>
