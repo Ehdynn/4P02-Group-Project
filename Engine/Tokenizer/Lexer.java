@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
  *
  *  TODO add Python and C support
  *  TODO add String support
+ *  TODO parse out comments
  *
  *  Based on Enzo Jade's Tokenizer from the linked tutorial: https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f
  *  Modified to support comments, Strings, and non-Java languages.
@@ -17,15 +18,23 @@ import java.util.regex.Pattern;
  */
 public class Lexer {
     private String input;
+    private final Language language;
     private int index;
     FiniteStateMachine currentState;
+
+    public Lexer(String input){
+        this.input = input;
+        this.language = Language.Java;
+        this.index = 0;
+    }
 
     /** Creates a Lexer (also known as a tokenizer,) that can be used to tokenize the given String input
      *
      * @param input Code to be tokenized
      */
-    public Lexer(String input){
+    public Lexer(String input, Language language){
         this.input = input;
+        this.language = language;
         this.index = 0;
     }
 
@@ -36,6 +45,9 @@ public class Lexer {
      */
     public List<Token> tokenize() {
         List<Token> tokens = new ArrayList<>();
+
+        input = removeComments(input, language);
+
         while (index < input.length()) {
             char currentChar = input.charAt(index);
 
@@ -54,9 +66,10 @@ public class Lexer {
             }
         }
 
+        correctStrings(tokens);
+        correctCharacters(tokens);
         return tokens;
     }
-
 
     /** Creates the next Token beginning at the current index
      *  Compares the current string to the regular expressions representing the different types of Tokens
@@ -72,12 +85,12 @@ public class Lexer {
         String[] tokenPatterns = {
                 "_|abstract|assert|boolean|break|byte|case|catch|char|class|continue|default|do|double|else|enum|extends|final|finally|float|for|if|implements|import|instanceof|int|interface|long|native|new|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while|const|goto|strictfp",         // Keywords
                 "[a-zA-Z_][a-zA-Z0-9_]*",   // Identifiers
-                "\\d+",                     // Literals
+                "\\d+",              // Literals
                 "//[a-zA-Z0-9_]*",          // Single-Line Commments
                 "/\\*[a-zA-Z0-9_]*",        // Multi-Line Comments
                 "\\*/",                     // Comment End
                 "[+-/*=<>!?]",              // Operators
-                "[.,;(){}]",                // Punctuation
+                "[.,;(){}\"']",              // Punctuation
         };
 
         TokenType[] tokenTypes = {
@@ -105,6 +118,7 @@ public class Lexer {
                 if(t == TokenType.MULTI_LINE_COMMENT) currentState = FiniteStateMachine.MULTI_LINE_COMMENT;
                 if(t == TokenType.COMMENT_END) currentState = FiniteStateMachine.CODE;
                 if(currentState == FiniteStateMachine.SINGLE_LINE_COMMENT || currentState == FiniteStateMachine.MULTI_LINE_COMMENT)  return new Token(TokenType.COMMENT, value);
+                System.out.println(value);
                 return new Token(tokenTypes[i], value);
             }
         }
@@ -112,4 +126,84 @@ public class Lexer {
         return null;
     }
 
+    /**Searches for and removes all comments
+     * Finds them using Java's replace all function
+     *
+     * Single line java/c comments are defined by the regular expression "// .* \n".
+     * Multiline java/c comments are defined by the regular expression "/ \\* .* \\* /".
+     *
+     * Single line python comments are defined by the regular expression "# .* \n".
+     * There are no official python multiline comments. multiline quotes however function as comments.
+     * Multiline strings functioning as comments are defined by the regex "\n \t* """ .* """ ".
+     *
+     * @param string    String to remove comments from
+     * @param l         language being processed
+     * @return  String with all comments removed.
+     */
+    private String removeComments(String string, Language l){
+        String s = string;
+        if(l == Language.C || l == Language.Java) {
+            s = s.replaceAll("/\\*.*\\*/", ""); //Deletes multiline comments
+            s = s.replaceAll("//.*\n", "");     //Deletes single line comments
+        } else if (l == Language.Python) {
+            s = s.replaceAll("\n\t*\"\"\".*\"\"\"", "\n");    //Deletes standalone multiline quotes
+            s = s.replaceAll("#.*\\n", ""); //Deletes single line comments
+        }
+        return s;
+    }
+
+    /**Rewrites the type of all tokens between quote tokens as literals, as they are part of strings.
+     *
+     * @param tokens    List of tokens to modify
+     * @return  updated List
+     */
+    private List<Token> correctStrings(List<Token> tokens){
+        int l = -1; //left/starting index
+        int r = -1; //right/final index
+        int counter = 0;
+
+        for(Token token : tokens){
+            if(token.getValue().equals("\"")){
+                if(l == -1) l = counter;
+                else{
+                    r = counter;
+                    for(int i = l + 1; i < r; i++) tokens.get(i).updateType(TokenType.LITERAL);
+                    l = -1;
+                    r = -1;
+                }
+            }
+
+            counter++;
+        }
+        return tokens;
+    }
+
+    /**Rewrites the type of any tokens between single quote tokens as literals, as they are character values.
+     * Will only update if a single token is nestled between the quotes
+     *
+     * @param tokens    List of tokens to modify
+     * @return  updated List
+     */
+    private List<Token> correctCharacters(List<Token> tokens){
+        int l = -1; //left/starting index
+        int r = -1; //right/final index
+        int counter = 0;
+
+        for(Token token : tokens){
+            if(token.getValue().equals("'") && token.getType() == TokenType.PUNCTUATION){
+                if(l == -1) l = counter;
+                else{
+                    r = counter;
+                    if(r-l == 2) {
+                        tokens.get(l + 1).updateType(TokenType.LITERAL);
+                        l = -1;
+                    }else l = r;
+                    r = -1;
+                }
+            }
+
+            counter++;
+        }
+        return tokens;
+    }
 }

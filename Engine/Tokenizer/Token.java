@@ -32,6 +32,13 @@ public class Token implements Comparable<Token>{
         return type;
     }
 
+    /**Updates the Token's type to the inputted type
+     *
+     * @param type  New type for the token
+     * @return  Token's new type
+     */
+    public TokenType updateType(TokenType type){return this.type = type;}
+
     /** The String the token holds and represents
      *
      * @return  the String value of the Token
@@ -43,12 +50,11 @@ public class Token implements Comparable<Token>{
     /** The computed value that represents the likelihood this token represents a stolen piece of code.
      *  TODO Figure out how the scale on this will work
      *
-     * @return
+     * @return plagiarismValue
      */
     public double getPlagiarismValue(){
         return plagiarismValue;
     }
-
     /** Writes out the value and type of this token
      *  For testing purposes primarily
      *

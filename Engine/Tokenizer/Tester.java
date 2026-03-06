@@ -5,7 +5,8 @@ import java.util.List;
  */
 public class Tester {
     public static void main(String[] args) {
-        String code = "if (x > 10) { y = x - 5; } //test \n/*test 1 2 3 4 5 6 7 8 9*/ 10 11 12 13 14 15";
+        String code3 = "if (x > 10) { y = x-5; } //test \n/*test 1 2 3 4 5 6 7 8 9*/ 10 11 12 13 14 15";
+        String code = "test (x > 10) { y = x - 5; } //test\n\"a b c d\"";
         String code2 = "for (i = 0; i < 10; i++){\nx +=1;\nSystem.out.printLn(x);}";
 
         Lexer lexer = new Lexer(code);
@@ -13,9 +14,9 @@ public class Tester {
         List<Token> copy = lexer.tokenize();
         System.out.println(new ComparisonEngine().compare(code, code));
 
-        /*for (Token token : tokens) {
+        for (Token token : tokens) {
             System.out.println(token);
-        }*/
+        }
 
 
     }
