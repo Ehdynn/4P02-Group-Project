@@ -30,9 +30,9 @@
 - [x] Redirect to overview on successfull creation of a course
 - [x] Turn the join a course button from a page to a modal
 - [ ] Add Toasts
-- [ ] Email confirmation of submission?
-- [ ] Implement Forgot Password
-- [ ] Fill out the landing page
+- [ ] [L] Email confirmation of submission?
+- [ ] [L] Implement Forgot Password
+- [ ] [L] Fill out the landing page
 - [ ] Add a footer
 - [ ] Log user in after creating account
 - [x] Update page not found page
