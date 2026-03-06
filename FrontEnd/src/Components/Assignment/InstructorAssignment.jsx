@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
 import useUser from "../../context/useUser";
-import supabase from "../../utils/DatabaseInteractions/supabase";
 import toTimestamptzIso from "../../utils/Timestamp/toTimestamptzIso";
 import { updateAssignment } from "../../utils/DatabaseInteractions/Instructor/updateAssignment";
 
@@ -67,23 +66,6 @@ const InstructorAssignment = () => {
 
     setLoadingUpdate(true);
     setUpdateError("");
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) {
-      setLoadingUpdate(false);
-      setUpdateError(userError.message || "Unable to validate current user");
-      return;
-    }
-
-    if (!user) {
-      setLoadingUpdate(false);
-      setUpdateError("You must be logged in to create an assignment.");
-      return;
-    }
 
     const dueDateWithTimezone = toTimestamptzIso(dueDate);
 

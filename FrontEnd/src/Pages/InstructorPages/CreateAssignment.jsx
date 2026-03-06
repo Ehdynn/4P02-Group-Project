@@ -1,5 +1,4 @@
 import { useState, useEffect} from "react";
-import supabase from "../../utils/DatabaseInteractions/supabase";
 import { getInstructorsCourses } from "../../utils/DatabaseInteractions/Instructor/getInstructorCourses";
 import useUser from "../../context/useUser";
 import { createAssignment } from "../../utils/DatabaseInteractions/Instructor/createAssignment";
@@ -58,23 +57,6 @@ const CreateAssignment = () => {
 
     setLoading(true);
     setError("");
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) {
-      setLoading(false);
-      setError(userError.message || "Unable to validate current user");
-      return;
-    }
-
-    if (!user) {
-      setLoading(false);
-      setError("You must be logged in to create an assignment.");
-      return;
-    }
 
     const dueDateWithTimezone = toTimestamptzIso(dueDate);
 
