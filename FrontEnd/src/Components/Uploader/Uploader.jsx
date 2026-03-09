@@ -7,10 +7,18 @@ const Uploader = ({aid}) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [badFileType, setBadFileType] = useState(false);
   const { user } = useUser();
-
+  const supportedTypes = ["application/pdf", "application/py", "application/x-zip-compressed","application/cpp", "application/java"];
   const onFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
+     if (supportedTypes.includes(event.target.files[0].type)) {
+        setBadFileType(false);
+
+     }
+     else{
+      setBadFileType(true);
+     } 
     setErrorMessage("");
     setSuccessMessage("");
   };
@@ -49,6 +57,7 @@ const Uploader = ({aid}) => {
           <input
             type="file"
             onChange={onFileChange}
+            accept=".pdf,.zip,.py,.cpp,.java"
             className="field-default file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800"
           />
         </label>
@@ -62,10 +71,14 @@ const Uploader = ({aid}) => {
 
         {errorMessage ? <p className="error">{errorMessage}</p> : null}
         {successMessage ? <p className="success">{successMessage}</p> : null}
-
+        {badFileType && (
+        <p style={{ color: "red" }}>
+          Unsupported file type. Please submit a .zip, .py, .cpp, .java or .pdf
+        </p>
+      )}
         <button
           type="submit"
-          disabled={isUploading}
+          disabled={isUploading || badFileType}
           className="submit-button disabled:cursor-not-allowed disabled:bg-slate-500"
         >
           {isUploading ? "Uploading..." : "Upload Submission"}
