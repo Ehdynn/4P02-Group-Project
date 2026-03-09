@@ -1,6 +1,6 @@
 import supabase from "../supabase";
 import uploadSubmission from "./uploadSubmission";
-
+const supportedTypes = ["application/pdf", "application/py", "application/x-zip-compressed","application/cpp", "application/java"];
 export async function submitAssignment(file, suid, aid){
   if (!file) {
     throw new Error("Please choose a file before uploading.");
@@ -30,7 +30,9 @@ export async function submitAssignment(file, suid, aid){
   if (dueDate.getTime() < Date.now()) {
     throw new Error(`Failed to submit, due date has already passed.`);
   }
-
+  if (!(supportedTypes.includes(file.type))){
+    throw new Error('Invalid File Format. MEEEE');
+  }
   const {data, error} = await supabase
     .from("File_Submissions")
     .insert({

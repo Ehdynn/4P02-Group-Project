@@ -9,6 +9,7 @@ const Uploader = ({aid}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [badFileType, setBadFileType] = useState(false);
   const { user } = useUser();
+  {/* Below must be updated with the same var in submitAssignment.js */}
   const supportedTypes = ["application/pdf", "application/py", "application/x-zip-compressed","application/cpp", "application/java"];
   const onFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
