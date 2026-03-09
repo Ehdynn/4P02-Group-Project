@@ -8,6 +8,9 @@ export default async function getAssignmentDetails(aid){
       .eq("id", aid)
       .single();
     if (error) {
+      if(error.message === "Cannot coerce the result to a single JSON object"){
+        return null;
+      }
       throw new Error(`Failed to get assingment details: ${error.message}`);
     }
     return data;

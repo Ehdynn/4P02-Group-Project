@@ -18,6 +18,8 @@ begin
     (
       select jsonb_agg(
         jsonb_build_object(
+          'suid',
+          enrolled.suid,
           'student_name',
           coalesce(
             nullif(btrim(auth_user.raw_user_meta_data->>'full_name'), ''),

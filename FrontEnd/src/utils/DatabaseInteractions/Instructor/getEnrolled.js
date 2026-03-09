@@ -22,6 +22,7 @@ export async function getEnrolled(cid, uid){
   }
 
   return data.map((student) => ({
+    suid: student?.suid ?? null,
     student_name: student?.student_name ?? "Unknown Student",
     student_number: student?.student_number ?? null,
   }));

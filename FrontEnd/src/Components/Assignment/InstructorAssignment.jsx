@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
-import useUser from "../../context/useUser";
 import toTimestamptzIso from "../../utils/Timestamp/toTimestamptzIso";
 import { updateAssignment } from "../../utils/DatabaseInteractions/Instructor/updateAssignment";
+import SubmissionList from "../Submissions/SubmissionList";
+import { useInstructorStudents } from "../Overview/hooks/useInstructorStudents";
 
 const InstructorAssignment = () => {
   const { aid } = useParams();
-  const {user} = useUser();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingUpdate, setLoadingUpdate] = useState(false);
@@ -172,9 +172,11 @@ const InstructorAssignment = () => {
             className="submit-button"
           >
             {loadingUpdate ? "Updating..." : "Update Assignment"}
-          </button>
+          </button>     
       </form>
       </div>
+      <SubmissionList aid={aid} courseId={details.course} />
+
     </div>
   );
 };

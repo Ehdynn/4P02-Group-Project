@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import getStudentCourses from "../../../utils/DatabaseInteractions/Student/getStudentCourses";
 
 const normalizeCourseId = (value) => String(value ?? "");
 
 export function useStudentCourses(userId, onError) {
+  const { cid } = useParams();
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState(cid ?? "");
   const [loadingCourses, setLoadingCourses] = useState(true);
+
 
   useEffect(() => {
     let cancelled = false;
