@@ -4,7 +4,7 @@
 
 - [ ] Track the % of the class who has submitted
 - [ ] Run Comparison Button
-- [ ] Download All Submission Button
+- [ ] [TN] Download All Submission Button
 - [ ] View Comparison Button
 
 ## Instructor Comparison Page
