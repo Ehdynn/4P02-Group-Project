@@ -4,7 +4,6 @@ import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/ge
 import toTimestamptzIso from "../../utils/Timestamp/toTimestamptzIso";
 import { updateAssignment } from "../../utils/DatabaseInteractions/Instructor/updateAssignment";
 import SubmissionList from "../Submissions/SubmissionList";
-import { useInstructorStudents } from "../Overview/hooks/useInstructorStudents";
 
 const InstructorAssignment = () => {
   const { aid } = useParams();
@@ -112,7 +111,7 @@ const InstructorAssignment = () => {
   }
 
   return (
-    <div className="center-box outer-container">
+    <main className="center-box outer-container">
       <div className="box-wrapper">
         <h1 className="h1-default text-center">{details.name ?? "Assignment"}</h1>
         <p className="">Due on {details.due_date ? (new Date(details.due_date).toLocaleString('en-US', {dateStyle: "medium"}) + " " + new Date(details.due_date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })) : "No Due Date Provided"}</p>
@@ -177,7 +176,7 @@ const InstructorAssignment = () => {
       </div>
       <SubmissionList aid={aid} courseId={details.course} />
 
-    </div>
+    </main>
   );
 };
 
