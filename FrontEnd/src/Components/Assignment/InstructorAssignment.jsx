@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
 import toTimestamptzIso from "../../utils/Timestamp/toTimestamptzIso";
 import { updateAssignment } from "../../utils/DatabaseInteractions/Instructor/updateAssignment";
+import SubmissionList from "../Submissions/SubmissionList";
+import { useInstructorStudents } from "../Overview/hooks/useInstructorStudents";
 
 const InstructorAssignment = () => {
   const { aid } = useParams();
@@ -170,9 +172,11 @@ const InstructorAssignment = () => {
             className="submit-button"
           >
             {loadingUpdate ? "Updating..." : "Update Assignment"}
-          </button>
+          </button>     
       </form>
       </div>
+      <SubmissionList aid={aid} courseId={details.course} />
+
     </div>
   );
 };
