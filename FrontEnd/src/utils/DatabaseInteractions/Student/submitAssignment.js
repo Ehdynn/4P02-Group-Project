@@ -31,7 +31,7 @@ export async function submitAssignment(file, suid, aid){
     throw new Error(`Failed to submit, due date has already passed.`);
   }
   if (!(supportedTypes.includes(file.type))){
-    throw new Error('Invalid File Format. MEEEE');
+    throw new Error('Invalid File Format.');
   }
   const {data, error} = await supabase
     .from("File_Submissions")
