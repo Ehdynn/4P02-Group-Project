@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 const CourseList = ({
   courses,
   selectedCourse,
@@ -12,6 +14,8 @@ const CourseList = ({
   const getCourseLabel = (course) =>
     String(course?.name ?? `Course ${getCourseId(course)}`);
 
+  const navigate = useNavigate();
+
   return (
     <section className="box-wrapper">
       <label className="label-default">
@@ -19,7 +23,10 @@ const CourseList = ({
         <select
           name="cid"
           value={selectedCourse}
-          onChange={(event) => setSelectedCourse(event.target.value)}
+          onChange={(event) => {
+            setSelectedCourse(event.target.value);
+            navigate(`/Overview/${getCourseId(event.target.value)}`, {replace: true})
+          }}
           className="field-default"
           disabled={loadingCourses || courseList.length === 0}
         >

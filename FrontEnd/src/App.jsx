@@ -37,6 +37,7 @@ function App() {
                   {/* Public Routes */}
                   <Route path="/" element = {<Landing />} />
                   <Route path="/login" element = {<Login/>} />
+                  <Route path="/Overview/:cid" element={<Overview/>}/>
                   <Route path="/Overview" element={<Overview/>}/>
                   <Route path="/ForgotPassword" element={<ForgotPassword/>}/>
                   <Route path="/ResetPassword" element={<ResetPassword/>}/>

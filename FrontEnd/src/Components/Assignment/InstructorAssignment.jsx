@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
-import useUser from "../../context/useUser";
 import toTimestamptzIso from "../../utils/Timestamp/toTimestamptzIso";
 import { updateAssignment } from "../../utils/DatabaseInteractions/Instructor/updateAssignment";
 
 const InstructorAssignment = () => {
   const { aid } = useParams();
-  const {user} = useUser();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingUpdate, setLoadingUpdate] = useState(false);

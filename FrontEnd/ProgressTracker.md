@@ -44,7 +44,7 @@
 - [x] Turn the join a course button from a page to a modal
 - [ ] Add Toasts
 - [ ] [L] Email confirmation of submission?
-- [ ] [L] Implement Forgot Password
+- [x] [L] [TN] Implement Forgot Password
 - [ ] [L] Fill out the landing page
 - [ ] Add a footer
 - [x] [TN] Log user in after creating account

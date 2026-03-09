@@ -65,7 +65,8 @@ const CreateCourse = () => {
       startDate: "",
       endDate: "",
     });
-    navigate("/Overview", { state: { courseId: createdCourse?.cid ?? null } });
+    const courseId = createdCourse?.cid ?? null;
+    navigate(`/Overview/${courseId}`);
   };
 
   return (
