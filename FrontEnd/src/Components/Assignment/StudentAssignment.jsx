@@ -4,6 +4,7 @@ import getAssignmentDetails from "../../utils/DatabaseInteractions/Student/getAs
 import { getSubmissions } from "../../utils/DatabaseInteractions/Student/getSubmissions";
 import Uploader from '../../Components/Uploader/Uploader'
 import useUser from "../../context/useUser";
+import PageNoteFound from '../../Pages/PageNotFound';
 
 const StudentAssignment = () => {
   const { aid } = useParams();
@@ -31,7 +32,7 @@ const StudentAssignment = () => {
         }
       } finally {
         if (!cancelled) {
-          const isPastDueDate = data?.due_date ? new Date(data.due_date).getTime() < Date.now() : false;
+          const isPastDueDate = details?.due_date ? new Date(details.due_date).getTime() < Date.now() : false;
           setPastDueDate(isPastDueDate);
           setLoading(false);
         }
@@ -75,7 +76,7 @@ const StudentAssignment = () => {
   }
 
   if (!details) {
-    return <div>Assignment not found.</div>;
+    return (<PageNoteFound />)
   }
 
   const submissionCount = submissions?.length ?? 0;
