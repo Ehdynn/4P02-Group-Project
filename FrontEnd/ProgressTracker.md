@@ -57,7 +57,7 @@
 - [ ] Fix error msg when student tries to enroll in the same course twice, also suppress the console error
 - [x] [TN] Create assignment should redirect to the assignment page
 - [x] [TN] Stop students from submitting after the due date, or add an option for the instructor to allow submissions after the due date.
-- [ ] Restrict file types for upload
+- [x] [L] Restrict file types for upload
 - [ ] Better assignment not found page
 - [x] [TN] Move the course update div to its own component and own hook files.
 - [ ] Add due dates to courses on overview
