@@ -4,11 +4,12 @@ import InstructorRoute from './utils/Routes/InstructorRoute';
 // Public Pages
 import Landing from './Pages/Landing';
 import ForgotPassword from './Pages/ForgotPassword';
+import ResetPassword from './Pages/ResetPassword';
 import PageNotFound from './Pages/PageNotFound';
 import Login from './Pages/Login';
 import Overview from './Pages/Overview';
 import Assignment from './Pages/Assignment';
-// Instructor Pages
+// Instructor Pages 
 import CreateCourse from './Pages/InstructorPages/CreateCourse';
 import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
 // Student Pages
@@ -38,6 +39,7 @@ function App() {
                   <Route path="/login" element = {<Login/>} />
                   <Route path="/Overview" element={<Overview/>}/>
                   <Route path="/ForgotPassword" element={<ForgotPassword/>}/>
+                  <Route path="/ResetPassword" element={<ResetPassword/>}/>
                   <Route path="/Assignment/:aid" element={<Assignment/>}/>
                   {/* Instructor Routes */}
                   <Route

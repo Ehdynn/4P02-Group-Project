@@ -1,67 +1,55 @@
-import React from 'react'
 import { useState } from "react";
-import { useRef } from 'react';
-import emailjs, { send } from '@emailjs/browser';
-const ForgotPassword = () => {
- const handleSubmit = async (event) => {
-    event.preventDefault();
-    console.log("placeholder")
-    setSubmitted(true);
- }
- const sendEmail = (e) => {
-    e.preventDefault();
+import supabase from '../utils/DatabaseInteractions/supabase';
+import { useNavigate } from "react-router-dom";
 
-    emailjs
-      .sendForm(import.meta.env.VITE_EMAILJS_SERVICE_ID, import.meta.env.VITE_EMAILJS_TEMPLATE_ID, form.current, {
-        publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-      })
-      .then(
-        () => {
-          console.log('SUCCESS!');
-          setSubmitted(true);
-        },
-        (error) => {
-          console.log('FAILED...', error.text);
-        },
-      );
-  };
- const form = useRef();
- const [email, setEmail] = useState("");
- const [loading, setLoading] = useState(false);
- const [error, setError] = useState("");
- const [submitted, setSubmitted] = useState(false);
+const ForgotPassword = () => {
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [error, setError] = useState("");
+    const [submitted, setSubmitted] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setSubmitted(true);
+        setSuccess(false);
+        if(email === ""){setError("Please enter the email."); setSubmitted(false); return;}
+        const {error } = await supabase.auth
+            .resetPasswordForEmail(email, {redirectTo: `${window.location.origin}/ResetPassword`})
+        if(error){setError(`Failed to send email: ${error}`)}
+        setSubmitted(false);
+        setSuccess(true);
+    }
+ 
   return (
-    <>
-    <h1 className="h1-default">Forgot Password</h1>
-    <form ref={form} className="form-default " onSubmit={sendEmail}>
-        <label className="label-default"type="email">
-          Email
-          <input
-            type="email"
-            name="user_email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            className="account-form-default"
-          />
-        </label>
-        <button
-          type="submit"
-          disabled={loading || !email.trim() || submitted}
-          className="submit-button"
-        >
-          {loading ? "Signing in…" : "Continue"}
-        </button>
+
+    <main className='outer-container'>
+      <div className='box-wrapper'>
+        <h1 className="h1-default">Forgot Password</h1>
+
+        <form className="form-default " onSubmit={handleSubmit}>
+            <label className="label-default"type="email">
+            Email
+            <input
+                type="email"
+                name="user_email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                className="account-form-default"
+            />
+            </label>
+            <button
+            type="submit"
+            disabled={submitted || !email.trim()}
+            className="submit-button"
+            >
+            {submitted ? "Sending Email…" : "Send Reset Request"}
+            </button>
+        </form>
         {error ? <p className="error">{error}</p> : null}
-        
-      </form>
-      {submitted && (
-        <p style={{ color: "red" }}>
-          An Email has been sent to you to reset your password.
-        </p>
-      )}
-      
-    </>
+        {success ? <><p className="success">Email sent!</p><button className="submit-button" onClick={() => {navigate("/login")}}>Sign in</button></>: null}
+      </div>
+    </main>
   )
 }
 
