@@ -1,72 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
-import getAssignmentDetails from "../../utils/DatabaseInteractions/Student/getAssignmentDetails";
-import { getSubmissions } from "../../utils/DatabaseInteractions/Student/getSubmissions";
 import Uploader from '../../Components/Uploader/Uploader'
 import useUser from "../../context/useUser";
 import PageNoteFound from '../../Pages/PageNotFound';
+import { useLoadStudentAssignment } from "./hooks/useLoadStudentAssignment";
+import { useLoadStudentSubmissions } from "./hooks/useLoadStudentSubmissions";
 
 const StudentAssignment = () => {
   const { aid } = useParams();
-  const [details, setDetails] = useState(null);
-  const [submissions, setSubmissions] = useState(null);
+  const {user} = useUser();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const {user} = useUser();
   const [showUploader, setShowUploader] = useState(false);
-  const [pastDueDate, setPastDueDate] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAssignment() {
-      try {
-        setLoading(true);
-        setError("");
-        const data = await getAssignmentDetails(aid);
-        if (!cancelled) {
-          setDetails(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load assignment.");
-        }
-      } finally {
-        if (!cancelled) {
-          const isPastDueDate = details?.due_date ? new Date(details.due_date).getTime() < Date.now() : false;
-          setPastDueDate(isPastDueDate);
-          setLoading(false);
-        }
-      }
-    }
-
-    async function loadSubmissions() {
-      try {
-        setLoading(true);
-        setError("");
-        const result = await getSubmissions(aid, user.id);
-        if (!cancelled) {
-          const normalized = Array.isArray(result) ? result : [];
-          setSubmissions(normalized);
-          setShowUploader(normalized.length === 0);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load submissions.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadAssignment();
-    loadSubmissions();
-    return () => {
-      cancelled = true;
-    };
-  }, [aid]);
-
+  const {details, pastDueDate} = useLoadStudentAssignment(aid, setLoading, setError);
+  const {submissions} = useLoadStudentSubmissions(aid, user.id, setLoading, setError, setShowUploader);
+  
   if (loading) {
     return <div>Loading assignment...</div>;
   }

@@ -1,103 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
-import toTimestamptzIso from "../../utils/Timestamp/toTimestamptzIso";
-import { updateAssignment } from "../../utils/DatabaseInteractions/Instructor/updateAssignment";
+
 import SubmissionList from "../Submissions/SubmissionList";
+import { useLoadInstructorAssignment } from "./hooks/useLoadInstructorAssignment";
+import { useUpdateAssignment } from "./hooks/useUpdateAssignment";
 
 const InstructorAssignment = () => {
   const { aid } = useParams();
-  const [details, setDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-  const [error, setError] = useState("");
-  const [updateError, setUpdateError] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    dueDate: "",
-    description: "",
-  });
-  useEffect(() => {
-    let cancelled = false;
+        name: "",
+        dueDate: "",
+        description: "",
+      });
 
-    async function loadAssignment() {
-      try {
-        setLoading(true);
-        setError("");
-        const data = await getAssignmentDetails(aid);
-        if (!cancelled) {
-          setDetails(data);
-          setFormData({name: data.name || "", dueDate:data.due_date ? data.due_date.slice(0, 16) : "", description: data.description || ""})
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load assignment.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadAssignment();
-    return () => {
-      cancelled = true;
-    };
-  }, [aid]);
-  const onChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((previous) => ({ ...previous, [name]: value }));
-    setError("");
-    setSubmitted(false);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setSubmitted(false);
-    const {dueDate, description } = formData;
-
-    if (!formData.name.trim()) {
-      setUpdateError("Name field can not be blank.");
-      return;
-    }
-
-    setLoadingUpdate(true);
-    setUpdateError("");
-
-    const dueDateWithTimezone = toTimestamptzIso(dueDate);
-
-    if (dueDate && !dueDateWithTimezone) {
-      setLoadingUpdate(false);
-      setUpdateError("Invalid due date format.");
-      return;
-    }
-
-    let assignmentData = null;
-    try {
-      assignmentData = await updateAssignment(aid, formData.name, dueDateWithTimezone, description);
-    } catch (invokeError) {
-      let errorMessage = invokeError instanceof Error ? invokeError.message : "Unable to create assignment";
-      if (invokeError?.context) {
-        try {
-          const payload = await invokeError.context.json();
-          errorMessage = payload?.error || errorMessage;
-        } catch {
-          // Keep default message if response is not JSON.
-        }
-      }
-      setUpdateError(errorMessage);
-      setSubmitted(false);
-      setLoadingUpdate(false);
-      return;
-    }
-
-    setLoadingUpdate(false);
-    setSubmitted(true);
-    setDetails(assignmentData)
-  };
-
+  const {details, setDetails, loading, error} = useLoadInstructorAssignment(aid, setFormData);
+  const {onChange, handleSubmit, submitted, loadingUpdate, updateError} = useUpdateAssignment(aid, formData, setFormData, setDetails);
+  
   if (loading) {
     return <div>Loading assignment...</div>;
   }
