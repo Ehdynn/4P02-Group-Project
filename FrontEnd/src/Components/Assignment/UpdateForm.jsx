@@ -1,5 +1,3 @@
-import React from 'react'
-
 const UpdateForm = ({handleSubmit, formData, onChange, updateError, submitted, loadingUpdate}) => {
   return (
     <>

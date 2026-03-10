@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useUser from "../../context/useUser";
 import ClassList from "./ClassList";
 import CourseList from "./CourseList";

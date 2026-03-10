@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import toTimestamptzIso from "../../../utils/Timestamp/toTimestamptzIso";
 import { updateAssignment } from "../../../utils/DatabaseInteractions/Instructor/updateAssignment";
 
