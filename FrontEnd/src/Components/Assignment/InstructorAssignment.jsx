@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate} from "react-router-dom";
 
 import SubmissionList from "../Submissions/SubmissionList";
 import { useLoadInstructorAssignment } from "./hooks/useLoadInstructorAssignment";
@@ -9,7 +9,9 @@ import UpdateForm from "./UpdateForm";
 import PageNotFound from "../../Pages/PageNotFound";
 
 const InstructorAssignment = () => {
+  const navigate = useNavigate();
   const { aid } = useParams();
+  const [comparisonAvailable, setComparisonAvailable] = useState(true);
   const [formData, setFormData] = useState({
         name: "",
         dueDate: "",
@@ -39,8 +41,13 @@ const InstructorAssignment = () => {
         <div className="flex-1 min-w-0">
           <div className="box-wrapper">
           <h2 className="h2-large">Similarity Comparison</h2>
-          <button className="submit-button">Run Similarity Comparision</button>
-          <button className="submit-button">View Results</button>
+          <button className="submit-button">{comparisonAvailable ? "Run Similarity Comparision" : "Run Similarity Comparision Again"}</button>
+          {comparisonAvailable ? 
+            <button className="submit-button"
+                    onClick={() => navigate(`/Comparison/${aid}`)}
+            >View Results</button>
+          : null};
+          
       </div>
         </div>
       </div>

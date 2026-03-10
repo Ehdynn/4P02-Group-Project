@@ -12,6 +12,7 @@ import Assignment from './Pages/Assignment';
 // Instructor Pages 
 import CreateCourse from './Pages/InstructorPages/CreateCourse';
 import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
+import Comparison from './Pages/InstructorPages/Comparison';
 // Student Pages
 import JoinCourseModal from './Components/JoinCourse/JoinCourse';
 import { useState } from 'react';
@@ -56,6 +57,14 @@ function App() {
                     element={
                       <InstructorRoute>
                         <CreateAssignment />
+                      </InstructorRoute>
+                    }
+                  />
+                  <Route
+                    path="/Comparison/:aid"
+                    element={
+                      <InstructorRoute>
+                        <Comparison />
                       </InstructorRoute>
                     }
                   />
