@@ -32,6 +32,18 @@ const InstructorAssignment = () => {
       <div className="box-wrapper">
         <AssignmentDetails details={details} />
       </div>
+      <div className="flex w-full space-x-5 flex-col md:flex-row">
+        <div className="flex-1 min-w-0">
+          <SubmissionList aid={aid} courseId={details.course} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="box-wrapper">
+          <h2 className="h2-large">Similarity Comparison</h2>
+          <button className="submit-button">Run Similarity Comparision</button>
+          <button className="submit-button">View Results</button>
+      </div>
+        </div>
+      </div>
       <div className="box-wrapper">
         <UpdateForm 
           handleSubmit={handleSubmit}
@@ -42,8 +54,6 @@ const InstructorAssignment = () => {
           loadingUpdate={loadingUpdate}
         />
       </div>
-      <SubmissionList aid={aid} courseId={details.course} />
-
     </main>
   );
 };

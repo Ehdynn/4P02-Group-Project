@@ -3,19 +3,20 @@
 ## Instructors Assignment Page
 
 - [ ] Track the % of the class who has submitted
-- [ ] Run Comparison Button
+- [ ] [TN] Run Comparison Button (Button in place, no effect) 
 - [ ] [TN] Download All Submission Button
-- [ ] View Comparison Button
+- [ ] [TN] View Comparison Button (Button in place, no effect)
 
 ## Instructor Comparison Page
 
-- [ ] View a user submission
-- [ ] Show were it was similar to other submissions
-- [ ] Link to the other submission it was similar to
-- [ ] Possibly show a side by side of the two assignments
+- [ ] List submissions along left side, click on submission to show it
+- [ ] Comparision overview with things like % similar etc on the top of the RHS (2/3 of the screen)
+- [ ] View Submission Box on the bottom of the RHS (2/3 of the screen)
+    - [ ] Highlight similar code
+    - [ ] Link to the other submission it was similar to
+- [ ] Link to open in side by side view of similar assignments 
 
 ## Instructor Course Overview
-
 - [x] [TN] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer security level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
 - [x] [TN] Add the ability to remove students from the course
 - [x] [TN] Allow them to update the join code

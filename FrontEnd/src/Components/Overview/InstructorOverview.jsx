@@ -59,38 +59,41 @@ const InstructorOverview = () => {
       />
 
       {loadingStudents ? <h2 className="h2-default">Loading class list...</h2> : null}
-      <AssignmentList assignments={assignments} loadingAssignments={loadingAssignments}/>
-
-      <ClassList studentList={students} onRemoveRequest={handleRequestRemove} />
-
+      <div className="flex w-full space-x-5 flex-col md:flex-row">
+        <div className="flex-1 min-w-0">
+          <AssignmentList assignments={assignments} loadingAssignments={loadingAssignments}/>
+        </div>
+        <div className="flex-1 min-w-0">
+          <ClassList studentList={students} onRemoveRequest={handleRequestRemove} />
+        </div>
+      </div>
       <div className="box-wrapper">
         <h2 className="h2-large">Update Course Info</h2>
         <p className="text-xs">Leave this field blank when you update to turn off course enrollment.</p>
 
         <form onSubmit={handleSubmit} className="form-no-wrapper">
+          <label className="label-default">
+            <span className="span-default">Join Code</span>
+            <input
+              type="text"
+              name="joinCode"
+              value={formData.joinCode}
+              onChange={onChange}
+              className="field-default"
+            />
+          </label>
 
-        <label className="label-default">
-          <span className="span-default">Join Code</span>
-          <input
-            type="text"
-            name="joinCode"
-            value={formData.joinCode}
-            onChange={onChange}
-            className="field-default"
-          />
-        </label>
+          {error ? <p className="error">{error}</p> : null}
+          {submitted ? <p className="success">Join code updated!</p> : null}
 
-        {error ? <p className="error">{error}</p> : null}
-        {submitted ? <p className="success">Join code updated!</p> : null}
-
-        <button
-          type="submit"
-          disabled={updating}
-          className="submit-button"
-        >
-          {updating ? "Updating..." : "Update Join Code"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={updating}
+            className="submit-button"
+          >
+            {updating ? "Updating..." : "Update Join Code"}
+          </button>
+        </form>
       </div>
 
       <ConfirmPopup
@@ -105,8 +108,11 @@ const InstructorOverview = () => {
         cancelLabel="Cancel"
         onResponse={handleConfirmRemove}
       />
+        
+      
     </main>
   );
 };
 
 export default InstructorOverview;
+
