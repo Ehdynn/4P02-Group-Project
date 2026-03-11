@@ -1,4 +1,5 @@
-import { useParams } from "react-router-dom"
+import { useParams } from "react-router-dom";
+import {useState} from 'react';
 import ComparisonList from "../../Components/Comparison/ComparisonList";
 import ComparisonViewer from "../../Components/Comparison/ComparisonViewer";
 import ComparisonStats from "../../Components/Comparison/ComparisonStats";

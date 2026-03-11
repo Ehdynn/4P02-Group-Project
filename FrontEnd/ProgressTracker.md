@@ -3,15 +3,9 @@
 ## Instructors Assignment Page
 
 - [ ] Track the % of the class who has submitted
-<<<<<<< Updated upstream
 - [ ] [TN] Run Comparison Button (Button in place, no effect) 
 - [ ] [TN] Download All Submission Button
 - [ ] [TN] View Comparison Button (Button in place, no effect)
-=======
-- [ ] Run Comparison Button
-- [ ] [TN] Download All Submission Button (Add options like only downloading the latest submission for each student vs all submissions made)
-- [ ] View Comparison Button
->>>>>>> Stashed changes
 
 ## Instructor Comparison Page
 
@@ -68,3 +62,4 @@
 - [ ] Better assignment not found page
 - [x] [TN] Move the course update div to its own component and own hook files.
 - [ ] Add due dates to courses on overview
+- [ ] add a way to trigger a the comparison engine inside the create comparison edge function once the engine is complete.
