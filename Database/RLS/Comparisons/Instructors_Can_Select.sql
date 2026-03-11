@@ -13,4 +13,5 @@ using (
              FROM "Courses" c
              WHERE ((c.cid = a.course) AND (c.primary_instructor = auth.uid()))
            )))
+  ))
 );
