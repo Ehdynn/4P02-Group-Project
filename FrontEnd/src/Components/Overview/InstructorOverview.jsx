@@ -3,7 +3,7 @@ import useUser from "../../context/useUser";
 import ClassList from "./ClassList";
 import CourseList from "./CourseList";
 import { removeStudent } from "../../utils/DatabaseInteractions/Instructor/removeStudent";
-import ConfirmPopup from "../common/ConfirmPopup";
+import ConfirmPopup from "../Common/ConfirmPopup";
 import AssignmentList from "./AssignmentList";
 import { useInstructorCourses } from "./hooks/useInstructorCourses";
 import { useInstructorAssignments } from "./hooks/useInstructorAssignments";
