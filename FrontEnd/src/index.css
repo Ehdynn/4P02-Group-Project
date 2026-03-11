@@ -19,6 +19,9 @@
     .outer-container{
         @apply mx-auto w-full max-w-4xl px-4 py-8;
     }
+    .outer-container-fw{
+        @apply mx-auto w-full px-4 py-8;
+    }
     .submit-button{
         @apply rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 w-full disabled:cursor-not-allowed disabled:opacity-70;
     }
