@@ -9,12 +9,12 @@
 
 ## Instructor Comparison Page
 
-- [ ] List submissions along left side, click on submission to show it
-- [ ] Comparision overview with things like % similar etc on the top of the RHS (2/3 of the screen)
-- [ ] View Submission Box on the bottom of the RHS (2/3 of the screen)
-    - [ ] Highlight similar code
-    - [ ] Link to the other submission it was similar to
-- [ ] Link to open in side by side view of similar assignments 
+- [ ] [L]List submissions along left side, click on submission to show it
+- [ ] [L]Comparision overview with things like % similar etc on the top of the RHS (2/3 of the screen)
+- [ ] [L]View Submission Box on the bottom of the RHS (2/3 of the screen)
+    - [ ] [L]Highlight similar code
+    - [ ] [L]Link to the other submission it was similar to
+- [ ] [L]Link to open in side by side view of similar assignments 
 
 ## Instructor Course Overview
 - [x] [TN] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer security level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
