@@ -12,15 +12,30 @@ const AssignmentList = ({ assignments, loadingAssignments }) => {
         {!loadingAssignments && assignments.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {assignments.map((assignment) => (
-              <li key={assignment.id}>
+              
+              <li className="border rounded-lg p-4 hover:bg-blue-50 transition cursor-pointer" key={assignment.id}>
                 <Link
                   to={`/Assignment/${assignment.id}`}
                   className="text-slate-900 underline hover:text-slate-700"
                 >
                   {assignment.name ?? `Assignment ${assignment.id}`}
                 </Link>
+                
+                <p className="text-sm text-gray-600 mt-1">
+                  Due: {new Date(assignment.due_date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZoneName: "short"
+                  })}
+                </p>
+                
               </li>
-            ))}
+              
+          ))}
           </ul>
         ) : null}
       </section>
