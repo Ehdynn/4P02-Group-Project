@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import useUser from "../../context/useUser";
-import AssignmentItem from "../Components/Assignment/AssignmentItem.jsx";
+import AssignmentItem from "../../Components/Assignment/AssignmentItem.jsx";
 const AssignmentList = ({ assignments, loadingAssignments }) => {
   const now = new Date();
   return (
@@ -23,7 +23,7 @@ const AssignmentList = ({ assignments, loadingAssignments }) => {
             .map((assignment) => (
               <AssignmentItem key={assignment.id} assignment={assignment} />
             ))}
-          <h2 className="h2-large">Completed</h2>
+          <h2 className="h2-large">Past Due</h2>
           {(assignments || [])
             .filter((assignment) => new Date(assignment.due_date) < now)
             .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))

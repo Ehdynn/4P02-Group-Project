@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import useUser from "../../context/useUser";
-import { useLoadStudentSubmissions } from "../Components/Overview/hooks/useLoadStudentSubmissions";
+import { useState } from "react";
+import { useLoadStudentSubmissions } from "./hooks/useLoadStudentSubmissions";
 
 function getDueStatus(dueDate) {
   const now = new Date();
@@ -12,25 +13,38 @@ function getDueStatus(dueDate) {
   } else if (diffDays <= 3) {
     return {
       text: "(" + diffDays + " days left" + ")" + " - Due soon",
-      className: "text-red-600 font-semibold",
+      className: "text-red-600 font-semibold"
     };
   } else {
     return {
       text: "(" + diffDays + " days left" + ")",
-      color: "text-gray-600",
+      className: "text-gray-600"
     };
   }
 }
-function subStatus(aid, user){
-  
+function subStatus(aid){
+  const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showUploader, setShowUploader] = useState(false);
   const {submissions} = useLoadStudentSubmissions(aid, user.id, setLoading, setError, setShowUploader);
-  if(submissions.length > 0){
-    return "Submitted";
+  
+  try{
+    if(submissions.length !== 0){
+        return {
+            text: "Submitted",
+            className: "text-right text-green-600"
+        };
+    }
+    else{
+        return{
+            text: "Incomplete",
+            className: "text-right text-red-600"
+        };
+    }
+  } catch(err){
+    return "Incomplete";
   }
-  return "Incomplete"
 }
 function AssignmentItem({ assignment }) {
   return (
@@ -55,10 +69,20 @@ function AssignmentItem({ assignment }) {
         })}
       </p>
 
-      <p className={getDueStatus(assignment.due_date).className}>
+      <div className="flex justify-between items-center">
+        <p className={getDueStatus(assignment.due_date).className}>
         {getDueStatus(assignment.due_date).text}
-      </p>
+        </p>
+        <div className="flex space-x-2">
+            <p className="text-right font-semibold">Submission Status:</p>
+            <p className={subStatus(assignment.id).className}>{subStatus(assignment.id).text}</p>    
+        </div>
+         
+      </div>      
+      
+      
     </li>
+    
   );
 }
 
