@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate} from "react-router-dom";
 
 import SubmissionList from "../Submissions/SubmissionList";
@@ -7,11 +7,14 @@ import { useUpdateAssignment } from "./hooks/useUpdateAssignment";
 import AssignmentDetails from "./AssignmentDetails";
 import UpdateForm from "./UpdateForm";
 import PageNotFound from "../../Pages/PageNotFound";
+import { checkForComparison } from "../../utils/DatabaseInteractions/Instructor/checkForComparison";
+import { createComparison } from "../../utils/DatabaseInteractions/Instructor/createComparison";
 
 const InstructorAssignment = () => {
   const navigate = useNavigate();
   const { aid } = useParams();
   const [comparisonAvailable, setComparisonAvailable] = useState(true);
+  const [comparisonError, setComparisonError] = useState("");
   const [formData, setFormData] = useState({
         name: "",
         dueDate: "",
@@ -21,6 +24,41 @@ const InstructorAssignment = () => {
   const {details, setDetails, loading, error, notFound} = useLoadInstructorAssignment(aid, setFormData);
   const {onChange, handleSubmit, submitted, loadingUpdate, updateError} = useUpdateAssignment(aid, formData, setFormData, setDetails);
   
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkComparisonStatus() {
+      try {
+        const data = await checkForComparison(aid);
+        if (!cancelled) {
+          setComparisonAvailable(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : "Failed to check comparison status.";
+          setComparisonError(message);
+        }
+      }
+    }
+
+    checkComparisonStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [aid]);
+
+  const handleCreateComparison = async () => {
+    try {
+      setComparisonError("");
+      await createComparison(aid);
+      setComparisonAvailable(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create comparison.";
+      setComparisonError(message);
+    }
+  };
+
+
   if (loading) {return <div>Loading assignment...</div>;}
 
   if (error && notFound) { return <PageNotFound />; }
@@ -41,12 +79,16 @@ const InstructorAssignment = () => {
         <div className="flex-1 min-w-0">
           <div className="box-wrapper">
           <h2 className="h2-large">Similarity Comparison</h2>
-          <button className="submit-button">{comparisonAvailable ? "Run Similarity Comparision" : "Run Similarity Comparision Again"}</button>
+          {comparisonError ? <p className="error">{comparisonError}</p> : null}
+          <button className="submit-button"
+                  onClick={handleCreateComparison}>
+            {!comparisonAvailable ? "Run Similarity Comparision" : "Run Similarity Comparision Again"}
+          </button>
           {comparisonAvailable ? 
             <button className="submit-button"
                     onClick={() => navigate(`/Comparison/${aid}`)}
             >View Results</button>
-          : null};
+          : null}
           
       </div>
         </div>

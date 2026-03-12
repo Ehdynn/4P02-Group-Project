@@ -3,26 +3,21 @@
 ## Instructors Assignment Page
 
 - [ ] Track the % of the class who has submitted
-<<<<<<< Updated upstream
-- [ ] [TN] Run Comparison Button (Button in place, no effect) 
+- [x] [TN] Run Comparison Button
 - [ ] [TN] Download All Submission Button
-- [ ] [TN] View Comparison Button (Button in place, no effect)
-=======
-- [ ] Run Comparison Button
-- [ ] [TN] Download All Submission Button (Add options like only downloading the latest submission for each student vs all submissions made)
-- [ ] View Comparison Button
->>>>>>> Stashed changes
+- [ ] [TN] View Comparison Button (Update button to say view results or view "???" depending on if it is ready or pending).
 
 ## Instructor Comparison Page
 
-- [ ] [L]List submissions along left side, click on submission to show it
-- [ ] [L]Comparision overview with things like % similar etc on the top of the RHS (2/3 of the screen)
-- [ ] [L]View Submission Box on the bottom of the RHS (2/3 of the screen)
-    - [ ] [L]Highlight similar code
-    - [ ] [L]Link to the other submission it was similar to
-- [ ] [L]Link to open in side by side view of similar assignments 
+- [ ] [TN]List submissions along left side, click on submission to show it
+- [ ] [TN]Comparision overview with things like % similar etc on the top of the RHS (2/3 of the screen)
+- [ ] [TN]View Submission Box on the bottom of the RHS (2/3 of the screen)
+    - [ ] [TN]Highlight similar code
+    - [ ] [TN]Link to the other submission it was similar to
+- [ ] [TN]Link to open in side by side view of similar assignments
 
 ## Instructor Course Overview
+
 - [x] [TN] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer security level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
 - [x] [TN] Add the ability to remove students from the course
 - [x] [TN] Allow them to update the join code
@@ -68,3 +63,4 @@
 - [ ] Better assignment not found page
 - [x] [TN] Move the course update div to its own component and own hook files.
 - [ ] Add due dates to courses on overview
+- [ ] add a way to trigger a the comparison engine inside the create comparison edge function once the engine is complete.
