@@ -1,7 +1,11 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /// Sequences of similar tokens that will be used to calculate the similarity score
 public class Sequence {
     private int start;
     private int length;
+    private List<Token> tokens;
 
     /** Sequence Constructor
      *
@@ -11,6 +15,7 @@ public class Sequence {
     Sequence(int start, int len) {
         this.start = start;
         this.length = len;
+        this.tokens = new ArrayList<>();
     }
 
     /** First token index
@@ -27,6 +32,22 @@ public class Sequence {
      */
     public int getLength() {
         return length;
+    }
+
+    /** Token list
+     *
+     * @return  a list of all tokens included in the sequence
+     */
+    public List<Token> getTokens() {
+        return tokens;
+    }
+
+    /** Adds a new token to this sequence
+     *
+     * @param t a token to be added to this sequence
+     */
+    public void addToken(Token t){
+        tokens.add(t);
     }
 
     /** Prints the starting index and length of sequence

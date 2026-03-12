@@ -23,6 +23,7 @@ public class StringTiling {
             List<Sequence> subMatches = new ArrayList<>();
             //array for keeping track of sequence starts, so two sequences of the same start and length aren't reused
             List<Integer> matchStarts = new ArrayList<>();
+            List<Token> tempTokens = new ArrayList<>();
             int lcs = minLength;
 
             for (int i = 0; i < A.length; i++) {
@@ -36,8 +37,9 @@ public class StringTiling {
                     while (i + n < A.length &&
                             j + n < B.length &&
                             !marked[i + n] &&
-                            A[i + n].compareTo(B[j + n]) == 1) {
+                            A[i + n].compareTo(B[j + n]) >= 0) {
                         n++;
+                        tempTokens.add(A[i + n]);
                     }
 
                     // Adds largest sequence(s) to matches list
@@ -45,12 +47,22 @@ public class StringTiling {
                         subMatches.clear();
                         matchStarts.clear();
                         lcs = n;
-                        subMatches.add(new Sequence(i, n));
+                        Sequence newSequence = new Sequence(i, n);
+                        for(Token t: tempTokens){
+                            newSequence.addToken(t);
+                        }
+                        subMatches.add(newSequence);
                         matchStarts.add(i);
                     } else if(n == lcs && !matchStarts.contains(i)){
-                        subMatches.add(new Sequence(i, n));
+                        Sequence newSequence = new Sequence(i, n);
+                        for(Token t: tempTokens){
+                            newSequence.addToken(t);
+                        }
+                        subMatches.add(newSequence);
                         matchStarts.add(i);
                     }
+
+                    tempTokens.clear();
                 }
             }
 
