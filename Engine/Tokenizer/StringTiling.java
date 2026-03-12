@@ -6,12 +6,11 @@ public class StringTiling {
     /** Takes in two different lists of tokens, outputs a list containing sequences of identical tokens greater than a certain length.
      *
      *  TODO make compatible with list of submissions rather than single list of tokens
-     *  TODO make compatible with plagiarismValue found in token class
      *
      *  Based on the Greedy-String-Tiling algorithm described on Louis Tarvin's linked website: https://louistarvin.uk/projects/plagiarism/
      *  Modified to only return the similar sequences of the first submission being compared.
      *
-     * @Version 1.1 (Feb 20th, 2026)
+     * @Version 1.2 (Mar 12th, 2026)
      */
     public static List<Sequence> tile(Token[] A, Token[] B, int minLength){
         List<Sequence> matches = new ArrayList<>();
@@ -39,6 +38,13 @@ public class StringTiling {
                             !marked[i + n] &&
                             A[i + n].compareTo(B[j + n]) >= 0) {
                         n++;
+                        if(A[i + n].compareTo(B[j + n]) == 1){
+                            //if token has identical type and value, assign full plagiarism value
+                            A[i + n].setPlagiarismValue(1);
+                        } else if (A[i + n].compareTo(B[j + n]) == 0){
+                            //if token has identical type but different value, assign partial plagiarism value
+                            A[i + n].setPlagiarismValue(0.9);
+                        }
                         tempTokens.add(A[i + n]);
                     }
 
