@@ -9,12 +9,17 @@
 
 ## Instructor Comparison Page
 
-- [ ] [TN]List submissions along left side, click on submission to show it
-- [ ] [TN]Comparision overview with things like % similar etc on the top of the RHS (2/3 of the screen)
-- [ ] [TN]View Submission Box on the bottom of the RHS (2/3 of the screen)
-    - [ ] [TN]Highlight similar code
-    - [ ] [TN]Link to the other submission it was similar to
-- [ ] [TN]Link to open in side by side view of similar assignments
+- [TN] [TN] Comparisons listed along the left side (1/4 ish of the screen).
+- [TN] [TN] Stats about the selected comparison at the top of the RHS (3/4 ish of the screen)
+- [ ] [TN] Comparison Details underneath stats with student list to compare submissions (3/4 ish of the screen)
+    - [ ] [TN] Modal that appears when you click on a student to see their individual comparison.
+        - [ ] [TN]Highlight similar code
+        - [ ] [TN]Link to the other submission it was similar to
+        - [ ] [TN]Link to open in side by side view of similar assignments
+
+## Instructor Side By Side Comparison
+
+- [ ] [TN] Show comparison between two students submissions side by side
 
 ## Instructor Course Overview
 
