@@ -56,7 +56,6 @@
 - [ ] Fix reload issue
 - [ ] Fix error msg when student tries to enroll in the same course twice, also suppress the console error
 - [ ] Better assignment not found page
-- [ ] Add due dates to courses on overview
 - [ ] add a way to trigger a the comparison engine inside the create comparison edge function once the engine is complete.
 - [ ] Create demo accounts
 
@@ -73,3 +72,4 @@
 - [x] [TN] Stop students from submitting after the due date, or add an option for the instructor to allow submissions after the due date.
 - [x] [L] Restrict file types for upload
 - [x] [TN] Move the course update div to its own component and own hook files.
+- [x] Add due dates to courses on overview
