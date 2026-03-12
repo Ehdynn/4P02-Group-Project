@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import ComparisonList from "../../Components/Comparison/ComparisonList";
 import ComparisonViewer from "../../Components/Comparison/ComparisonViewer";
 import ComparisonStats from "../../Components/Comparison/ComparisonStats";
-import { getComparisonStudents } from "../../utils/DatabaseInteractions/Instructor/getComparisonStudents";
+import { getComparisons } from "../../utils/DatabaseInteractions/Instructor/getComparisons";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
 import { getEnrolled } from "../../utils/DatabaseInteractions/Instructor/getEnrolled";
 import useUser from "../../context/useUser";
@@ -11,8 +11,8 @@ import useUser from "../../context/useUser";
 const Comparison = () => {
   const { aid } = useParams();
   const { user } = useUser();
-  // Comparison list is an array of { suid, student_name }.
-  const [comparisonList, setComparisonList] = useState([]);
+  const [comparisons, setComparisons] = useState([]);
+  const [selectedComparisonId, setSelectedComparisonId] = useState(null);
   const [assignmentName, setAssignmentName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,12 +20,12 @@ const Comparison = () => {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadComparisonStudents() {
+    async function loadComparisonData() {
       try {
         setLoading(true);
         setError("");
-        const [students, assignmentDetails] = await Promise.all([
-          getComparisonStudents(aid),
+        const [comparisonRows, assignmentDetails] = await Promise.all([
+          getComparisons(aid),
           getAssignmentDetails(aid),
         ]);
         const resolvedAssignmentName = assignmentDetails?.name?.trim?.() ?? "";
@@ -37,24 +37,39 @@ const Comparison = () => {
         const nameBySuid = new Map();
         enrolledRows.forEach((student) => {
           if (student?.suid) {
-            nameBySuid.set(student.suid, student?.student_name?.trim() || "Unknown Student");
+            nameBySuid.set(String(student.suid), student?.student_name?.trim() || "Unknown Student");
           }
         });
 
-        const resolvedStudents = students.map((suid) => ({
-          suid,
-          student_name: nameBySuid.get(suid) ?? suid,
-        }));
+        const resolvedComparisons = comparisonRows.map((comparison) => {
+          const students = Array.isArray(comparison.students_compared)
+            ? comparison.students_compared
+            : [];
+
+          return {
+            ...comparison,
+            students,
+            studentsWithNames: students.map((suid) => {
+              const normalizedSuid = String(suid);
+              return {
+                suid: normalizedSuid,
+                student_name: nameBySuid.get(normalizedSuid) ?? normalizedSuid,
+              };
+            }),
+          };
+        });
 
         if (!cancelled) {
           setAssignmentName(resolvedAssignmentName);
-          setComparisonList(resolvedStudents);
+          setComparisons(resolvedComparisons);
+          setSelectedComparisonId(resolvedComparisons[0]?.id ?? null);
         }
       } catch (err) {
         if (!cancelled) {
           setAssignmentName("");
-          setComparisonList([]);
-          setError(err instanceof Error ? err.message : "Failed to load comparison list.");
+          setComparisons([]);
+          setSelectedComparisonId(null);
+          setError(err instanceof Error ? err.message : "Failed to load comparison data.");
         }
       } finally {
         if (!cancelled) {
@@ -63,11 +78,15 @@ const Comparison = () => {
       }
     }
 
-    loadComparisonStudents();
+    loadComparisonData();
     return () => {
       cancelled = true;
     };
   }, [aid, user?.id]);
+
+  const selectedComparison = comparisons.find((comparison) => comparison.id === selectedComparisonId)
+    ?? comparisons[0]
+    ?? null;
 
   
   return (
@@ -78,11 +97,16 @@ const Comparison = () => {
       {error ? <p className="error text-center">{error}</p> : null}
       <div className="flex w-full space-x-5 flex-col md:flex-row">
         <div className="flex-1 min-w-0">
-          <ComparisonList comparisonList={comparisonList} loading={loading} />
+          <ComparisonList
+            comparisons={comparisons}
+            loading={loading}
+            selectedComparisonId={selectedComparison?.id ?? null}
+            onSelectComparison={setSelectedComparisonId}
+          />
         </div>
         <div className="flex-4 min-w-0">
-          <ComparisonStats />
-          <ComparisonViewer />
+          <ComparisonStats comparisons={comparisons} loading={loading} />
+          <ComparisonViewer comparison={selectedComparison} loading={loading} />
         </div>
       </div>
     </main>

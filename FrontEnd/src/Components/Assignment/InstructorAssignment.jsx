@@ -82,7 +82,7 @@ const InstructorAssignment = () => {
           {comparisonError ? <p className="error">{comparisonError}</p> : null}
           <button className="submit-button"
                   onClick={handleCreateComparison}>
-            {!comparisonAvailable ? "Run Similarity Comparision" : "Run Similarity Comparision Again"}
+            {!comparisonAvailable ? "Run Similarity Comparison" : "Run Similarity Comparison Again"}
           </button>
           {comparisonAvailable ? 
             <button className="submit-button"
