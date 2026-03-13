@@ -14,6 +14,7 @@ const SubmissionList = ({ aid, courseId }) => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [count, setCount] = useState(0);
 
   const buildNameBySuid = (enrolledStudents) => {
     const nameBySuid = new Map();
@@ -26,10 +27,23 @@ const SubmissionList = ({ aid, courseId }) => {
 
     return nameBySuid;
   };
+  const percentSubmitted = (submissionList) => {
+    const seenStudents = new Set();
+    
+    for (const submission of submissionList) {
+      if (submission.student_name) {
+        seenStudents.add(submission.student_name);
+      }
+    }
 
+    return {
+      text: seenStudents.size+"/"+count+" Students have submitted ("+(seenStudents.size/count*100)+"%)",
+      className: "text-xs"
+    }
+  }
   useEffect(() => {
     let cancelled = false;
-
+    
     async function loadSubmissions() {
       if (!aid) {
         setSubmissions([]);
@@ -44,7 +58,7 @@ const SubmissionList = ({ aid, courseId }) => {
         const enrolledRows = courseId && user?.id ? await getEnrolled(courseId, user.id) : [];
         const studentNameByUid = buildNameBySuid(enrolledRows);
         const groupedBySuid = new Map();
-
+        setCount(enrolledRows.length)  
         submissionRows.forEach((submission) => {
           const uid = submission.suid;
           const existing = groupedBySuid.get(uid) ?? {
@@ -113,7 +127,7 @@ const SubmissionList = ({ aid, courseId }) => {
     }
   };
 
-
+  
   if (loading) {
     return (
       <div className="box-wrapper">
@@ -124,8 +138,12 @@ const SubmissionList = ({ aid, courseId }) => {
   }
 
   return (
+    
     <div className="box-wrapper">
+      
       <h1 className="h1-default">Submissions</h1>
+      <p>{percentSubmitted(submissions).text}</p>
+      
       {error ? <p className="error">{error}</p> : null}
       {submissions.length === 0 ? (
         <p className="text-sm text-slate-600">No submissions yet.</p>
