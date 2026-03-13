@@ -2,7 +2,7 @@
 
 ## Instructors Assignment Page
 
-- [ ] Track the % of the class who has submitted
+- [x] Track the % of the class who has submitted
 - [x] [TN] Run Comparison Button
 - [ ] [TN] Download All Submission Button
 - [ ] [TN] View Comparison Button (Update button to say view results or view "???" depending on if it is ready or pending).
