@@ -13,12 +13,12 @@ function getDueStatus(dueDate) {
   } else if (diffDays <= 3) {
     return {
       text: "(" + diffDays + " days left" + ")" + " - Due soon",
-      className: "text-red-600 font-semibold"
+      className: "text-red-600 font-semibold uppercase"
     };
   } else {
     return {
       text: "(" + diffDays + " days left" + ")",
-      className: "text-gray-600"
+      className: "text-black-600"
     };
   }
 }
@@ -33,13 +33,13 @@ function subStatus(aid){
     if(submissions.length !== 0){
         return {
             text: "Submitted",
-            className: "text-right text-green-600"
+            className: "text-green-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border-2 border-green-600 min-w-[100px] text-center"
         };
     }
     else{
         return{
             text: "Incomplete",
-            className: "text-right text-red-600"
+            className: "bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm min-w-[100px] text-center"
         };
     }
   } catch(err){
@@ -48,10 +48,10 @@ function subStatus(aid){
 }
 function AssignmentItem({ assignment }) {
   return (
-    <li className="border rounded-lg p-4 hover:bg-blue-50 transition cursor-pointer">
+    <li className="border border-slate-100 rounded-xl  py-6 px-5 hover:bg-blue-50 transition cursor-pointer bg-white shadow-sm border mb-4">
       <Link
         to={`/Assignment/${assignment.id}`}
-        className="text-black-900 underline hover:text-slate-700 font-bold"
+        className="text-lg text-slate-900 underline hover:text-slate-700 font-bold"
       >
         {assignment.name ?? `Assignment ${assignment.id}`}
       </Link>
@@ -73,9 +73,9 @@ function AssignmentItem({ assignment }) {
         <p className={getDueStatus(assignment.due_date).className}>
         {getDueStatus(assignment.due_date).text}
         </p>
-        <div className="flex space-x-2">
-            <p className="text-right font-semibold">Submission Status:</p>
-            <p className={subStatus(assignment.id).className}>{subStatus(assignment.id).text}</p>    
+        <div className="flex space-x-2 items-center leading-none">
+            <p className="text-[14px] uppercase tracking-widest text-slate-400 font-bold leading-none relative -top-[1px]">Submission Status:</p>
+            <span className={subStatus(assignment.id).className}>{subStatus(assignment.id).text}</span>    
         </div>
          
       </div>      

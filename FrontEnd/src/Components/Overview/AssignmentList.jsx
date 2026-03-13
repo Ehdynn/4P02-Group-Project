@@ -5,7 +5,7 @@ const AssignmentList = ({ assignments, loadingAssignments }) => {
   const now = new Date();
   return (
     <section className="box-wrapper">
-      <h2 className="h2-large">Assignments</h2>
+      <h1 className="h1-default">Assignments</h1>
 
       {loadingAssignments ? (
         <h2 className="h2-default">Loading assignments...</h2>
