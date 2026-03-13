@@ -28,6 +28,7 @@ const JoinCourse = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
     const { joinCode } = formData;
 
     if (!joinCode) {
@@ -58,7 +59,7 @@ const JoinCourse = ({ isOpen, onClose }) => {
     const { data: invokeData, error: invokeError } =
       await supabase.functions.invoke("addStudentToCourse", {
         body: {
-          join_code: joinCode.trim(),
+          join_code: joinCode.trim().toUpperCase(),
         },
       });
 
@@ -68,6 +69,8 @@ const JoinCourse = ({ isOpen, onClose }) => {
       const isInvalidCourseCode = invokeError.message?.includes(
         "Cannot coerce the result to a single JSON object"
       );
+      const isDuplicateCourse = invokeError.message?.includes('Edge Function returned a non-2xx status code');
+      console.log(invokeError);
       let errorMessage = isInvalidCourseCode
         ? "Invalid course code."
         : invokeError.message || "Unable to join course.";
@@ -78,6 +81,9 @@ const JoinCourse = ({ isOpen, onClose }) => {
         } catch {
           // Keep default message if response is not JSON.
         }
+      }
+      if(isDuplicateCourse){
+        errorMessage = "You are already enrolled in this course"
       }
       setError(errorMessage);
       setSubmitted(false);
