@@ -128,7 +128,7 @@ const JoinCourse = ({ isOpen, onClose }) => {
               value={formData.joinCode}
               onChange={onChange}
               placeholder="Enter join code"
-              className="field-default border-slate-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 shadow-sm"
+              className="field-default uppercase border-slate-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 shadow-sm"
             />
           </label>
           {error ? <p className="error">{error}</p> : null}
