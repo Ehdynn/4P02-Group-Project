@@ -1,10 +1,7 @@
 import { useState } from "react";
 import supabase from "../../utils/DatabaseInteractions/supabase";
 
-const JoinCourse = ({
-  isOpen,
-  onClose,
-}) => {
+const JoinCourse = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     joinCode: "",
   });
@@ -21,7 +18,6 @@ const JoinCourse = ({
       onClose();
     }
   };
-
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -59,17 +55,22 @@ const JoinCourse = ({
       return;
     }
 
-    const { data: invokeData, error: invokeError } = await supabase.functions.invoke("addStudentToCourse", {
-      body: {
-        join_code: joinCode.trim(),
-      },
-    });
+    const { data: invokeData, error: invokeError } =
+      await supabase.functions.invoke("addStudentToCourse", {
+        body: {
+          join_code: joinCode.trim(),
+        },
+      });
 
     setLoading(false);
 
-  if (invokeError) {
-      const isInvalidCourseCode = invokeError.message?.includes("Cannot coerce the result to a single JSON object");
-      let errorMessage = isInvalidCourseCode? "Invalid course code.": invokeError.message || "Unable to join course.";
+    if (invokeError) {
+      const isInvalidCourseCode = invokeError.message?.includes(
+        "Cannot coerce the result to a single JSON object"
+      );
+      let errorMessage = isInvalidCourseCode
+        ? "Invalid course code."
+        : invokeError.message || "Unable to join course.";
       if (invokeError.context && !isInvalidCourseCode) {
         try {
           const payload = await invokeError.context.json();
@@ -96,18 +97,29 @@ const JoinCourse = ({
       onMouseDown={handleClose}
     >
       <div onMouseDown={(event) => event.stopPropagation()}>
-        
         <form onSubmit={handleSubmit} className="form-default">
-            <div className="flex items-center justify-end mb-3">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="text-gray-600 hover:text-gray-900"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
+          <div className="flex items-center justify-end mb-3">
+          
+            <h2 className="text-xl font-bold text-slate-900 text-center">
+              Join a Course!
+            </h2>
+            {/*This is really Stupid im sorry lol*/}
+            <h2 className="text-xl font-bold text-white text-center">
+              &nbsp;&nbsp;
+            </h2>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-slate-100 text-slate-400 flex justify-end"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            
+            
+              
+          </div>
+          
           <label className="label-default">
             {/*<span className="span-default">Join Code</span>*/}
             <input
@@ -116,17 +128,13 @@ const JoinCourse = ({
               value={formData.joinCode}
               onChange={onChange}
               placeholder="Enter join code"
-              className="field-default"
+              className="field-default border-slate-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 shadow-sm"
             />
           </label>
           {error ? <p className="error">{error}</p> : null}
           {submitted ? <p className="success">Course Joined!</p> : null}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="submit-button"
-          >
+          <button type="submit" disabled={loading} className="submit-button">
             {loading ? "Joining..." : "Join Course"}
           </button>
         </form>
