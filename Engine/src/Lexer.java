@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  *  Modified to support comments, Strings, and non-Java languages
  *  Modified to make Keywords not break the lexer if not the first keyword in a list
  *
- * @Version 1.2.0 (March 8th, 2026)
+ * @Version 1.2.1 (March 8th, 2026)
  */
 public class Lexer {
     private String input;
@@ -103,7 +103,7 @@ public class Lexer {
                 "/\\*[a-zA-Z0-9_]*",        // Multi-Line Comments
                 "\\*/",                     // Comment End
                 "[+/*=<>!?&|^~:%@-]",       // Operators
-                "[.,;(){}\"']",             // Punctuation
+                "[.,;()\\[\\]{}\"']",             // Punctuation
         };
 
         TokenType[] tokenTypes = {
@@ -223,6 +223,7 @@ public class Lexer {
 
     /**Rewrites the type of any tokens that fit within the requirements to be a keyword token.
      * The token must not be part of a string token, and must fit within the language appropriate keyword regex.
+     * Also identifies and corrects any occurrences of null in C and Java, and converts said tokens into Literals.
      *
      * @param tokens    List of tokens to modify
      * @return  updated List
@@ -240,7 +241,12 @@ public class Lexer {
 
 
         for(Token token : tokens){
-            if(token.getType() == TokenType.IDENTIFIER && token.getValue().matches(keywords)) token.updateType(TokenType.KEYWORD);
+            if(token.getType() == TokenType.IDENTIFIER){
+                String s = token.getValue();
+                if(s.matches(keywords))token.updateType(TokenType.KEYWORD);
+                else if (s.equals("null") && (language == Language.Java || language == Language.C)) token.updateType(TokenType.LITERAL);
+            }
+
         }
         return tokens;
     }
