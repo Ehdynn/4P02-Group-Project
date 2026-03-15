@@ -111,7 +111,7 @@ const JoinCourse = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={handleClose}
-              className="text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-slate-100 text-slate-400 flex justify-end"
+              className="hover:text-gray-900 p-2 rounded-full hover:bg-slate-100 text-slate-400 flex justify-end"
               aria-label="Close"
             >
               ✕
