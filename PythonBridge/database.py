@@ -1,15 +1,20 @@
 import json
 import os
 from email.policy import default
+from pathlib import Path
+from dotenv import load_dotenv
 
 from supabase import create_client, Client
 from supabase.client import ClientOptions
 import datetime
 import uuid
 
+env_path = Path(__file__).with_name(".env.local")
+load_dotenv(env_path)
 
-url = "https://siozhcgesehtdelzuwct.supabase.co"
-key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpb3poY2dlc2VodGRlbHp1d2N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MjgzNDQsImV4cCI6MjA4NjUwNDM0NH0.s8oZ4FO9LwpC2k2BVW_KgWFbVlknxM0fc9pzIdvX5XI"
+url = os.getenv("URL")
+key = os.getenv("SECRET_KEY")
+
 print(url + " " + str(key))
 supabase: Client = create_client(
     url,
@@ -36,4 +41,4 @@ response = (
     .execute()
 )
 
-#print(response)
+print(response)
