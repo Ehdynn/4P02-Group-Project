@@ -1,5 +1,5 @@
 import useUser from "../../context/useUser";
-import AssignmentItem from "../../Components/Assignment/AssignmentItem.jsx";
+import AssignmentItem from "./AssignmentItem.jsx";
 
 const AssignmentList = ({ assignments, loadingAssignments }) => {
   const { isProfessor, roleReady } = useUser();
