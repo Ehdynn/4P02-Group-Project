@@ -48,7 +48,7 @@ function subStatus(aid){
 }
 function AssignmentItem({ assignment }) {
   return (
-    <li className="border border-slate-100 rounded-xl  py-6 px-5 hover:bg-blue-50 transition cursor-pointer bg-white shadow-sm border mb-4">
+    <li className="border-slate-100 rounded-xl  py-6 px-5 hover:bg-blue-50 transition cursor-pointer bg-white shadow-sm border mb-4">
       <Link
         to={`/Assignment/${assignment.id}`}
         className="text-lg text-slate-900 underline hover:text-slate-700 font-bold"
@@ -74,7 +74,7 @@ function AssignmentItem({ assignment }) {
         {getDueStatus(assignment.due_date).text}
         </p>
         <div className="flex space-x-2 items-center leading-none">
-            <p className="text-[14px] uppercase tracking-widest text-slate-400 font-bold leading-none relative -top-[1px]">Submission Status:</p>
+            <p className="text-[14px] uppercase tracking-widest text-slate-400 font-bold leading-none relative top[1px]">Submission Status:</p>
             <span className={subStatus(assignment.id).className}>{subStatus(assignment.id).text}</span>    
         </div>
          
