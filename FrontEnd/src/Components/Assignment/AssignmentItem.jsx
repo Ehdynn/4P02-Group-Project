@@ -76,7 +76,7 @@ function StudentSubmissionStatus({ assignmentId, userId }) {
 
   return (
     <div className="flex space-x-2 items-center leading-none">
-      <p className="text-[14px] uppercase tracking-widest text-slate-400 font-bold leading-none relative top-[1px]">
+      <p className="text-[14px] uppercase tracking-widest text-slate-400 font-bold leading-none relative top-px">
         Submission Status:
       </p>
       <span className={submissionStatus.className}>{submissionStatus.text}</span>
