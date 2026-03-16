@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /** Code to test the Lexer works as intended. Modify as needed.
@@ -14,12 +16,23 @@ public class Tester {
                 "    // Your program begins with a call to main()\n" +
                 "    public static void main(String args[])\n" +
                 "    {\n" +
-                "        // Prints \"Hello, World\" to the terminal window.\n" +
-                "        System.out.println(\"Hello, World\");\n" +
+                "        // Prints \"Hello test\" to the terminal window.\n" +
+                "        System.out.println(\"Hello 你 World\");\n" +
                 "    }\n" +
                 "}";
 
-        Lexer lexer = new Lexer(helloWorld);
+        SourceCode sourceCode;
+
+        try{
+            String sourceFile = "Engine/testFiles/labE8.cpp";
+            FileHandler f = new FileHandler();
+            File file = new File(sourceFile);
+            sourceCode = f.getSourceCode(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Lexer lexer = new Lexer(sourceCode);
         List<Token> tokens = lexer.tokenize();
         List<Token> copy = lexer.tokenize();
         //System.out.println(new ComparisonEngine().compare(code, code));
