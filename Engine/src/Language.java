@@ -4,5 +4,6 @@
 public enum Language {
     Java,
     C,
+    CPP,
     Python
 }

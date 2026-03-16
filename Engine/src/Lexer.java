@@ -21,12 +21,19 @@ public class Lexer {
     FiniteStateMachine currentState;
     private static final String JAVA_KEYWORDS = "_|abstract|assert|boolean|break|byte|case|catch|char|class|continue|default|do(uble)?|else|enum|extends|final(ly)?|float|for|if|implements|import|instanceof|int(erface)?|long|native|new|package|private|protected|public|return|short|static|super|switch|synchronized|this|throw|throws|transient|try|void|volatile|while|const|goto|strictfp";
     private static final String C_KEYWORDS = "auto|break|case|char|const|continue|default|do(uble)?|else|enum|extern|float|for|goto|if|int|long|register|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while|inline|restrict|_(Bool|Complex|Imaginary_Alignas|Alignof|Atomic|Generic|NoReturn|Static_assert|Thread_local|BitInt|Decimal(32|64|128))|align(as|of)|bool|constexpr|false|nullptr|static_assert|thread_local|true|typeof(_unequal)?";
+    private static final String CPP_KEYWORDS = "and(_eq)?|auto|bit(and|or)|bool|break|case|catch|char|class|compl|const|continue|default|delete|do(uble)?|else|enum|false|float|for|friend|goto|if|int|long|namespace|new|not(_eq)?|or(_eq)?|private|protected|public|return|short|signed|sizeof|static|struct|switch|template|this|throw|true|try|typedef|unsigned|using|virtual|void|while|xor(_eq)?";
     private static final String PYTHON_KEYWORDS = "if|for|while|try|raise|class|def|with|break|continue|del|pass|assert|yield|return|import|from|match|case|bool|byte(array|s)|complex|dict|types|EllipsisType|float|frozenset|int|list|NoneType|NotImplementedType|range|set|str|tuple";
 
 
     public Lexer(String input){
         this.input = input;
         this.language = Language.Java;
+        this.index = 0;
+    }
+
+    public Lexer(SourceCode input){
+        this.input = input.sourceCode();
+        this.language = input.language();
         this.index = 0;
     }
 
@@ -75,10 +82,10 @@ public class Lexer {
         return tokens;
     }
 
-    /** Creates the next Token beginning at the current index
-     *  Compares the current string to the regular expressions representing the different types of Tokens
+    /** Creates the next Token beginning at the current index.
+     *  Compares the current string to the regular expressions representing the different types of Tokens.
      *  Does not identify strings, chars or keywords. Those must be done independently, later with the correctKeywords,
-     *  correctCharacters, and correctKeywords functions
+     *  correctCharacters, and correctKeywords functions.
      *  TODO Need to make this more resilient. Currently handles errors poorly
      *
      * @return  null if something fails, token made from next token of code otherwise
@@ -92,18 +99,19 @@ public class Lexer {
         switch (language){
             case Java -> keywords = JAVA_KEYWORDS;
             case C -> keywords = C_KEYWORDS;
+            case CPP -> keywords = CPP_KEYWORDS;
             case Python -> keywords = PYTHON_KEYWORDS;
             default -> keywords = "";
         }
 
         String[] tokenPatterns = {
-                "[a-zA-Z_][a-zA-Z0-9_]*",   // Identifiers
+                "\\p{L}[\\p{L}0-9_]*",      // Identifiers
                 "\\d+",                     // Literals
                 "//[a-zA-Z0-9_]*",          // Single-Line Comments
                 "/\\*[a-zA-Z0-9_]*",        // Multi-Line Comments
                 "\\*/",                     // Comment End
                 "[+/*=<>!?&|^~:%@-]",       // Operators
-                "[.,;()\\[\\]{}\"']",             // Punctuation
+                "[.,;()#\\[\\]{}\"']",       // Punctuation
         };
 
         TokenType[] tokenTypes = {
@@ -140,8 +148,8 @@ public class Lexer {
         return null;
     }
 
-    /**Searches for and removes all comments
-     * Finds them using Java's replace all function
+    /**Searches for and removes all comments.
+     * Finds them using Java's replace all function.
      *
      * Single line java/c comments are defined by the regular expression "// .* \n".
      * Multiline java/c comments are defined by the regular expression "/ \\* .* \\* /".
@@ -156,8 +164,8 @@ public class Lexer {
      */
     private String removeComments(String string, Language l){
         String s = string;
-        if(l == Language.C || l == Language.Java) {
-            s = s.replaceAll("/\\*.*\\*/", ""); //Deletes multiline comments
+        if(l == Language.C || l == Language.CPP || l == Language.Java) {
+            s = s.replaceAll("/\\*[.\n]*\\*/", ""); //Deletes multiline comments
             s = s.replaceAll("//.*\n", "");     //Deletes single line comments
         } else if (l == Language.Python) {
             s = s.replaceAll("\n\t*\"\"\".*\"\"\"", "\n");    //Deletes standalone multiline quotes
