@@ -37,14 +37,14 @@ public class StringTiling {
                         while (i + n < submission.length &&
                                 j + n < comparison.length &&
                                 !marked[i + n] &&
-                                submission[i + n].compareTo(comparison[j + n]) == 1) {
-                            //if(submission[i + n].compareTo(comparison[j + n]) == 1){
+                                submission[i + n].compareTo(comparison[j + n]) >= 0) {
+                            if(submission[i + n].compareTo(comparison[j + n]) == 1){
                                 //if token has identical type and value, assign full plagiarism value
                                 submission[i + n].setPlagiarismValue(1);
-                            /* }  else if (submission[i + n].compareTo(comparison[j + n]) == 0){
+                            }  else if (submission[i + n].compareTo(comparison[j + n]) == 0){
                                 //if token has identical type but different value, assign partial plagiarism value
                                 submission[i + n].setPlagiarismValue(0.9);
-                            } */
+                            }
                             tempTokens.add(submission[i + n]);
                             n++;
                         }
