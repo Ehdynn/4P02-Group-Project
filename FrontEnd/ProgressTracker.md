@@ -23,17 +23,13 @@
 
 ## Instructor Course Overview
 
-- [x] [TN] Add a class list - Currently uses a database function, since their names are only stored in the auth.users table it had to use the definer security level, might be worth considering if using an edge function is better, or if the Accounts table should hold their name as well to avoid this whole issue.
 - [x] [TN] Add the ability to remove students from the course
 - [x] [TN] Allow them to update the join code
 - [ ] Display more info about the course, right now the start date / end date isn't shown.
 
-## Students Assignment Page
+## Student Submit Modal
 
-- [x] [TN] Improve the look
-- [ ] Button to view comparison
-
-## Student Comparison Page
+- [ ] Modal to submit an assignment, should first get the key then show the assignment info and allow submission.
 
 ## Convert Edge Functions to front end queries or db functions
 

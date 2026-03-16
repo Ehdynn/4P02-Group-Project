@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useUser from '../../context/useUser';
 import supabase from "../../utils/DatabaseInteractions/supabase";
 import InstructorLinks from './InstructorLinks';
-import StudentLinks from './StudentLinks';
-const Navbar = ({ onJoinCourse }) => {
+const Navbar = () => {
     const navigate = useNavigate();
     const { user, setUser, isProfessor, roleReady } = useUser();
     const handleLogout = async () => {
@@ -31,7 +30,7 @@ const Navbar = ({ onJoinCourse }) => {
                 </Link> 
                 :
                 <>
-                  {roleReady ? (isProfessor ? <InstructorLinks /> : <StudentLinks onJoinCourse={onJoinCourse} />) : null}
+                  {roleReady ? (isProfessor ? <InstructorLinks /> : null) : null}
                   <button
                     type="button"
                     onClick={handleLogout}

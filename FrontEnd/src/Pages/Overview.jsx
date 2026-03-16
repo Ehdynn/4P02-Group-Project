@@ -1,7 +1,6 @@
 import useUser from "../context/useUser"
 import { Navigate } from "react-router-dom";
 import InstructorOverview from '../Components/Overview/InstructorOverview';
-import StudentOverview from '../Components/Overview/StudentOverview';
 
 const Overview = () => {
   const { user, isProfessor, roleReady } = useUser();
@@ -9,7 +8,7 @@ const Overview = () => {
   if (!roleReady) return null; // or loading UI
   if (!user) return <Navigate to="/" replace />;
 
-  return isProfessor ? <InstructorOverview /> : <StudentOverview />;
+  return isProfessor ? <InstructorOverview /> : null;
 
 }
 

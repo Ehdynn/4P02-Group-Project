@@ -1,5 +1,5 @@
 import InstructorRoute from './utils/Routes/InstructorRoute';
-//import StudentRoute from './utils/Routes/StudentRoute';
+import { useState } from 'react';
 
 // Public Pages
 import Landing from './Pages/Landing';
@@ -14,8 +14,7 @@ import CreateCourse from './Pages/InstructorPages/CreateCourse';
 import CreateAssignment from './Pages/InstructorPages/CreateAssignment';
 import Comparison from './Pages/InstructorPages/Comparison';
 // Student Pages
-import JoinCourseModal from './Components/JoinCourse/JoinCourse';
-import { useState } from 'react';
+
 // Components
 import NavBar from './Components/NavBar/NavBar';
 // Utils
@@ -23,17 +22,20 @@ import UserProvider from './context/UserProvider';
 import { BrowserRouter as Router, Routes,Route } from 'react-router-dom';
 
 function App() {
-  const [showJoinCourseModal, setShowJoinCourseModal] = useState(false);
+  //const [showJoinCourseModal, setShowJoinCourseModal] = useState(false); Rename later for submit assignment
 
   return (
     <UserProvider>
       <Router>
           <div>
+              <NavBar />
+              {/**
               <NavBar onJoinCourse={() => setShowJoinCourseModal(true)}/>
               <JoinCourseModal
                 isOpen={Boolean(showJoinCourseModal)}
                 onClose={() => setShowJoinCourseModal(false)}
               />
+               */}
               <Routes>
                   {/* Public Routes */}
                   <Route path="/" element = {<Landing />} />

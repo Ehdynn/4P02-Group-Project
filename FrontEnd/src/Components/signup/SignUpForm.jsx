@@ -8,13 +8,10 @@ export default function SignUpForm() {
   const { setUser } = useUser();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [accountType, setAccountType] = useState("student");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [studentNumber, setStudentNumber] = useState("");
-  const isProfessor = accountType === "prof";
 
   const onSubmit = async () => {
     setError("");
@@ -25,8 +22,8 @@ export default function SignUpForm() {
           email: email.trim(),
           password,
           full_name: fullName.trim(),
-          is_prof: isProfessor,
-          student_number: isProfessor ? undefined : studentNumber.trim(),
+          is_prof: false,
+          student_number: undefined,
         },
       });
 
@@ -64,7 +61,7 @@ export default function SignUpForm() {
 
   return (
     <>
-      <h1 className="h1-default">Sign Up</h1>
+      <h1 className="h1-default">Instructor Sign Up</h1>
 
       <form
         className="form-default"
@@ -73,34 +70,6 @@ export default function SignUpForm() {
           await onSubmit();
         }}
       >
-        <div className="space-y-2">
-          <label className="label-default">Account type</label>
-          <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setAccountType("student");
-              }}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                accountType === "student" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              Student
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAccountType("prof");
-                setStudentNumber("");
-              }}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                accountType === "prof" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              Instructor
-            </button>
-          </div>
-        </div>
 
         <label className="label-default">
           Full name
@@ -113,21 +82,6 @@ export default function SignUpForm() {
             className="account-form-default"
           />
         </label>
-        {!isProfessor ? (
-          <label className="label-default">
-            Student Number
-            <input
-              type="text"
-              value={studentNumber}
-              onChange={(event) => setStudentNumber(event.target.value.replace(/\D/g, ""))}
-              placeholder="1010101"
-              required
-              inputMode="numeric"
-              pattern="[0-9]*"
-              className="account-form-default"
-            />
-          </label>
-        ) : null}
 
         <label className="label-default">
           Email
@@ -164,7 +118,7 @@ export default function SignUpForm() {
         <div className="pt-1">
           <button
             type="submit"
-            disabled={loading || !fullName.trim() || !email.trim() || !password.trim() || (!isProfessor && !studentNumber.trim())}
+            disabled={loading || !fullName.trim() || !email.trim() || !password.trim()}
             className="submit-button"
           >
             {loading ? "Creating..." : "Create account"}
