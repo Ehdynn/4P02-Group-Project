@@ -69,12 +69,20 @@ public class Token implements Comparable<Token>{
      *
      *
      * @param token the token this token is to be compared to
-     * @return  1 if tokens are the same, 0 if tokens are the same type but different, 0 if tokens are different types.
+     * @return  1 if tokens are the same, 0 if tokens are both strings but different values, -1 if tokens are different types.
      */
     @Override
     public int compareTo(Token token) {
         if(this.getType() == token.getType() && this.getValue().compareTo(token.getValue()) == 0) return 1;
         if(this.getType() == token.getType() && this.getType() == TokenType.LITERAL) return 0;
         return -1;
+    }
+
+    /** Copies the current token, used in the string tiling algorithm to prevent overwrites
+     *
+     * @return copy of the current token
+     */
+    public Token copy(){
+        return new Token(this.type, this.value);
     }
 }
