@@ -59,7 +59,7 @@ const JoinCourse = ({ isOpen, onClose }) => {
     const { data: invokeData, error: invokeError } =
       await supabase.functions.invoke("addStudentToCourse", {
         body: {
-          join_code: joinCode.trim().toUpperCase(),
+          join_code: joinCode.trim(),
         },
       });
 
@@ -111,7 +111,7 @@ const JoinCourse = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={handleClose}
-              className="text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-slate-100 text-slate-400 flex justify-end"
+              className="hover:text-gray-900 p-2 rounded-full hover:bg-slate-100 text-slate-400 flex justify-end"
               aria-label="Close"
             >
               ✕
@@ -129,7 +129,8 @@ const JoinCourse = ({ isOpen, onClose }) => {
               value={formData.joinCode}
               onChange={onChange}
               placeholder="Enter join code"
-              className="field-default uppercase border-slate-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 shadow-sm"
+              // Do not add uppercase, course codes are not required to be in all caps.
+              className="field-default border-slate-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 shadow-sm"
             />
           </label>
           {error ? <p className="error">{error}</p> : null}
