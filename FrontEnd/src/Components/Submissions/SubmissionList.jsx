@@ -27,20 +27,6 @@ const SubmissionList = ({ aid, courseId }) => {
 
     return nameBySuid;
   };
-  const percentSubmitted = (submissionList) => {
-    const seenStudents = new Set();
-    
-    for (const submission of submissionList) {
-      if (submission.student_name) {
-        seenStudents.add(submission.student_name);
-      }
-    }
-
-    return {
-      text: seenStudents.size+"/"+count+" Students have submitted ("+(seenStudents.size/count*100)+"%)",
-      className: "text-xs"
-    }
-  }
   useEffect(() => {
     let cancelled = false;
     
@@ -142,7 +128,6 @@ const SubmissionList = ({ aid, courseId }) => {
     <div className="box-wrapper">
       
       <h1 className="h1-default">Submissions</h1>
-      <p>{percentSubmitted(submissions).text}</p>
       
       {error ? <p className="error">{error}</p> : null}
       {submissions.length === 0 ? (
