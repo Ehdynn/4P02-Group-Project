@@ -24,22 +24,27 @@ public class Tester {
         SourceCode sourceCode;
 
         try{
-            String sourceFile = "Engine/testFiles/labE8.cpp";
+            String sourceFile = "Engine/testFiles/VectorImp.java";
             FileHandler f = new FileHandler();
             File file = new File(sourceFile);
             sourceCode = f.getSourceCode(file);
+            Lexer lexer = new Lexer(sourceCode);
+            List<Token> tokens = lexer.tokenize();
+            List<Token> copy = lexer.tokenize();
+            //System.out.println(new ComparisonEngine().compare(code, code));
+
+            for (Token token : tokens) {
+                //System.out.println(token);
+            }
+
+            f.saveTokenList(tokens);
+            System.out.println(f.getTokensFromFile(new File("Engine/src/resources/tokens.csv")).toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Lexer lexer = new Lexer(sourceCode);
-        List<Token> tokens = lexer.tokenize();
-        List<Token> copy = lexer.tokenize();
-        //System.out.println(new ComparisonEngine().compare(code, code));
 
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
+
 
 
     }

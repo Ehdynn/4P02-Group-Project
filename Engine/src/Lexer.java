@@ -53,7 +53,6 @@ public class Lexer {
      * @return  List of Tokens
      */
     public List<Token> tokenize() {
-        System.out.println(language.toString());
         List<Token> tokens = new ArrayList<>();
 
         input = removeComments(input, language);

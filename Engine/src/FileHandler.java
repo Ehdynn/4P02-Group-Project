@@ -1,5 +1,11 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -76,19 +82,6 @@ public class FileHandler {
         return destDir;
     }
 
-    private File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
-        File destFile = new File(destinationDir, zipEntry.getName());
-
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
-        }
-
-        return destFile;
-    }
-
     /**Gets the file extension from a file's name
      * e.g. "file.txt" returns "txt"
      *
@@ -102,6 +95,19 @@ public class FileHandler {
             return ""; // No extension found
         }
         return fileName.substring(lastIndexOfDot + 1);
+    }
+
+    private File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+        File destFile = new File(destinationDir, zipEntry.getName());
+
+        String destDirPath = destinationDir.getCanonicalPath();
+        String destFilePath = destFile.getCanonicalPath();
+
+        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+        }
+
+        return destFile;
     }
 
 
@@ -122,6 +128,51 @@ public class FileHandler {
             case "cpp" -> new SourceCode(Language.CPP, content);
             default -> null;
         };
+    }
+
+    public File saveTokenList(List<Token> tokens){
+        Path path = Paths.get("Engine/src/resources/tokens.csv");
+        File file = null;
+        String csv = "type, value\n";
+        for (Token token : tokens) {
+            csv += token.getType() + ", " + token.getValue() + "\n";
+        }
+
+        // Try block to check for exceptions
+        try {
+            // Now calling Files.writeString() method
+            // with path , content & standard charsets
+            file = Files.writeString(path, csv, StandardCharsets.UTF_8).toFile();
+        }
+
+        // Catch block to handle the exception
+        catch (IOException ex) {
+            // Print message exception occurred as
+            // invalid. directory local path is passed
+            System.out.print("Invalid Path");
+        }
+        return file;
+    }
+
+    /**Reads tokens from token csv file
+     *
+     *
+     * @param file
+     * @return
+     */
+    public List<Token> getTokensFromFile(File file) {
+        List<Token> tokens = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(file.getPath()))) {
+            String line;
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] l = line.split(",");
+                tokens.add(new Token(TokenType.valueOf(l[0]), l[1]));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return tokens;
     }
 
     static void main() throws IOException {

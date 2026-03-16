@@ -14,7 +14,7 @@ public class EntryPoint {
         List<String> list = new LinkedList<>();
         list.add("Item 1");
         list.add("Item 2");
-        list.add("Test test bitch");
+        list.add("Test test if you know what's good for you machine");
         return list.toString();
     }
 
