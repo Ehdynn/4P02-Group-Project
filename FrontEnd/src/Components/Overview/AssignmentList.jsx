@@ -12,12 +12,9 @@ const AssignmentList = ({ assignments, loadingAssignments }) => {
     .filter((assignment) => new Date(assignment.due_date) < now)
     .sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
 
-  const futureLabel = roleReady && isProfessor ? "Open Assignments" : "Upcoming";
-  const pastLabel = roleReady && isProfessor ? "Closed Assignments" : "Past Due";
-  const emptyMessage =
-    roleReady && isProfessor
-      ? "No assignments have been created for this course."
-      : "No assignments found for this course.";
+  const futureLabel = "Open Assignments";
+  const pastLabel = "Closed Assignments";
+  const emptyMessage = "No assignments have been created for this course.";
 
   return (
     <section className="box-wrapper">
