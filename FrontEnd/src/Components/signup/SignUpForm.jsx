@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useUser from "../../context/useUser";
-import supabase from "../../utils/DatabaseInteractions/supabase";
+import {
+  createUserAccount,
+  setDisplayNameForUser,
+} from "../../utils/DatabaseInteractions/createUserAccount";
 
 export default function SignUpForm() {
   const navigate = useNavigate();
-  const { setUser } = useUser();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -16,44 +17,41 @@ export default function SignUpForm() {
   const onSubmit = async () => {
     setError("");
     setLoading(true);
+
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke("createUserAccount", {
-        body: {
-          email: email.trim(),
-          password,
-          full_name: fullName.trim(),
-          is_prof: false,
-          student_number: undefined,
-        },
-      });
-
-      if (invokeError) {
-        let errorMessage = invokeError.message || "Unable to create account";
-        if (invokeError.context) {
-          try {
-            const payload = await invokeError.context.json();
-            errorMessage = payload?.error || errorMessage;
-          } catch {
-            // Keep default message if response body isn't JSON.
-          }
-        }
-        setError(errorMessage);
-        return;
-      }
-
-      const { data: user, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await createUserAccount({
         email: email.trim(),
         password,
       });
 
-
-      if (signInError) {
-        setError(signInError.message || "Unable to sign in");
+      if (error) {
+        setError(error.message || "Unable to create account");
         return;
       }
 
-      setUser(user?.user?? null);
-      navigate("/Overview");
+      if (!data?.user) {
+        setError("Account creation did not complete.");
+        return;
+      }
+
+      if (data.session) {
+        if (fullName.trim()) {
+          const { error: profileError } = await setDisplayNameForUser({
+            displayName: fullName.trim(),
+          });
+
+          if (profileError) {
+            setError(
+              "Account created, but saving your display name failed."
+            );
+          }
+        }
+
+        navigate("/Overview");
+        return;
+      }
+
+      setError("Please check your email to confirm your account before signing in.");
     } finally {
       setLoading(false);
     }
@@ -70,14 +68,13 @@ export default function SignUpForm() {
           await onSubmit();
         }}
       >
-
         <label className="label-default">
           Full name
           <input
             type="text"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
-            placeholder="Juno Park"
+            placeholder="John Doe"
             required
             className="account-form-default"
           />
@@ -89,7 +86,7 @@ export default function SignUpForm() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@studio.com"
+            placeholder="you@email.com"
             className="account-form-default"
           />
         </label>
@@ -101,7 +98,6 @@ export default function SignUpForm() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
               className="account-form-default"
             />
             <button
@@ -118,7 +114,12 @@ export default function SignUpForm() {
         <div className="pt-1">
           <button
             type="submit"
-            disabled={loading || !fullName.trim() || !email.trim() || !password.trim()}
+            disabled={
+              loading ||
+              !fullName.trim() ||
+              !email.trim() ||
+              !password.trim()
+            }
             className="submit-button"
           >
             {loading ? "Creating..." : "Create account"}
