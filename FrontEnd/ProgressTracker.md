@@ -2,7 +2,6 @@
 
 ## Instructors Assignment Page
 
-- [x] Track the % of the class who has submitted
 - [x] [TN] Run Comparison Button
 - [ ] [TN] Download All Submission Button
 - [ ] [TN] View Comparison Button (Update button to say view results or view "???" depending on if it is ready or pending).
@@ -37,7 +36,7 @@
 - [x] [TN] create assignment
 - [x] [TN] get instructors courses
 - [ ] Add student to course (db function)
-- [ ] create user account (db function)
+- [x] [TN] create user account (db function)
 
 ## MSC
 
@@ -50,7 +49,6 @@
 - [ ] Update error msgs to be more user friendly once testing is done
 - [ ] Create a spinning wheel for loading and add it to pages
 - [ ] Fix reload issue
-- [ ] Fix error msg when student tries to enroll in the same course twice, also suppress the console error
 - [ ] Better assignment not found page
 - [ ] add a way to trigger a the comparison engine inside the create comparison edge function once the engine is complete.
 - [ ] Create demo accounts
