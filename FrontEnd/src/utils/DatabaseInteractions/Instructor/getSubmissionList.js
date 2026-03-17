@@ -4,8 +4,8 @@ export async function getSubmissionList(aid) {
   if (!aid) throw new Error("No assignment id provided.");
 
   const { data, error } = await supabase
-    .from("File_Submissions")
-    .select("id, suid, created_at, file_name")
+    .from("File_Submissions_New")
+    .select("id, created_at, file_name, student_info")
     .eq("assignment_id", Number(aid));
 
   if (error) {

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { getSubmissionList } from "../../utils/DatabaseInteractions/Instructor/getSubmissionList";
-import { getEnrolled } from "../../utils/DatabaseInteractions/Instructor/getEnrolled";
 import useUser from "../../context/useUser";
 import { downloadSubmission } from "../../utils/DatabaseInteractions/Instructor/downloadSubmission";
 import { downloadAllSubmissions } from "../../utils/DatabaseInteractions/Instructor/downloadAllSubmissions";
@@ -16,17 +15,6 @@ const SubmissionList = ({ aid, courseId }) => {
   const [downloadingAll, setDownloadingAll] = useState(false);
   const [count, setCount] = useState(0);
 
-  const buildNameBySuid = (enrolledStudents) => {
-    const nameBySuid = new Map();
-
-    enrolledStudents.forEach((student) => {
-      if (student?.suid) {
-        nameBySuid.set(student.suid, student?.student_name?.trim() || "Unknown Student");
-      }
-    });
-
-    return nameBySuid;
-  };
   useEffect(() => {
     let cancelled = false;
     
@@ -41,31 +29,9 @@ const SubmissionList = ({ aid, courseId }) => {
 
       try {
         const submissionRows = await getSubmissionList(aid);
-        const enrolledRows = courseId && user?.id ? await getEnrolled(courseId, user.id) : [];
-        const studentNameByUid = buildNameBySuid(enrolledRows);
-        const groupedBySuid = new Map();
-        setCount(enrolledRows.length)  
-        submissionRows.forEach((submission) => {
-          const uid = submission.suid;
-          const existing = groupedBySuid.get(uid) ?? {
-            suid: uid,
-            student_name: "Unknown Student",
-            submission_count: 0,
-            submissions: [],
-          };
-
-          const resolvedName = studentNameByUid.get(uid) ?? existing.student_name;
-
-          groupedBySuid.set(uid, {
-            ...existing,
-            student_name: resolvedName,
-            submissions: [...existing.submissions, submission],
-            submission_count: existing.submission_count + 1,
-          });
-        });
 
         if (!cancelled) {
-          setSubmissions(Array.from(groupedBySuid.values()));
+          setSubmissions(Array.from(submissionRows));
         }
       } catch (err) {
         if (!cancelled) {

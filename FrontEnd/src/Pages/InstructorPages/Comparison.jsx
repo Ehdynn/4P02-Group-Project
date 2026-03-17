@@ -5,7 +5,6 @@ import ComparisonViewer from "../../Components/Comparison/ComparisonViewer";
 import ComparisonStats from "../../Components/Comparison/ComparisonStats";
 import { getComparisons } from "../../utils/DatabaseInteractions/Instructor/getComparisons";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
-import { getEnrolled } from "../../utils/DatabaseInteractions/Instructor/getEnrolled";
 import useUser from "../../context/useUser";
 
 const Comparison = () => {
@@ -30,39 +29,11 @@ const Comparison = () => {
         ]);
         const resolvedAssignmentName = assignmentDetails?.name?.trim?.() ?? "";
 
-        const enrolledRows = assignmentDetails?.course && user?.id
-          ? await getEnrolled(assignmentDetails.course, user.id)
-          : [];
-
-        const nameBySuid = new Map();
-        enrolledRows.forEach((student) => {
-          if (student?.suid) {
-            nameBySuid.set(String(student.suid), student?.student_name?.trim() || "Unknown Student");
-          }
-        });
-
-        const resolvedComparisons = comparisonRows.map((comparison) => {
-          const students = Array.isArray(comparison.students_compared)
-            ? comparison.students_compared
-            : [];
-
-          return {
-            ...comparison,
-            students,
-            studentsWithNames: students.map((suid) => {
-              const normalizedSuid = String(suid);
-              return {
-                suid: normalizedSuid,
-                student_name: nameBySuid.get(normalizedSuid) ?? normalizedSuid,
-              };
-            }),
-          };
-        });
 
         if (!cancelled) {
           setAssignmentName(resolvedAssignmentName);
-          setComparisons(resolvedComparisons);
-          setSelectedComparisonId(resolvedComparisons[0]?.id ?? null);
+          //setComparisons(resolvedComparisons);
+          //setSelectedComparisonId(resolvedComparisons[0]?.id ?? null);
         }
       } catch (err) {
         if (!cancelled) {
