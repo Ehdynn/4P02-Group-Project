@@ -2,13 +2,13 @@ import { Navigate } from "react-router-dom";
 import useUser from '../../context/useUser';
 
 const InstructorRoute = ({children}) => {
-  const {isProfessor, roleReady } = useUser();
+  const { user, roleReady } = useUser();
 
   if (!roleReady) {
-    return children
+    return children;
   }
 
-  if (isProfessor){
+  if (user) {
     return children;
   }
 

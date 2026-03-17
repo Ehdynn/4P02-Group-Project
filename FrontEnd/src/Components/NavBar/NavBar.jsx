@@ -5,10 +5,9 @@ import supabase from "../../utils/DatabaseInteractions/supabase";
 import InstructorLinks from './InstructorLinks';
 const Navbar = () => {
     const navigate = useNavigate();
-    const { user, setUser, isProfessor, roleReady } = useUser();
+    const { user, isProfessor, roleReady } = useUser();
     const handleLogout = async () => {
       await supabase.auth.signOut();
-      setUser(null);
       navigate("/");
     };
 
@@ -30,7 +29,7 @@ const Navbar = () => {
                 </Link> 
                 :
                 <>
-                  {roleReady ? (isProfessor ? <InstructorLinks /> : null) : null}
+                  {roleReady ? <InstructorLinks /> : null}
                   <button
                     type="button"
                     onClick={handleLogout}

@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useUser from "../../context/useUser";
 import supabase from "../../utils/DatabaseInteractions/supabase";
 
 export default function LoginForm() {
   const navigate = useNavigate();
-  const { setUser } = useUser();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -35,7 +33,6 @@ export default function LoginForm() {
       return;
     }
 
-    setUser(data?.user ?? null);
     navigate("/Overview");
   };
 

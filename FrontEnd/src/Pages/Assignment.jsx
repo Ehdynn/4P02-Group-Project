@@ -8,7 +8,7 @@ const Assignment = () => {
   if (!roleReady) return null; // or loading UI
   if (!user) return <Navigate to="/login" replace />;
 
-  return isProfessor ? <InstructorAssignment /> : null;
+  return <InstructorAssignment />;
 
 }
 

@@ -14,6 +14,10 @@ export default function UserProvider({ children }) {
     let isMounted = true;
 
     const hydrateUser = async () => {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("app_user");
+      }
+
       const { data } = await supabase.auth.getSession();
       if (isMounted) {
         setUser(data.session?.user ?? null);
