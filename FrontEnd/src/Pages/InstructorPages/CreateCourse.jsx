@@ -7,7 +7,6 @@ const CreateCourse = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
-    joinCode: "",
     startDate: "",
     endDate: "",
   });
@@ -24,7 +23,7 @@ const CreateCourse = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const { name, joinCode, startDate, endDate } = formData;
+    const { name, startDate, endDate } = formData;
 
     if (!name.trim()) {
       setError("Course name required.");
@@ -46,7 +45,7 @@ const CreateCourse = () => {
 
     let createdCourse = null;
     try {
-      createdCourse = await createCourse(user.id, formData.name, joinCode, startDate, endDate);
+      createdCourse = await createCourse(user.id, formData.name, startDate, endDate);
     } catch (createError) {
       const errorMessage =
         createError instanceof Error ? createError.message : "Unable to create course.";
@@ -61,7 +60,6 @@ const CreateCourse = () => {
     setSubmitted(true);
     setFormData({
       name: "",
-      joinCode: "",
       startDate: "",
       endDate: "",
     });
@@ -83,18 +81,6 @@ const CreateCourse = () => {
             value={formData.name}
             onChange={onChange}
             placeholder="Software Design 101"
-            className="field-default"
-          />
-        </label>
-
-        <label className="label-default">
-          <span className="span-default">Join Code</span>
-          <input
-            type="text"
-            name="joinCode"
-            value={formData.joinCode}
-            onChange={onChange}
-            placeholder="4P02-W26"
             className="field-default"
           />
         </label>
