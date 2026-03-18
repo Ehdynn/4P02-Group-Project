@@ -6,16 +6,19 @@ public class Sequence {
     private int start;
     private int length;
     private List<Token> tokens;
+    private int submissionId;
 
     /** Sequence Constructor
      *
      * @param start Index of first token in sequence
      * @param len   Length of sequence
+     * @param submissionId   ID of flagged submission
      */
-    Sequence(int start, int len) {
+    Sequence(int start, int len, int submissionId) {
         this.start = start;
         this.length = len;
         this.tokens = new ArrayList<>();
+        this.submissionId = submissionId;
     }
 
     /** First token index
@@ -32,6 +35,14 @@ public class Sequence {
      */
     public int getLength() {
         return length;
+    }
+
+    /** Submission ID
+     *
+     * @return  the ID of the flagged submission
+     */
+    public int getSubmissionId() {
+        return submissionId;
     }
 
     /** Token list

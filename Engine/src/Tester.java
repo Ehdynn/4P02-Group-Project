@@ -20,7 +20,8 @@ public class Tester {
                 "        // Prints \"Hello test\" to the terminal window.\n" +
                 "        System.out.println(\"Hello 你 World\");\n" +
                 "    }\n" +
-                "}";
+                "}\n" +
+                "if (x > 10) { y = x-5; } //test \n/*test 1 2 3 4 5 6 7 8 9*/ 10 11 12 13 14 15";
 
         String hiWorld = "public class HelloWorld {\n" +
                 "\n" +
@@ -40,7 +41,8 @@ public class Tester {
                 "        // Prints \"Numbers 1 - 10\" to the terminal window.\n" +
                 "        for (i = 0; i < 10; i++){\nx +=1;\nSystem.out.printLn(x);}" +
                 "    }\n" +
-                "}";
+                "}" +
+                "if (x > 10) { y = x-5; } //test \n/*test 1 2 3 4 5 6 7 8 9*/ 10 11 12 13 14 15";
 
         Lexer lexer_1 = new Lexer(helloWorld);
         Lexer lexer_2 = new Lexer(hiWorld);
@@ -53,7 +55,7 @@ public class Tester {
         List<Token> code3Tokens = lexer_3.tokenize();
         List<Token> numberTokens = lexer_4.tokenize();
 
-        System.out.println("Test 1: Two identical files:");
+        /*System.out.println("Test 1: Two identical files:");
         System.out.println(ComparisonEngine.compareSingle(tokens1, copy1, 5));
         System.out.println(" ");
 
@@ -63,19 +65,24 @@ public class Tester {
 
         System.out.println("Test 3: Two dissimilar files:");
         System.out.println(ComparisonEngine.compareSingle(tokens1, code3Tokens, 5));
-        System.out.println(" ");
+        System.out.println(" ");*/
 
         System.out.println("Test 4: Two somewhat similar files:");
-        System.out.println(ComparisonEngine.compareSingle(tokens1, numberTokens, 5));
-        System.out.println(" ");
+        Token[] testTokens = ComparisonEngine.tokensToArray(tokens1);
+        Token[] testTokens2 = ComparisonEngine.tokensToArray(numberTokens);
+        Submission testSub = new Submission(testTokens, 123123);
+        Submission testSub2 = new Submission(testTokens2, 456545);
 
-        List<List<Token>> multipleSubmissions = new ArrayList<>();
+        List<Submission> testSubList = new ArrayList<>();
+        testSubList.add(testSub2);
 
-        multipleSubmissions.add(hiWorldTokens);
-        multipleSubmissions.add(numberTokens);
+        List<Sequence> testSequences = StringTiling.tile(testSub, testSubList, 5);
+        double testScore = SimilarityScore.getSimilarityScore(testTokens, testSequences);
+
+        ComparisonEngine.buildComparisonData(testSub, testSequences, testScore);
 
         System.out.println("Test 5: Evaluating tests 2 and 4 simultaneously:");
-        System.out.println(ComparisonEngine.compareDatabase(tokens1, multipleSubmissions, 5));
+        //System.out.println(ComparisonEngine.compareDatabase(tokens1, multipleSubmissions, 5));
 
         SourceCode sourceCode;
 

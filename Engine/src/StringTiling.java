@@ -12,11 +12,13 @@ public class StringTiling {
      *
      * @Version 1.2 (Mar 12th, 2026)
      */
-    public static List<Sequence> tile(Token[] submission, List<Token[]> database, int tolerance){
+    public static List<Sequence> tile(Submission current, List<Submission> database, int tolerance){
+        Token[] submission = current.getTokens();
         List<Sequence> matches = new ArrayList<>();
         boolean[] marked = new boolean[submission.length];
 
-        for(Token[] comparison: database){
+        for(Submission submissions: database){
+            Token[] comparison = submissions.getTokens();
             int numMatches = 1;
             // Iterative loop which finds the largest remaining common sequences
             while(numMatches != 0){
@@ -55,14 +57,14 @@ public class StringTiling {
                             subMatches.clear();
                             matchStarts.clear();
                             lcs = n;
-                            Sequence newSequence = new Sequence(i, n);
+                            Sequence newSequence = new Sequence(i, n, submissions.getId());
                             for(Token t: tempTokens){
                                 newSequence.addToken(t);
                             }
                             subMatches.add(newSequence);
                             matchStarts.add(i);
                         } else if(n == lcs && !matchStarts.contains(i)){
-                            Sequence newSequence = new Sequence(i, n);
+                            Sequence newSequence = new Sequence(i, n, submissions.getId());
                             for(Token t: tempTokens){
                                 newSequence.addToken(t);
                             }
