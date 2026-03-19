@@ -301,4 +301,16 @@ public class Lexer {
 
         return tokens;
     }
+
+    public String getStudentInfo(String input){
+        String out = "";
+        int startingIndex = input.indexOf("/*") + 2;
+        if (startingIndex == -1) return null;
+
+        int endingIndex = input.indexOf("\n");
+        if (endingIndex == -1) return null;
+
+        return out;
+    }
+
 }

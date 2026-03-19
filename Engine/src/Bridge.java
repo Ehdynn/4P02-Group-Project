@@ -22,6 +22,13 @@ class Bridge {
         System.out.println(pythonData);
     }
 
+    /**Creates a token list from code, and then sends the code to python
+     * TEST CODE
+     * NOT FOR FINAL RELEASE
+     *
+     * @param code
+     * @return
+     */
     public String Tokenize(String code){
         Lexer lexer = new Lexer(code);
         List<Token> tokens = lexer.tokenize();
@@ -33,6 +40,5 @@ class Bridge {
         System.out.println(out);
         return out;
     }
-
 
 }
