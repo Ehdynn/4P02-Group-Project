@@ -18,6 +18,7 @@ const Comparison = () => {
   const [assignmentKey, setAssignmentKey] = useState("");
   const [comparisonOutputs, setComparisonOutputs] = useState([]);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
+  const [secondarySelected, setSecondarySelected] = useState(null);
   const [outputsLoading, setOutputsLoading] = useState(false);
   const [outputsError, setOutputsError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -124,8 +125,31 @@ const Comparison = () => {
     };
   }, [aid, assignmentKey, selectedComparison?.id]);
 
-  const selectedOutput = comparisonOutputs.find((output) => output.submissionId === selectedSubmissionId)
-    ?? null;
+  // Primary Output
+  const selectedOutput = comparisonOutputs.find((output) => output.submissionId === selectedSubmissionId) ?? null;
+  
+  // Secondary output
+  const secondaryOutput = comparisonOutputs.find((output) => output.submissionId === secondarySelected) ?? null;
+
+  // Allows both the primary and secondary to be set at the same time,
+  // Or just the primary if no secondary is provided. At which point the secondary is set to null.
+  // If no secondary is given it closes the side by side view if it is open
+  function selectSubmission(submissionId, secondaryId){
+    if(submissionId){
+      setSelectedSubmissionId(submissionId);
+      if(secondaryId){
+        setSecondarySelected(secondaryId);
+      } else{setSecondarySelected(null);}
+    }
+  }
+
+  // Swaps the secondary to the RHS and opens the new secondary on the LHS
+  function selectSubmissionFromSecondary(newSecondary){
+    if(newSecondary){
+      setSelectedSubmissionId(secondarySelected);
+      setSecondarySelected(newSecondary);
+    }
+  }
 
   return (
     <main className="outer-container-fw">
@@ -149,21 +173,44 @@ const Comparison = () => {
             loading={loading}
             outputs={comparisonOutputs}
             selectedSubmissionId={selectedOutput?.submissionId ?? null}
-            onSelectSubmission={setSelectedSubmissionId}
+            onSelectSubmission={selectSubmission}
           />
           {outputsLoading ? <div className="box-wrapper">Loading comparison output files...</div> : null}
           {outputsError ? <p className="error">{outputsError}</p> : null}
           {!outputsLoading && !outputsError && comparisonOutputs.length === 0 && selectedComparison ? (
             <div className="box-wrapper">No comparison JSON files found for this run.</div>
           ) : null}
-          {selectedOutput ? (
-            <div key={selectedOutput.path} className="mt-6">
-              <Viewer
-                data={selectedOutput.data}
-                title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
-                onSelectSubmission={setSelectedSubmissionId}
-              />
-            </div>
+          {selectedOutput ? ( // A Submission is Selected
+            !secondarySelected ? ( // Only One is Selected
+              <div key={selectedOutput.path} className="mt-6">
+                <Viewer
+                  data={selectedOutput.data}
+                  title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                  onSelectSubmission={setSecondarySelected}
+                />
+              </div>
+            ) : ( // Side by side view
+              <div className="flex w-full space-x-5 flex-col md:flex-row">
+                <div className="flex-1 min-w-0"> {/* RHS */}
+                  <div key={selectedOutput.path} className="mt-6">
+                    <Viewer
+                      data={selectedOutput.data}
+                      title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                      onSelectSubmission={setSecondarySelected}
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0"> {/* LHS */}
+                  <div key={selectedOutput.path} className="mt-6">
+                    <Viewer
+                      data={secondaryOutput.data}
+                      title={`${secondaryOutput.studentName} (${secondaryOutput.studentNumber})`}
+                      onSelectSubmission={selectSubmissionFromSecondary}
+                    />
+                  </div>
+                </div>
+              </div>
+            )
           ) : null}
         </div>
       </div>

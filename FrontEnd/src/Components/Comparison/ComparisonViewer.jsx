@@ -39,7 +39,7 @@ const ComparisonViewer = ({ comparison, loading, outputs, selectedSubmissionId, 
                     : "border-slate-200 bg-white"
                 }`}
                 onClick={() => onSelectSubmission(
-                  selectedSubmissionId === output.submissionId ? null : output.submissionId,
+                  selectedSubmissionId === output.submissionId ? null : output.submissionId
                 )}
               >
                 <p className="font-medium">{output.studentName}</p>
