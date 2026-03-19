@@ -62,7 +62,7 @@ const SubmitAssignment = () => {
             value={formData.assignmentKey}
             onChange={onChange}
             placeholder=""
-            className="field-default uppercase"
+            className="field-default"
           />
         </label>
         {error ? <p className="error">{error}</p> : null}
