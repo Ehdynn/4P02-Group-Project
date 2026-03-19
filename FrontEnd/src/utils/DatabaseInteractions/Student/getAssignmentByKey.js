@@ -1,14 +1,14 @@
 import supabase from '../supabase'
 
-export async function getAssignmentByJoinCode(joinCode) {
+export async function getAssignmentByKey(key) {
   const { data, error } = await supabase
     .from('Assignments')
     .select('id')
-    .eq('key', joinCode.trim())
+    .eq('key', key.trim())
     .single()
 
   if (error) {
-    return { data: null, error: 'No course found with that join code.' }
+    return { data: null, error: 'No assignment found with that key.' }
   }
 
   return { data, error: null }

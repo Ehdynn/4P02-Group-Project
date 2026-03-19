@@ -29,8 +29,8 @@ const Navbar = () => {
                 About
               </Link>
               {!isProfessor && 
-                <Link to={'/JoinCourse'} className="link-default">
-                Join Course
+                <Link to={'/Submit'} className="link-default">
+                Submit Assignment
               </Link>
               }
               {user == null ? 

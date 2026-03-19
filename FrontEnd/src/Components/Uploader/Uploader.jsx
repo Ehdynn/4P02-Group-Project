@@ -2,24 +2,26 @@ import { useState } from "react";
 import { submitAssignment } from "../../utils/DatabaseInteractions/Student/submitAssignment";
 import useUser from "../../context/useUser";
 
-const Uploader = ({aid}) => {
+const Uploader = ({ aid, assignmentKey }) => {
+  const supportedExtensions = [".pdf", ".zip", ".py", ".cpp", ".java"];
   const [selectedFile, setSelectedFile] = useState(null);
+  const [studentName, setStudentName] = useState("");
+  const [studentNumber, setStudentNumber] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [badFileType, setBadFileType] = useState(false);
   const { user } = useUser();
-  {/* Below must be updated with the same var in submitAssignment.js */}
-  const supportedTypes = ["application/pdf", "application/py", "application/x-zip-compressed","application/cpp", "application/java"];
-  const onFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
-     if (supportedTypes.includes(event.target.files[0].type)) {
-        setBadFileType(false);
 
-     }
-     else{
-      setBadFileType(true);
-     } 
+  const hasSupportedExtension = (file) => {
+    const fileName = String(file?.name ?? "").toLowerCase();
+    return supportedExtensions.some((extension) => fileName.endsWith(extension));
+  };
+
+  const onFileChange = (event) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedFile(file);
+    setBadFileType(file ? !hasSupportedExtension(file) : false);
     setErrorMessage("");
     setSuccessMessage("");
   };
@@ -33,14 +35,20 @@ const Uploader = ({aid}) => {
       setErrorMessage("Please choose a file before uploading.");
       return;
     }
-    if (!user?.id) {
-      setErrorMessage("You must be logged in to upload a submission.");
+    if (!studentName.trim() || !studentNumber.trim()) {
+      setErrorMessage("Please enter your student name and number before uploading.");
       return;
     }
 
     setIsUploading(true);
     try {
-      const result = await submitAssignment(selectedFile, user.id, aid);
+      const result = await submitAssignment(
+        selectedFile,
+        studentName.trim(),
+        studentNumber,
+        aid,
+        assignmentKey,
+      );
       setSuccessMessage(result.message);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Upload failed.");
@@ -53,6 +61,28 @@ const Uploader = ({aid}) => {
     <div className="outer-container">
       <form onSubmit={onFileUpload} className="box-wrapper">
         <h1 className="h1-default">Submit Assignment</h1>
+        <label className="label-default">
+          <span className="span-default">Name</span>
+           <input
+            type="text"
+            value={studentName}
+            onChange={(event) => setStudentName(event.target.value)}
+            placeholder="Enter your full name"
+            className="field-default"
+          />
+        </label>
+        <label className="label-default">
+          <span className="span-default">Student Number</span>
+          <input
+            type="text"
+            value={studentNumber}
+            onChange={(event) => setStudentNumber(event.target.value)}
+            placeholder="Enter your student number"
+            className="field-default"
+            inputMode="numeric"
+          />
+        </label>
+
         <label className="label-default">
           <span className="span-default">Assignment File</span>
           <input
