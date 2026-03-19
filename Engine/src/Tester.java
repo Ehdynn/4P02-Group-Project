@@ -70,14 +70,14 @@ public class Tester {
         System.out.println("Test 4: Two somewhat similar files:");
         Token[] testTokens = ComparisonEngine.tokensToArray(tokens1);
         Token[] testTokens2 = ComparisonEngine.tokensToArray(numberTokens);
-        Submission testSub = new Submission(testTokens, 123123);
-        Submission testSub2 = new Submission(testTokens2, 456545);
+        //Submission testSub = new Submission(testTokens, 123123);
+        //Submission testSub2 = new Submission(testTokens2, 456545);
 
         List<Submission> testSubList = new ArrayList<>();
-        testSubList.add(testSub2);
+        //testSubList.add(testSub2);
 
-        List<Sequence> testSequences = StringTiling.tile(testSub, testSubList, 5);
-        double testScore = SimilarityScore.getSimilarityScore(testTokens, testSequences);
+        //List<Sequence> testSequences = StringTiling.tile(testSub, testSubList, 5);
+        //double testScore = SimilarityScore.getSimilarityScore(testTokens, testSequences);
 
         //ComparisonEngine.buildComparisonData(testSub, testSequences, testScore);
 
