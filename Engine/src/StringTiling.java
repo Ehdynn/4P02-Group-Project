@@ -13,12 +13,12 @@ public class StringTiling {
      * @Version 1.2 (Mar 12th, 2026)
      */
     public static List<Sequence> tile(Submission current, List<Submission> database, int tolerance){
-        Token[] submission = current.getTokens();
+        List<Token> submission = current.getTokens();
         List<Sequence> matches = new ArrayList<>();
-        boolean[] marked = new boolean[submission.length];
+        boolean[] marked = new boolean[submission.size()];
 
         for(Submission submissions: database){
-            Token[] comparison = submissions.getTokens();
+            List<Token> comparison = submissions.getTokens();
             int numMatches = 1;
             // Iterative loop which finds the largest remaining common sequences
             while(numMatches != 0){
@@ -28,23 +28,23 @@ public class StringTiling {
                 List<Token> tempTokens = new ArrayList<>();
                 int lcs = tolerance;
 
-                for (int i = 0; i < submission.length; i++) {
+                for (int i = 0; i < submission.size(); i++) {
                     if (marked[i]) continue;
 
-                    for (int j = 0; j < comparison.length; j++) {
+                    for (int j = 0; j < comparison.size(); j++) {
 
                         int n = 0;
 
                         // Finds n next common tokens
-                        while (i + n < submission.length &&
-                                j + n < comparison.length &&
+                        while (i + n < submission.size() &&
+                                j + n < comparison.size() &&
                                 !marked[i + n] &&
-                                submission[i + n].compareTo(comparison[j + n]) >= 0) {
-                            Token copy = submission[i + n].copy();
-                            if(submission[i + n].compareTo(comparison[j + n]) == 1){
+                                submission.get(i + n).compareTo(comparison.get(j + n)) >= 0) {
+                            Token copy = submission.get(i + n).copy();
+                            if(submission.get(i + n).compareTo(comparison.get(j + n)) == 1){
                                 //if token has identical type and value, assign full plagiarism value
                                 copy.setPlagiarismValue(1);
-                            }  else if (submission[i + n].compareTo(comparison[j + n]) == 0){
+                            }  else if (submission.get(i + n).compareTo(comparison.get(j + n)) == 0){
                                 //if token has identical type but different value, assign partial plagiarism value
                                 copy.setPlagiarismValue(0.9);
                             }

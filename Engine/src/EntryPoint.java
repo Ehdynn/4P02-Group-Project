@@ -26,6 +26,11 @@ public class EntryPoint {
         return out;
     }
 
+    //placeholder
+    public void getJson(){
+
+    }
+
     public void sendDataToJava(String data){
         this.pythonData = data;
         System.out.println("From Python: \n" + pythonData);

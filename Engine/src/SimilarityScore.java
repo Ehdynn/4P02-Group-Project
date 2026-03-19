@@ -8,9 +8,9 @@ public class SimilarityScore {
      *
      * @Version 1.1 (Mar 12th, 2026)
      */
-    public static double getSimilarityScore(Token[] submission, List<Sequence> sequences){
+    public static double getSimilarityScore(List<Token> submission, List<Sequence> sequences){
         double plagarismValues = 0;
-        double submissionLength = submission.length;
+        double submissionLength = submission.size();
 
         for(Sequence s: sequences){
             for(Token t: s.getTokens()){

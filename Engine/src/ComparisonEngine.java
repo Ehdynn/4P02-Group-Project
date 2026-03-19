@@ -20,16 +20,18 @@ public class ComparisonEngine {
         return tokenArray;
     }
 
-    public static void buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore){
+    public static String buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore){
+        FileHandler handler = new FileHandler();
         JSONObject comparisonJson = new JSONObject();
-        Token[] submissionCode = submission.getTokens();
+        List<Token> submissionCode = submission.getTokens();
         sequences.sort(Comparator.comparingInt(Sequence::getStart));
         int sequenceStart = sequences.getFirst().getStart();
         int sequenceIndex = 0;
+        String codeString = handler.getTokenListCSV(submissionCode);
 
         comparisonJson.put("submission_id", submission.getId());
 
-        JSONArray tokensArray = new JSONArray();
+        /*JSONArray tokensArray = new JSONArray();
         for(int i = 0; i < submissionCode.length; i++){
             JSONObject tokenJson = new JSONObject();
             tokenJson.put("token_type", submissionCode[i].getType());
@@ -37,7 +39,9 @@ public class ComparisonEngine {
             tokensArray.put(tokenJson);
         }
 
-        comparisonJson.put("tokens", tokensArray);
+        comparisonJson.put("tokens", tokensArray);*/
+
+        comparisonJson.put("code", codeString);
 
         JSONArray sequenceArray = new JSONArray();
         for(Sequence s: sequences){
@@ -52,8 +56,6 @@ public class ComparisonEngine {
 
         comparisonJson.put("similarity_score", similarityScore);
 
-        String jsonString = comparisonJson.toString(4);
-
-        System.out.println(jsonString);
+        return comparisonJson.toString(4);
     }
 }

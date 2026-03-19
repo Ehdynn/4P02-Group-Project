@@ -79,7 +79,7 @@ public class Tester {
         List<Sequence> testSequences = StringTiling.tile(testSub, testSubList, 5);
         double testScore = SimilarityScore.getSimilarityScore(testTokens, testSequences);
 
-        ComparisonEngine.buildComparisonData(testSub, testSequences, testScore);
+        //ComparisonEngine.buildComparisonData(testSub, testSequences, testScore);
 
         System.out.println("Test 5: Evaluating tests 2 and 4 simultaneously:");
         //System.out.println(ComparisonEngine.compareDatabase(tokens1, multipleSubmissions, 5));
