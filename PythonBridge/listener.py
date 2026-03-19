@@ -24,6 +24,41 @@ gateway = JavaGateway()
 # Access the entry point object exposed by the Java application
 entry_point = gateway.entry_point
 
+def get_submission_ids_for_assignment(assignment_id):
+    response = (
+        supabase.table("File_Submissions_New")
+        .select("id")
+        .eq("assignment_id", assignment_id)
+        .execute()
+    )
+
+    return [row.get("id") for row in (response.data or []) if row.get("id") is not None]
+
+
+def download_token_csvs_for_assignment(assignment_id, submission_ids):
+    token_csvs = []
+
+    for submission_id in submission_ids:
+        path = f"{assignment_id}/{submission_id}.csv"
+        file_bytes = supabase.storage.from_("Tokens").download(path)
+
+        token_csvs.append(
+            {
+                "submission_id": submission_id,
+                "csv_bytes": file_bytes,
+            }
+        )
+
+    return token_csvs
+
+
+def has_pending_submission_for_assignment(assignment_id):
+    queued_items = list(submission_queue._queue)
+    return any(
+        item.get("assignment_id") == assignment_id
+        for item in queued_items
+    )
+
 
 '''
 Handles the insert event on the Comparisons table.
@@ -69,8 +104,27 @@ async def consume_comparison():
             assignment_id = comparison_event.get("assignment_id")
             comparison_id = comparison_event.get("comparison_id")
             print(f"Processing comparison with id: {comparison_id}")
+
+            while has_pending_submission_for_assignment(assignment_id):
+                print(
+                    f"Waiting for queued submissions to finish for assignment {assignment_id}"
+                )
+                await asyncio.sleep(10)
             
-            # TODO: Download tokens for files being compared
+            submission_ids = await asyncio.to_thread(
+                get_submission_ids_for_assignment,
+                assignment_id,
+            )
+            print(f"{len(submission_ids)} submission(s) where found for assignment {assignment_id}: ")
+            
+            token_csvs = await asyncio.to_thread(
+                download_token_csvs_for_assignment,
+                assignment_id,
+                submission_ids,
+            )
+            print(
+                f"Downloaded {len(token_csvs)} token csv file(s) for assignment {assignment_id}"
+            )
 
             # TODO Handle Comparison Work
 
