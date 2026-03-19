@@ -99,11 +99,19 @@ async def consume_submission():
                 supabase.storage.from_("Submissions").download,
                 path,
             )
-            file_text = file_bytes.decode("utf-8", errors="replace")
             print(f"Downloaded submission file for submission id: {submission_id}")
             # TODO Call the java code and upload the results.
-            java_tokens = entry_point.getTokens(file_text)
-            print(f"Received tokens: {str(java_tokens)}")
+            token_csv = entry_point.Proper_Function_Name_Here(file_bytes)
+            print(f"Received token csv for submission: {submission_id}")
+            response = (
+                supabase.storage
+                .from_("Tokens")
+                .upload(
+                    token_csv,
+                    path=(assignment_id + "/" + submission_id + ".csv"),
+                    file_options={"cache-control": "3600", "upsert": "false"}
+                )
+            )
         except Exception as e:
             print(f"Error processing submission event {submission_event}: {e}")
         finally:
