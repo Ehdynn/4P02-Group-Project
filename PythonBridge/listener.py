@@ -4,10 +4,12 @@ import os
 from pathlib import Path
 from supabase import create_client, Client
 from realtime import AsyncRealtimeClient, RealtimePostgresChangesListenEvent
+from py4j.java_gateway import JavaGateway
 
 comparison_queue = asyncio.Queue()
 submission_queue = asyncio.Queue()
 
+# Setting Up Supabase Client
 env_path = Path(__file__).with_name(".env.local")
 load_dotenv(env_path)
 
@@ -15,6 +17,13 @@ url = os.getenv("URL")
 key = os.getenv("SECRET_KEY")
 
 supabase: Client = create_client(url, key)
+
+# Connect to the Java Gateway Server (default port is 25333)
+gateway = JavaGateway()
+
+# Access the entry point object exposed by the Java application
+entry_point = gateway.entry_point
+
 
 '''
 Handles the insert event on the Comparisons table.
@@ -60,6 +69,7 @@ async def consume_comparison():
             assignment_id = comparison_event.get("assignment_id")
             comparison_id = comparison_event.get("comparison_id")
             print(f"Processing comparison with id: {comparison_id}")
+            
             # TODO: Download tokens for files being compared
 
             # TODO Handle Comparison Work
@@ -91,8 +101,9 @@ async def consume_submission():
             )
             file_text = file_bytes.decode("utf-8", errors="replace")
             print(f"Downloaded submission file for submission id: {submission_id}")
-            print(file_text)
             # TODO Call the java code and upload the results.
+            java_tokens = entry_point.getTokens(file_text)
+            print(f"Received tokens: {str(java_tokens)}")
         except Exception as e:
             print(f"Error processing submission event {submission_event}: {e}")
         finally:
