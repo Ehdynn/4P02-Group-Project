@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import getInstructorAssignments from "../../../utils/DatabaseInteractions/Instructor/getInstructorAssignments";
 
-const normalizeAssignments = (data) => {
-  return Array.isArray(data) ? data : [];
-};
 
 export function useInstructorAssignments(selectedCourse, onError) {
   const [assignments, setAssignments] = useState([]);
@@ -25,14 +22,11 @@ export function useInstructorAssignments(selectedCourse, onError) {
         const data = await getInstructorAssignments(selectedCourse);
 
         if (!cancelled) {
-          setAssignments(normalizeAssignments(data));
+          setAssignments(data);
         }
       } catch (err) {
         if (!cancelled) {
-          const message =
-            err instanceof Error
-              ? err.message
-              : "Unable to load assignments.";
+          const message = err.message ??  "Unable to load assignments.";
 
           if (onError) {
             onError(message);

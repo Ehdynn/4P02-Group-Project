@@ -19,7 +19,7 @@ const ComparisonList = ({ comparisons, loading, selectedComparisonId, onSelectCo
               >
                 <p className="font-medium">{String(comparison.status).toUpperCase()}</p>
                 <p className="text-xs text-slate-600">
-                  {comparison.studentsWithNames?.length ?? 0} student(s)
+                  {comparison.number_of_students ?? 0} student(s)
                 </p>
                 <p className="text-xs text-slate-500">
                   {comparison.created_at ? new Date(comparison.created_at).toLocaleString() : "No timestamp"}

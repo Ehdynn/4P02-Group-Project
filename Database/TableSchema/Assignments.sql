@@ -4,6 +4,8 @@ create table public."Assignments" (
   due_date timestamp with time zone null,
   description text null,
   name text not null,
+  key text not null,
   constraint Assignments_pkey primary key (id),
+  constraint Assignments_join_code_key unique (key),
   constraint Assignments_course_fkey foreign KEY (course) references "Courses" (cid)
 ) TABLESPACE pg_default;

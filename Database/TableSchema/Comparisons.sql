@@ -5,6 +5,7 @@ create table public."Comparisons" (
   aid bigint not null,
   status text not null default 'pending'::text,
   error_message text null,
-  students_compared uuid[] null,
+  number_of_students integer null,
+  constraint Comparisons_pkey primary key (id),
   constraint Comparisons_aid_fkey foreign KEY (aid) references "Assignments" (id)
 ) TABLESPACE pg_default;
