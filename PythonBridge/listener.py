@@ -16,6 +16,10 @@ key = os.getenv("SECRET_KEY")
 
 supabase: Client = create_client(url, key)
 
+'''
+Handles the insert event on the Comparisons table.
+Takes the information and adds it to the queue to be handled by the consumer.
+'''
 def handle_comparison_update(payload):
     record = payload.get("data", {}).get("record", {})
     comparison_id = record.get("id")
@@ -27,7 +31,11 @@ def handle_comparison_update(payload):
                 "assignment_id": assignment_id,
             }
         )
-    
+
+'''
+Handles the insert event on the File_Submissions_New table.
+Takes the information and adds it to the queue to be handled by the consumer.
+'''
 def handle_submission_update(payload):
     record = payload.get("data", {}).get("record", {})
     submission_id = record.get("id")
@@ -42,6 +50,9 @@ def handle_submission_update(payload):
             }
         )
 
+'''
+Handles each comparison request.
+'''
 async def consume_comparison():
     while True:
         comparison_event = await comparison_queue.get()
@@ -62,6 +73,9 @@ async def consume_comparison():
             comparison_queue.task_done()
 
 
+'''
+Handles each submission.
+'''
 async def consume_submission():
     while True:
         submission_event = await submission_queue.get()
@@ -77,6 +91,7 @@ async def consume_submission():
             )
             file_text = file_bytes.decode("utf-8", errors="replace")
             print(f"Downloaded submission file for submission id: {submission_id}")
+            print(file_text)
             # TODO Call the java code and upload the results.
         except Exception as e:
             print(f"Error processing submission event {submission_event}: {e}")
@@ -94,6 +109,7 @@ async def main():
         asyncio.create_task(consume_comparison())
         asyncio.create_task(consume_submission())
 
+        # Comparison Listener
         comparison_channel = client.channel("realtime:public:Comparisons")
         comparison_channel.on_postgres_changes(
             RealtimePostgresChangesListenEvent.Insert,
@@ -104,6 +120,7 @@ async def main():
         await comparison_channel.subscribe()
         print(f"Subscribed to inserts on 'Comparisons'. Listening for changes...")
 
+        # Submission Listener
         submissions_channel = client.channel("realtime:public:File_Submissions_New")
         submissions_channel.on_postgres_changes(
             RealtimePostgresChangesListenEvent.Insert,
@@ -114,8 +131,10 @@ async def main():
         await submissions_channel.subscribe()
         print(f"Subscribed to inserts on 'Submissions'. Listening for changes...")
 
+        # Keep the program alive while waiting for events.
         await asyncio.Event().wait()
     except Exception as e:
+        # TODO More verbose error msg
         print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
