@@ -1,7 +1,9 @@
 import useUser from "../context/useUser"
+import {useNavigate} from "react-router-dom";
 
 const Landing = () => {
   const {isProfessor, roleReady } = useUser();
+  const navigate = useNavigate();
   return (
     <main className="outer-container-3qw">
       <h1 className="h1-default text-center">Team Won Code Comparison</h1>
@@ -24,7 +26,9 @@ const Landing = () => {
                 Student Description
               </p>
             </div>
-            <button className="submit-button">Submit An Assignment</button>
+            <button className="submit-button"
+                    onClick={() => navigate("/Submit")}
+            >Submit An Assignment</button>
             </div>
         </div>
       </div>
