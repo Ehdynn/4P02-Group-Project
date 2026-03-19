@@ -1,5 +1,69 @@
 const noSpaceBefore = new Set([")", "]", "}", ",", ";", ".", ":"]);
 const noSpaceAfter = new Set(["(", "[", "{", ".", "!", "~"]);
+const highlightPalettes = [
+  {
+    text: "text-sky-100",
+    bg: "bg-sky-400/30",
+    button: "bg-sky-300 hover:bg-sky-200 text-slate-900",
+    label: "text-sky-200",
+  },
+  {
+    text: "text-rose-100",
+    bg: "bg-rose-400/30",
+    button: "bg-rose-300 hover:bg-rose-200 text-slate-900",
+    label: "text-rose-200",
+  },
+  {
+    text: "text-emerald-100",
+    bg: "bg-emerald-400/30",
+    button: "bg-emerald-300 hover:bg-emerald-200 text-slate-900",
+    label: "text-emerald-200",
+  },
+  {
+    text: "text-violet-100",
+    bg: "bg-violet-400/30",
+    button: "bg-violet-300 hover:bg-violet-200 text-slate-900",
+    label: "text-violet-200",
+  },
+  {
+    text: "text-orange-100",
+    bg: "bg-orange-400/30",
+    button: "bg-orange-300 hover:bg-orange-200 text-slate-900",
+    label: "text-orange-200",
+  },
+  {
+    text: "text-cyan-100",
+    bg: "bg-cyan-400/30",
+    button: "bg-cyan-300 hover:bg-cyan-200 text-slate-900",
+    label: "text-cyan-200",
+  },
+];
+
+const multipleMatchPalette = {
+  text: "text-amber-100",
+  bg: "bg-amber-400/30",
+  button: "bg-amber-300 hover:bg-amber-200 text-slate-900",
+  label: "text-amber-200",
+};
+
+const getPaletteIndex = (value) => {
+  const normalized = String(value ?? "");
+  let hash = 0;
+
+  for (let index = 0; index < normalized.length; index += 1) {
+    hash = (hash * 31 + normalized.charCodeAt(index)) >>> 0;
+  }
+
+  return hash % highlightPalettes.length;
+};
+
+const getHighlightPalette = (highlightKey) => {
+  if (highlightKey === "multipleMatches") {
+    return multipleMatchPalette;
+  }
+
+  return highlightPalettes[getPaletteIndex(highlightKey)];
+};
 
 const getFlaggedTokenMap = (tokens, sequences) => {
   const flaggedMap = Array.from({ length: tokens.length }, () => null);
@@ -159,28 +223,36 @@ const Viewer = ({ data, title = "Comparison Output", onSelectSubmission }) => {
       <div key={`line-${lineIndex}`}>
         {segments.map((segment, segmentIndex) => (
           segment.highlightKey != null ? (
-            <span
-              key={`segment-${lineIndex}-${segmentIndex}`}
-              className="group relative inline-block bg-amber-300/30 text-amber-100"
-            >
-              {segment.text}
-              <span className="absolute left-0 top-full z-20 hidden min-w-56 rounded-lg border border-slate-700 bg-slate-900 p-3 text-xs text-slate-100 shadow-xl group-hover:block group-focus-within:block">
-                <span className="block font-semibold text-amber-200">Flagged Token / Token Sequence</span>
-                <span className="mt-1 block text-slate-300">
-                  This code matches code present in another submission.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelectSubmission(segment.highlightKey);
-                  }}
-                  disabled={segment.highlightKey === "multipleMatches"}
-                  className="submit-button bg-amber-300 hover:bg-amber-200 text-slate-900"
+            (() => {
+              const palette = getHighlightPalette(segment.highlightKey);
+
+              return (
+                <span
+                  key={`segment-${lineIndex}-${segmentIndex}`}
+                  className={`group relative inline-block ${palette.bg} ${palette.text}`}
                 >
-                  View Matching Submission
-                </button>
-              </span>
-            </span>
+                  {segment.text}
+                  <span className="absolute left-0 top-full z-20 hidden min-w-56 rounded-lg border border-slate-700 bg-slate-900 p-3 text-xs text-slate-100 shadow-xl group-hover:block group-focus-within:block">
+                    <span className={`block font-semibold ${palette.label}`}>
+                      Flagged Token / Token Sequence
+                    </span>
+                    <span className="mt-1 block text-slate-300">
+                      This code matches code present in another submission.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectSubmission(segment.highlightKey);
+                      }}
+                      disabled={segment.highlightKey === "multipleMatches"}
+                      className={`submit-button ${palette.button}`}
+                    >
+                      View Matching Submission
+                    </button>
+                  </span>
+                </span>
+              );
+            })()
           ) : (
             <span key={`segment-${lineIndex}-${segmentIndex}`}>
               {segment.text}
