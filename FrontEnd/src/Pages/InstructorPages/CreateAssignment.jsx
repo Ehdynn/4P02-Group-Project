@@ -12,6 +12,7 @@ const CreateAssignment = () => {
     name: "",
     dueDate: "",
     description: "",
+    key: "",
   });
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -48,9 +49,9 @@ const CreateAssignment = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const { cid, dueDate, description } = formData;
+    const { cid, dueDate, description, key } = formData;
 
-    if (!cid || !formData.name.trim()) {
+    if (!cid || !formData.name.trim() || !key) {
       setError("Please fill in all fields.");
       return;
     }
@@ -68,7 +69,7 @@ const CreateAssignment = () => {
 
     let assignmentData = null;
     try {
-      assignmentData = await createAssignment(cid, formData.name, dueDateWithTimezone, description);
+      assignmentData = await createAssignment(cid, formData.name, dueDateWithTimezone, description, key.trim());
     } catch (invokeError) {
       let errorMessage = invokeError instanceof Error ? invokeError.message : "Unable to create assignment";
       if (invokeError?.context) {
@@ -136,6 +137,18 @@ const CreateAssignment = () => {
             value={formData.name}
             onChange={onChange}
             placeholder="Assignment One"
+            className="field-default"
+          />
+        </label>
+        <label className="label-default">
+          <span className="span-default">Submission Key</span>
+          <p>This Cannot be changed once assignment is created.</p>
+          <input
+            type="text"
+            name="key"
+            value={formData.key}
+            onChange={onChange}
+            placeholder="xxVs2lK"
             className="field-default"
           />
         </label>
