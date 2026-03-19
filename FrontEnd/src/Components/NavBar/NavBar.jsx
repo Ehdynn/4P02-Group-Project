@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import useUser from '../../context/useUser';
 import supabase from "../../utils/DatabaseInteractions/supabase";
 import InstructorLinks from './InstructorLinks';
+
 const Navbar = () => {
     const navigate = useNavigate();
-    const { user, isProfessor, roleReady } = useUser();
+    const { user, setUser, isProfessor, roleReady } = useUser();
     const handleLogout = async () => {
       await supabase.auth.signOut();
+
       navigate("/");
     };
 
@@ -23,13 +25,21 @@ const Navbar = () => {
             >{user && roleReady ? "Overview" : "Home"}</Link>
 
             <div className="ml-auto flex items-center gap-1">
+              <Link to="/about" className="link-default">
+                About
+              </Link>
+              {!isProfessor && 
+                <Link to={'/JoinCourse'} className="link-default">
+                Join Course
+              </Link>
+              }
               {user == null ? 
                 <Link to="/login" className="link-default">
                     Login
                 </Link> 
                 :
                 <>
-                  {roleReady ? <InstructorLinks /> : null}
+                  {(roleReady ? <InstructorLinks /> : null)}
                   <button
                     type="button"
                     onClick={handleLogout}
