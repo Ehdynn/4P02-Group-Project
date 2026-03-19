@@ -2,13 +2,11 @@ import org.postgresql.util.internal.FileUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -91,7 +89,7 @@ public class FileHandler {
      * @param fileName  Filename to extract the extension from
      * @return  String containing extension
      */
-    private static String getFileExtension(String fileName) {
+    public String getFileExtension(String fileName) {
         int lastIndexOfDot = fileName.lastIndexOf('.');
         // Check if a dot exists and is not the very first character
         if (lastIndexOfDot == -1 || lastIndexOfDot == 0) {
@@ -142,6 +140,7 @@ public class FileHandler {
     }
 
     /**Saves and returns a list of tokens as a csv
+     * Header is: type, value
      *
      * @param tokens    tokens to save
      * @return  CSV file
@@ -170,8 +169,29 @@ public class FileHandler {
         return file;
     }
 
+    /**Creates a CSV formatted string of a token list
+     * Header is: type, value
+     *
+     * @param tokens Token List to be converted to CSV
+     * @return  Token List in String formatted as CSV
+     */
     public String getTokenListCSV(List<Token> tokens){
         StringBuilder csv = new StringBuilder("type, value\n");
+        for (Token token : tokens) {
+            csv.append(token.getType()).append(", ").append(token.getValue()).append("\n");
+        }
+        return csv.toString();
+    }
+
+    /**Creates a string representing a token list
+     * Formatted as a CSV without the header
+     * Tokens are represented as type, value
+     *
+     * @param tokens Token List to be converted to CSV
+     * @return  Token List in String formatted as CSV
+     */
+    public String getHeadlessTokenListCSV(List<Token> tokens){
+        StringBuilder csv = new StringBuilder();
         for (Token token : tokens) {
             csv.append(token.getType()).append(", ").append(token.getValue()).append("\n");
         }
@@ -224,7 +244,7 @@ public class FileHandler {
      * @return  Java file object
      * @throws IOException  byte array isn't a file
      */
-    public static File writeByte(byte[] bytes, String name) throws IOException {
+    public File writeBytesToFile(byte[] bytes, String name) throws IOException {
         if(bytes.length == 0) return null;
         Path path = Paths.get("Engine/src/resources/" + name);
         Files.write(path, bytes);
@@ -232,6 +252,18 @@ public class FileHandler {
         return new File("Engine/src/resources/" + name);
     }
 
+    public Set<String> listFilesUsingDirectoryStream(String dir) throws IOException {
+        Set<String> fileSet = new HashSet<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) {
+            for (Path path : stream) {
+                if (!Files.isDirectory(path)) {
+                    fileSet.add(path.getFileName()
+                            .toString());
+                }
+            }
+        }
+        return fileSet;
+    }
 
     static void main() throws IOException {
         FileHandler f = new FileHandler();
