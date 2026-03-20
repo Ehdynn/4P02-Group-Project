@@ -24,6 +24,10 @@ gateway = JavaGateway()
 # Access the entry point object exposed by the Java application
 entry_point = gateway.entry_point
 
+'''
+Get all of the ids from submissions
+TODO only get the most recent submission from each student
+'''
 def get_submission_ids_for_assignment(assignment_id):
     response = (
         supabase.table("File_Submissions_New")
@@ -34,7 +38,9 @@ def get_submission_ids_for_assignment(assignment_id):
 
     return [row.get("id") for row in (response.data or []) if row.get("id") is not None]
 
-
+'''
+Download all of the csvs to be compared from the db
+'''
 def download_token_csvs_for_assignment(assignment_id, submission_ids):
     token_csvs = []
 
@@ -51,7 +57,9 @@ def download_token_csvs_for_assignment(assignment_id, submission_ids):
 
     return token_csvs
 
-
+'''
+Checks to make sure that all of the tokens have been created for each submission to an assignment
+'''
 def has_pending_submission_for_assignment(assignment_id):
     queued_items = list(submission_queue._queue)
     return any(
