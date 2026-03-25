@@ -122,6 +122,8 @@ def encode_bytes(token_csvs):
             }
         )
 
+    return encoded_bytes
+
 '''
 Handles each comparison request.
 '''
@@ -131,6 +133,7 @@ async def consume_comparison():
         try:
             assignment_id = comparison_event.get("assignment_id")
             comparison_id = comparison_event.get("comparison_id")
+            submission_id = comparison_event.get("submission_id")
             print(f"Processing comparison with id: {comparison_id}")
 
             while has_pending_submission_for_assignment(assignment_id):
@@ -154,7 +157,9 @@ async def consume_comparison():
                 f"Downloaded {len(token_csvs)} token csv file(s) for assignment {assignment_id}"
             )
 
-            # TODO Handle Comparison Work
+            encoded_bytes = encode_bytes(token_csvs)
+
+            similarity_data = gateway.getComparisonData(submission_id, encoded_bytes)
 
             # TODO Upload Comparisons
 
