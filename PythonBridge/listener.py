@@ -1,3 +1,5 @@
+import base64
+
 from dotenv import load_dotenv
 import asyncio
 import os
@@ -5,6 +7,7 @@ from pathlib import Path
 from supabase import create_client, Client
 from realtime import AsyncRealtimeClient, RealtimePostgresChangesListenEvent
 from py4j.java_gateway import JavaGateway
+import json
 
 comparison_queue = asyncio.Queue()
 submission_queue = asyncio.Queue()
@@ -99,6 +102,23 @@ def handle_submission_update(payload):
                 "assignment_id": assignment_id,
                 "submission_id": submission_id,
                 "file_name": file_name,
+            }
+        )
+
+'''
+Encodes file bytes to send as string
+'''
+def encode_bytes(token_csvs):
+    encoded_bytes = []
+
+    for submission in token_csvs:
+
+        encoded = base64.b64encode(submission['csv_bytes']).decode('utf-8')
+
+        encoded_bytes.append(
+            {
+                "submission_id": submission['submission_id'],
+                "csv_bytes": encoded,
             }
         )
 

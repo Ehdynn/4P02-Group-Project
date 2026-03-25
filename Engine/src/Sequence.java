@@ -6,7 +6,7 @@ public class Sequence {
     private int start;
     private int length;
     private List<Token> tokens;
-    private int submissionId;
+    private String submissionId;
 
     /** Sequence Constructor
      *
@@ -14,7 +14,7 @@ public class Sequence {
      * @param len   Length of sequence
      * @param submissionId   ID of flagged submission
      */
-    Sequence(int start, int len, int submissionId) {
+    Sequence(int start, int len, String submissionId) {
         this.start = start;
         this.length = len;
         this.tokens = new ArrayList<>();
@@ -41,7 +41,7 @@ public class Sequence {
      *
      * @return  the ID of the flagged submission
      */
-    public int getSubmissionId() {
+    public String getSubmissionId() {
         return submissionId;
     }
 

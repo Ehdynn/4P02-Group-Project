@@ -12,7 +12,7 @@ public class StringTiling {
      *
      * @Version 1.2 (Mar 12th, 2026)
      */
-    public static List<Sequence> tile(Submission current, List<Submission> database, int tolerance){
+    public List<Sequence> tile(Submission current, List<Submission> database, int tolerance){
         List<Token> submission = current.getTokens();
         List<Sequence> matches = new ArrayList<>();
         boolean[] marked = new boolean[submission.size()];

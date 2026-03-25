@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 
 class Bridge {
@@ -30,8 +32,6 @@ class Bridge {
      * TEST CODE
      * NOT FOR FINAL RELEASE
      *
-     * @param code
-     * @return
      *
     public String Tokenize(String code){
         Lexer lexer = new Lexer(code);
@@ -94,5 +94,45 @@ class Bridge {
         }
 
         return tokenLists;
+    }
+
+    public String getComparisonData(String submissionID, String databaseCSVs){
+        JSONArray databaseParser = new JSONArray(databaseCSVs);
+        FileHandler handler = new FileHandler();
+        StringTiling tiling = new StringTiling();
+        SimilarityScore score = new SimilarityScore();
+        ComparisonEngine comparison = new ComparisonEngine();
+        List<Submission> database = new ArrayList<Submission>();
+        List<Token> studentTokens = new ArrayList<Token>();
+        String studentId = new String();
+
+        for (int i = 0; i < databaseParser.length(); i++) {
+            JSONObject obj = databaseParser.getJSONObject(i);
+
+            String id = obj.getString("submission_id");
+            String file = obj.getString("csv_bytes");
+
+            byte[] decodedBytes = Base64.getDecoder().decode(file);
+
+            String tokenizedString = tokenizeCondensed(decodedBytes);
+
+            List<Token> tokens = handler.getTokensFromFile(tokenizedString);
+
+            if(submissionID.equals(id)){
+                studentTokens = tokens;
+                studentId = id;
+            } else {
+                Submission databaseSubmission = new Submission(tokens, id);
+                database.add(databaseSubmission);
+            }
+        }
+
+        Submission studentSubmission = new Submission(studentTokens, studentId);
+
+        List<Sequence> flaggedSequences = tiling.tile(studentSubmission, database, 5);
+
+        double similarityScore = score.getSimilarityScore(studentTokens, flaggedSequences);
+
+        return comparison.buildComparisonData(studentSubmission, flaggedSequences, similarityScore);
     }
 }

@@ -20,7 +20,7 @@ public class ComparisonEngine {
         return tokenArray;
     }
 
-    public static String buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore){
+    public String buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore){
         FileHandler handler = new FileHandler();
         JSONObject comparisonJson = new JSONObject();
         List<Token> submissionCode = submission.getTokens();

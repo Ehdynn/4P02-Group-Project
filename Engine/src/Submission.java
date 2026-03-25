@@ -2,14 +2,14 @@ import java.util.List;
 
 public class Submission {
     private List<Token> tokens;
-    private int id;
+    private String id;
 
     /** Constructor for Submissions
      *
      * @param tokens  List of code tokens
      * @param id Submissions id
      */
-    public Submission(List<Token> tokens, int id){
+    public Submission(List<Token> tokens, String id){
         this.tokens = tokens;
         this.id = id;
     }
@@ -26,7 +26,7 @@ public class Submission {
      *
      * @return  the TokenType of the Token
      */
-    public int getId() {
+    public String getId() {
         return id;
     }
 }
