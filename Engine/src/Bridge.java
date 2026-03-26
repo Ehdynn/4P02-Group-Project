@@ -96,15 +96,13 @@ class Bridge {
         return tokenLists;
     }
 
-    public String getComparisonData(String submissionID, String databaseCSVs){
+    public String getComparisonData(String databaseCSVs){
         JSONArray databaseParser = new JSONArray(databaseCSVs);
         FileHandler handler = new FileHandler();
         StringTiling tiling = new StringTiling();
         SimilarityScore score = new SimilarityScore();
         ComparisonEngine comparison = new ComparisonEngine();
         List<Submission> database = new ArrayList<Submission>();
-        List<Token> studentTokens = new ArrayList<Token>();
-        String studentId = new String();
 
         for (int i = 0; i < databaseParser.length(); i++) {
             JSONObject obj = databaseParser.getJSONObject(i);
@@ -118,21 +116,20 @@ class Bridge {
 
             List<Token> tokens = handler.getTokensFromFile(tokenizedString);
 
-            if(submissionID.equals(id)){
-                studentTokens = tokens;
-                studentId = id;
-            } else {
-                Submission databaseSubmission = new Submission(tokens, id);
-                database.add(databaseSubmission);
-            }
+            Submission databaseSubmission = new Submission(tokens, id);
+            database.add(databaseSubmission);
         }
 
-        Submission studentSubmission = new Submission(studentTokens, studentId);
+        JSONArray comparisonData = new JSONArray();
 
-        List<Sequence> flaggedSequences = tiling.tile(studentSubmission, database, 5);
+        for(Submission s: database){
+            List<Sequence> flaggedSequences = tiling.tile(s, database, 5);
 
-        double similarityScore = score.getSimilarityScore(studentTokens, flaggedSequences);
+            double similarityScore = score.getSimilarityScore(s.getTokens(), flaggedSequences);
 
-        return comparison.buildComparisonData(studentSubmission, flaggedSequences, similarityScore);
+            comparisonData.put(new JSONObject(comparison.buildComparisonData(s, flaggedSequences, similarityScore)));
+        }
+
+        return comparisonData.toString();
     }
 }

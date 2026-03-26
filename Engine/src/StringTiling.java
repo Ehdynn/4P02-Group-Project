@@ -18,6 +18,10 @@ public class StringTiling {
         boolean[] marked = new boolean[submission.size()];
 
         for(Submission submissions: database){
+            //skips submission if it is the one being analyzed
+            if(current.getId().equals(submissions.getId()))
+                continue;
+
             List<Token> comparison = submissions.getTokens();
             int numMatches = 1;
             // Iterative loop which finds the largest remaining common sequences
