@@ -76,16 +76,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const studentList = [
-      ...new Set((students ?? []).map((student) => student.suid).filter(Boolean)),
-    ];
-
     const { data: comparison, error: comparisonError } = await dbClient
       .from("Comparisons")
       .insert({
         aid: aid,
         status: "pending",
-        students_compared: studentList
       })
       .select()
       .single();
