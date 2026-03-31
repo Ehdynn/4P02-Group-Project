@@ -8,6 +8,7 @@ const corsHeaders = {
 type CreateComparisonBody = {
   aid: number;
   boilerPlateFileId?: string | null;
+  repositoryId?: string | null;
 };
 
 Deno.serve(async (req) => {
@@ -59,11 +60,58 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as Partial<CreateComparisonBody>;
     const aid = body.aid;
     const boilerPlateFileId = body.boilerPlateFileId ?? null;
+    const repositoryId = body.repositoryId ?? null;
     if (!aid || aid <= 0) {
       return new Response(JSON.stringify({ error: ("Assignment id required") }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (boilerPlateFileId) {
+      const { data: boilerPlateFile, error: boilerPlateError } = await dbClient
+        .from("Boiler_Plate_Uploads")
+        .select("id")
+        .eq("id", boilerPlateFileId)
+        .eq("aid", aid)
+        .maybeSingle();
+
+      if (boilerPlateError) {
+        return new Response(JSON.stringify({ error: boilerPlateError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!boilerPlateFile) {
+        return new Response(JSON.stringify({ error: "Selected boiler plate file does not belong to this assignment." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    if (repositoryId) {
+      const { data: repository, error: repositoryError } = await dbClient
+        .from("Repositories")
+        .select("id")
+        .eq("id", repositoryId)
+        .eq("aid", aid)
+        .maybeSingle();
+
+      if (repositoryError) {
+        return new Response(JSON.stringify({ error: repositoryError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (!repository) {
+        return new Response(JSON.stringify({ error: "Selected repository does not belong to this assignment." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const{data: students, error: studentError} = await dbClient
@@ -84,6 +132,7 @@ Deno.serve(async (req) => {
         aid: aid,
         status: "pending",
         boiler_plate_file: boilerPlateFileId,
+        repository: repositoryId,
       })
       .select()
       .single();
