@@ -19,6 +19,7 @@ const Comparison = () => {
   const [comparisonOutputs, setComparisonOutputs] = useState([]);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
   const [secondarySelected, setSecondarySelected] = useState(null);
+  const [secondaryNavigationTarget, setSecondaryNavigationTarget] = useState(null);
   const [outputsLoading, setOutputsLoading] = useState(false);
   const [outputsError, setOutputsError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -86,6 +87,8 @@ const Comparison = () => {
       if (!selectedComparison?.id) {
         setComparisonOutputs([]);
         setSelectedSubmissionId(null);
+        setSecondarySelected(null);
+        setSecondaryNavigationTarget(null);
         setOutputsError("");
         setOutputsLoading(false);
         return;
@@ -105,11 +108,23 @@ const Comparison = () => {
 
             return null;
           });
+          setSecondarySelected((currentSecondaryId) => (
+            currentSecondaryId && outputs.some((output) => output.submissionId === currentSecondaryId)
+              ? currentSecondaryId
+              : null
+          ));
+          setSecondaryNavigationTarget((currentTarget) => (
+            currentTarget && outputs.some((output) => output.submissionId === currentTarget.submissionId)
+              ? currentTarget
+              : null
+          ));
         }
       } catch (err) {
         if (!cancelled) {
           setComparisonOutputs([]);
           setSelectedSubmissionId(null);
+          setSecondarySelected(null);
+          setSecondaryNavigationTarget(null);
           setOutputsError(err instanceof Error ? err.message : "Failed to load comparison output files.");
         }
       } finally {
@@ -134,20 +149,25 @@ const Comparison = () => {
   // Allows both the primary and secondary to be set at the same time,
   // Or just the primary if no secondary is provided. At which point the secondary is set to null.
   // If no secondary is given it closes the side by side view if it is open
-  function selectSubmission(submissionId, secondaryId){
+  function selectSubmission(submissionId, secondaryId, navigationTarget = null){
     if(submissionId){
       setSelectedSubmissionId(submissionId);
       if(secondaryId){
         setSecondarySelected(secondaryId);
+        setSecondaryNavigationTarget(navigationTarget);
       } else{setSecondarySelected(null);}
+      if (!secondaryId) {
+        setSecondaryNavigationTarget(null);
+      }
     }
   }
 
   // Swaps the secondary to the RHS and opens the new secondary on the LHS
-  function selectSubmissionFromSecondary(newSecondary){
+  function selectSubmissionFromSecondary(newSecondary, navigationTarget = null){
     if(newSecondary){
       setSelectedSubmissionId(secondarySelected);
       setSecondarySelected(newSecondary);
+      setSecondaryNavigationTarget(navigationTarget);
     }
   }
 
@@ -186,7 +206,10 @@ const Comparison = () => {
                 <Viewer
                   data={selectedOutput.data}
                   title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
-                  onSelectSubmission={setSecondarySelected}
+                  onSelectSubmission={(submissionId, navigationTarget) => {
+                    setSecondarySelected(submissionId);
+                    setSecondaryNavigationTarget(navigationTarget);
+                  }}
                 />
               </div>
             ) : ( // Side by side view
@@ -196,7 +219,10 @@ const Comparison = () => {
                     <Viewer
                       data={selectedOutput.data}
                       title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
-                      onSelectSubmission={setSecondarySelected}
+                      onSelectSubmission={(submissionId, navigationTarget) => {
+                        setSecondarySelected(submissionId);
+                        setSecondaryNavigationTarget(navigationTarget);
+                      }}
                     />
                   </div>
                 </div>
@@ -205,6 +231,7 @@ const Comparison = () => {
                     <Viewer
                       data={secondaryOutput.data}
                       title={`${secondaryOutput.studentName} (${secondaryOutput.studentNumber})`}
+                      navigationTarget={secondaryNavigationTarget}
                       onSelectSubmission={selectSubmissionFromSecondary}
                     />
                   </div>

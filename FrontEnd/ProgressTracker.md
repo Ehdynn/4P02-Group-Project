@@ -1,5 +1,15 @@
 # Progress Tracker
 
+## MUST BE FINISHED BY April 2 @ 11:59 
+- [ ] Boiler Plate Upload
+- [ ] Boiler Plate RLS
+- [ ] Selecting the same person again should close side by side
+- [ ] Test if it goes to the right line on longer files in side by side
+- [ ] Remove About page - Or add stuff to it
+
+
+
+
 ## Instructors Assignment Page
 
 - [x] [TN] Run Comparison Button

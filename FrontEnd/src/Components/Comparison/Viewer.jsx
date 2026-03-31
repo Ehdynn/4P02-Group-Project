@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 const noSpaceBefore = new Set([")", "]", "}", ",", ";", ".", ":"]);
 const noSpaceAfter = new Set(["(", "[", "{", ".", "!", "~"]);
 const highlightPalettes = [
@@ -85,6 +87,63 @@ const getFlaggedTokenMap = (tokens, sequences) => {
   return flaggedMap;
 };
 
+const parseFlaggedCode = (flaggedCode) => {
+  if (!flaggedCode) {
+    return [];
+  }
+
+  return String(flaggedCode)
+    .split(/\r?\n/)
+    .slice(1)
+    .filter(Boolean)
+    .map((line) => {
+      const separatorIndex = line.indexOf(",");
+      if (separatorIndex === -1) {
+        return null;
+      }
+
+      return {
+        token_type: line.slice(0, separatorIndex).trim(),
+        token_value: line.slice(separatorIndex + 1).trimStart(),
+      };
+    })
+    .filter(Boolean);
+};
+
+const tokensMatch = (leftToken, rightToken) => {
+  if (!leftToken || !rightToken) {
+    return false;
+  }
+
+  return (
+    String(leftToken.token_type ?? "") === String(rightToken.token_type ?? "") &&
+    String(leftToken.token_value ?? "") === String(rightToken.token_value ?? "")
+  );
+};
+
+const findMatchingSequenceStart = (tokens, sequenceTokens) => {
+  if (!Array.isArray(tokens) || !Array.isArray(sequenceTokens) || sequenceTokens.length === 0) {
+    return null;
+  }
+
+  for (let startIndex = 0; startIndex <= tokens.length - sequenceTokens.length; startIndex += 1) {
+    let isMatch = true;
+
+    for (let offset = 0; offset < sequenceTokens.length; offset += 1) {
+      if (!tokensMatch(tokens[startIndex + offset], sequenceTokens[offset])) {
+        isMatch = false;
+        break;
+      }
+    }
+
+    if (isMatch) {
+      return startIndex;
+    }
+  }
+
+  return null;
+};
+
 const buildFormattedCodeLines = (tokens) => {
   let indentLevel = 0;
   let currentLine = [];
@@ -160,14 +219,62 @@ const buildFormattedCodeLines = (tokens) => {
   return lines;
 };
 
-const Viewer = ({ data, title = "Comparison Output", onSelectSubmission }) => {
+const getTargetLineIndex = (codeLines, startTokenIndex) => {
+  if (startTokenIndex == null) {
+    return null;
+  }
+
+  for (let lineIndex = 0; lineIndex < codeLines.length; lineIndex += 1) {
+    const hasToken = codeLines[lineIndex].some((part) => part.tokenIndex === startTokenIndex);
+    if (hasToken) {
+      return lineIndex;
+    }
+  }
+
+  return null;
+};
+
+const getMatchingSequence = (sequences, submissionId, tokenIndex) => {
+  if (!Array.isArray(sequences) || tokenIndex == null) {
+    return null;
+  }
+
+  return sequences.find((sequence) => (
+    String(sequence.flagged_submission) === String(submissionId) &&
+    tokenIndex >= sequence.sequence_start &&
+    tokenIndex < sequence.sequence_start + sequence.sequence_length
+  )) ?? null;
+};
+
+const Viewer = ({ data, title = "Comparison Output", navigationTarget = null, onSelectSubmission }) => {
   const flaggedTokenMap = getFlaggedTokenMap(data.tokens, data.similarity_sequences);
   const codeLines = buildFormattedCodeLines(data.tokens);
+  const lineRefs = useRef([]);
+  const targetSequenceTokens = navigationTarget?.sequenceTokens ?? [];
+  const targetTokenStart = (
+    navigationTarget &&
+    String(navigationTarget.submissionId) === String(data.submission_id)
+  )
+    ? findMatchingSequenceStart(data.tokens, targetSequenceTokens)
+    : null;
+  const targetLineIndex = getTargetLineIndex(codeLines, targetTokenStart);
+
+  useEffect(() => {
+    if (targetLineIndex == null) {
+      return;
+    }
+
+    const lineElement = lineRefs.current[targetLineIndex];
+    if (lineElement) {
+      lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [targetLineIndex]);
 
   const renderLine = (line, lineIndex) => {
     const segments = [];
     let currentText = "";
     let currentHighlightKey = null;
+    let currentStartTokenIndex = null;
 
     line.forEach((part, partIndex) => {
       const previousTokenIndex = [...line]
@@ -203,28 +310,46 @@ const Viewer = ({ data, title = "Comparison Output", onSelectSubmission }) => {
           segments.push({
             text: currentText,
             highlightKey: currentHighlightKey,
+            startTokenIndex: currentStartTokenIndex,
           });
         }
         currentText = "";
         currentHighlightKey = highlightKey;
+        currentStartTokenIndex = part.tokenIndex ?? previousTokenIndex ?? nextTokenIndex ?? null;
       }
 
       currentText += part.text;
+
+      if (currentStartTokenIndex == null) {
+        currentStartTokenIndex = part.tokenIndex ?? previousTokenIndex ?? nextTokenIndex ?? null;
+      }
     });
 
     if (currentText) {
       segments.push({
         text: currentText,
         highlightKey: currentHighlightKey,
+        startTokenIndex: currentStartTokenIndex,
       });
     }
 
     return (
-      <div key={`line-${lineIndex}`}>
+      <div
+        key={`line-${lineIndex}`}
+        ref={(element) => {
+          lineRefs.current[lineIndex] = element;
+        }}
+        className={lineIndex === targetLineIndex ? "rounded bg-amber-300/15 ring-1 ring-amber-300/50" : ""}
+      >
         {segments.map((segment, segmentIndex) => (
           segment.highlightKey != null ? (
             (() => {
               const palette = getHighlightPalette(segment.highlightKey);
+              const matchingSequence = getMatchingSequence(
+                data.similarity_sequences,
+                segment.highlightKey,
+                segment.startTokenIndex,
+              );
 
               return (
                 <span
@@ -242,7 +367,10 @@ const Viewer = ({ data, title = "Comparison Output", onSelectSubmission }) => {
                     <button
                       type="button"
                       onClick={() => {
-                        onSelectSubmission(segment.highlightKey);
+                        onSelectSubmission(segment.highlightKey, {
+                          submissionId: segment.highlightKey,
+                          sequenceTokens: parseFlaggedCode(matchingSequence?.flagged_code),
+                        });
                       }}
                       disabled={segment.highlightKey === "multipleMatches"}
                       className={`submit-button ${palette.button}`}
