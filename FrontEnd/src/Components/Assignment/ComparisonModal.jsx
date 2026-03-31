@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getBoilerPlateUploads } from "../../utils/DatabaseInteractions/Instructor/getBoilerPlateUploads";
 import { uploadBoilerPlateCode } from "../../utils/DatabaseInteractions/Instructor/uploadBoilerPlateCode";
+import { getRepositories } from "../../utils/DatabaseInteractions/Instructor/getRepositories";
+import { uploadRepository } from "../../utils/DatabaseInteractions/Instructor/uploadRepository";
 
 const defaultMode = "none";
 
@@ -13,6 +15,15 @@ function formatUploadLabel(upload, index) {
   return `${fileName} (${timestamp})`;
 }
 
+function formatRepositoryLabel(repository, index) {
+  const repositoryName = String(repository?.repository_name ?? "").trim() || `Repository ${index + 1}`;
+  const timestamp = repository?.created_at
+    ? new Date(repository.created_at).toLocaleString()
+    : "Unknown upload time";
+
+  return `${repositoryName} (${timestamp})`;
+}
+
 const ComparisonModal = ({
   aid,
   isOpen,
@@ -23,7 +34,12 @@ const ComparisonModal = ({
   const [uploads, setUploads] = useState([]);
   const [selectedUploadId, setSelectedUploadId] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [repositoryMode, setRepositoryMode] = useState(defaultMode);
+  const [repositories, setRepositories] = useState([]);
+  const [selectedRepositoryId, setSelectedRepositoryId] = useState("");
+  const [selectedRepositoryFile, setSelectedRepositoryFile] = useState(null);
   const [loadingUploads, setLoadingUploads] = useState(false);
+  const [loadingRepositories, setLoadingRepositories] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,25 +53,36 @@ const ComparisonModal = ({
     async function loadUploads() {
       try {
         setLoadingUploads(true);
+        setLoadingRepositories(true);
         setError("");
-        const rows = await getBoilerPlateUploads(aid);
+        const [rows, repositoryRows] = await Promise.all([
+          getBoilerPlateUploads(aid),
+          getRepositories(aid),
+        ]);
 
         if (!cancelled) {
           setUploads(rows);
           setSelectedUploadId(rows[0]?.id ?? "");
           setMode(rows.length > 0 ? "existing" : defaultMode);
+          setRepositories(repositoryRows);
+          setSelectedRepositoryId(repositoryRows[0]?.id ?? "");
+          setRepositoryMode(repositoryRows.length > 0 ? "existing" : defaultMode);
         }
       } catch (err) {
         if (!cancelled) {
-          const message = err instanceof Error ? err.message : "Failed to load boiler plate uploads.";
+          const message = err instanceof Error ? err.message : "Failed to load comparison resources.";
           setError(message);
           setUploads([]);
           setSelectedUploadId("");
           setMode(defaultMode);
+          setRepositories([]);
+          setSelectedRepositoryId("");
+          setRepositoryMode(defaultMode);
         }
       } finally {
         if (!cancelled) {
           setLoadingUploads(false);
+          setLoadingRepositories(false);
         }
       }
     }
@@ -77,6 +104,7 @@ const ComparisonModal = ({
       setError("");
 
       let boilerPlateFileId = null;
+      let repositoryId = null;
 
       if (mode === "existing") {
         if (!selectedUploadId) {
@@ -90,8 +118,21 @@ const ComparisonModal = ({
         boilerPlateFileId = upload.id;
       }
 
-      await onRunComparison(boilerPlateFileId);
+      if (repositoryMode === "existing") {
+        if (!selectedRepositoryId) {
+          throw new Error("Please select a previously uploaded repository.");
+        }
+        repositoryId = selectedRepositoryId;
+      }
+
+      if (repositoryMode === "new") {
+        const repositoryUpload = await uploadRepository(aid, selectedRepositoryFile);
+        repositoryId = repositoryUpload.id;
+      }
+
+      await onRunComparison(boilerPlateFileId, repositoryId);
       setSelectedFile(null);
+      setSelectedRepositoryFile(null);
       onClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to run comparison.";
@@ -130,7 +171,7 @@ const ComparisonModal = ({
               className="input-default"
               value={mode}
               onChange={(event) => setMode(event.target.value)}
-              disabled={submitting || loadingUploads}
+              disabled={submitting || loadingUploads || loadingRepositories}
             >
               <option value="none">No boiler plate code</option>
               <option value="existing" disabled={uploads.length === 0}>Use a previous upload</option>
@@ -176,6 +217,59 @@ const ComparisonModal = ({
               </p>
             </label>
           ) : null}
+
+          <label className="block">
+            <span className="mb-1 block font-medium text-slate-700">Repository source</span>
+            <select
+              className="input-default"
+              value={repositoryMode}
+              onChange={(event) => setRepositoryMode(event.target.value)}
+              disabled={submitting || loadingUploads || loadingRepositories}
+            >
+              <option value="none">No repository</option>
+              <option value="existing" disabled={repositories.length === 0}>Use a previous repository</option>
+              <option value="new">Upload new repository</option>
+            </select>
+          </label>
+
+          {repositoryMode === "existing" ? (
+            <label className="block">
+              <span className="mb-1 block font-medium text-slate-700">Previous repositories</span>
+              <select
+                className="input-default"
+                value={selectedRepositoryId}
+                onChange={(event) => setSelectedRepositoryId(event.target.value)}
+                disabled={submitting || loadingRepositories || repositories.length === 0}
+              >
+                <option value="">Select a repository</option>
+                {repositories.map((repository, index) => (
+                  <option key={repository.id} value={repository.id}>
+                    {formatRepositoryLabel(repository, index)}
+                  </option>
+                ))}
+              </select>
+              {loadingRepositories ? <p className="mt-2 text-sm text-slate-500">Loading repositories...</p> : null}
+              {!loadingRepositories && repositories.length === 0 ? (
+                <p className="mt-2 text-sm text-slate-500">No previous repositories found.</p>
+              ) : null}
+            </label>
+          ) : null}
+
+          {repositoryMode === "new" ? (
+            <label className="block">
+              <span className="mb-1 block font-medium text-slate-700">Upload repository</span>
+              <input
+                type="file"
+                className="input-default"
+                accept=".zip"
+                onChange={(event) => setSelectedRepositoryFile(event.target.files?.[0] ?? null)}
+                disabled={submitting}
+              />
+              <p className="mt-2 text-sm text-slate-500">
+                Accepted format: `.zip`
+              </p>
+            </label>
+          ) : null}
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
@@ -191,7 +285,7 @@ const ComparisonModal = ({
             type="button"
             className="submit-button"
             onClick={handleSubmit}
-            disabled={submitting || loadingUploads}
+            disabled={submitting || loadingUploads || loadingRepositories}
           >
             {submitting ? "Starting Comparison..." : "Run Comparison"}
           </button>

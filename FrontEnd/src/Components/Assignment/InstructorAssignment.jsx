@@ -69,10 +69,10 @@ const InstructorAssignment = () => {
     };
   }, [aid]);
 
-  const handleCreateComparison = async (boilerPlateFileId = null) => {
+  const handleCreateComparison = async (boilerPlateFileId = null, repositoryId = null) => {
     try {
       setComparisonError("");
-      await createComparison(aid, boilerPlateFileId);
+      await createComparison(aid, boilerPlateFileId, repositoryId);
       setComparisonAvailable(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create comparison.";

@@ -1,12 +1,13 @@
 import supabase from "../supabase";
 
-export async function createComparison(aid, boilerPlateFileId = null) {
+export async function createComparison(aid, boilerPlateFileId = null, repositoryId = null) {
     if(!aid) throw new Error("Failed to create comparison.");
 
     const { data, error } = await supabase.functions.invoke("createComparison", {
       body: {
         aid: Number(aid),
         boilerPlateFileId: boilerPlateFileId ?? null,
+        repositoryId: repositoryId ?? null,
       },
     });
     
