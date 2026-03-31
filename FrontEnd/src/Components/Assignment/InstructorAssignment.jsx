@@ -4,6 +4,7 @@ import { useParams, useNavigate} from "react-router-dom";
 import { useLoadInstructorAssignment } from "./hooks/useLoadInstructorAssignment";
 import { useUpdateAssignment } from "./hooks/useUpdateAssignment";
 import AssignmentDetails from "./AssignmentDetails";
+import ComparisonModal from "./ComparisonModal";
 import UpdateForm from "./UpdateForm";
 import PageNotFound from "../../Pages/PageNotFound";
 import { checkForComparison } from "../../utils/DatabaseInteractions/Instructor/checkForComparison";
@@ -15,6 +16,7 @@ const InstructorAssignment = () => {
   const { aid } = useParams();
   const [comparisonAvailable, setComparisonAvailable] = useState(true);
   const [comparisonError, setComparisonError] = useState("");
+  const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
   const [submissionCounts, setSubmissionCounts] = useState({
     submissionCount: 0,
     uniqueStudentSubmissionCount: 0,
@@ -67,14 +69,15 @@ const InstructorAssignment = () => {
     };
   }, [aid]);
 
-  const handleCreateComparison = async () => {
+  const handleCreateComparison = async (boilerPlateFileId = null) => {
     try {
       setComparisonError("");
-      await createComparison(aid);
-      setComparisonAvailable(false);
+      await createComparison(aid, boilerPlateFileId);
+      setComparisonAvailable(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create comparison.";
       setComparisonError(message);
+      throw err;
     }
   };
 
@@ -106,7 +109,7 @@ const InstructorAssignment = () => {
             <h2 className="h2-large">Similarity Comparison</h2>
             {comparisonError ? <p className="error">{comparisonError}</p> : null}
             <button className="submit-button"
-                    onClick={handleCreateComparison}>
+                    onClick={() => setComparisonModalOpen(true)}>
               {!comparisonAvailable ? "Run Similarity Comparison" : "Run Similarity Comparison Again"}
             </button>
             {comparisonAvailable ? 
@@ -117,6 +120,12 @@ const InstructorAssignment = () => {
          </div>
         </div>
       </div>
+      <ComparisonModal
+        aid={aid}
+        isOpen={comparisonModalOpen}
+        onClose={() => setComparisonModalOpen(false)}
+        onRunComparison={handleCreateComparison}
+      />
       <div className="box-wrapper">
         <UpdateForm 
           handleSubmit={handleSubmit}
