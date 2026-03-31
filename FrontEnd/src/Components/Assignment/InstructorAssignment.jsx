@@ -8,12 +8,18 @@ import UpdateForm from "./UpdateForm";
 import PageNotFound from "../../Pages/PageNotFound";
 import { checkForComparison } from "../../utils/DatabaseInteractions/Instructor/checkForComparison";
 import { createComparison } from "../../utils/DatabaseInteractions/Instructor/createComparison";
+import { getNumberOfSubmissions } from "../../utils/DatabaseInteractions/Instructor/getNumberOfSubmissions";
 
 const InstructorAssignment = () => {
   const navigate = useNavigate();
   const { aid } = useParams();
   const [comparisonAvailable, setComparisonAvailable] = useState(true);
   const [comparisonError, setComparisonError] = useState("");
+  const [submissionCounts, setSubmissionCounts] = useState({
+    submissionCount: 0,
+    uniqueStudentSubmissionCount: 0,
+  });
+  const [submissionError, setSubmissionError] = useState("");
   const [formData, setFormData] = useState({
         name: "",
         dueDate: "",
@@ -25,6 +31,20 @@ const InstructorAssignment = () => {
   
   useEffect(() => {
     let cancelled = false;
+
+    async function loadSubmissionCounts() {
+      try {
+        const counts = await getNumberOfSubmissions(aid);
+        if (!cancelled) {
+          setSubmissionCounts(counts);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : "Failed to load submission counts.";
+          setSubmissionError(message);
+        }
+      }
+    }
 
     async function checkComparisonStatus() {
       try {
@@ -40,6 +60,7 @@ const InstructorAssignment = () => {
       }
     }
 
+    loadSubmissionCounts();
     checkComparisonStatus();
     return () => {
       cancelled = true;
@@ -71,7 +92,17 @@ const InstructorAssignment = () => {
       <div className="box-wrapper">
         <AssignmentDetails details={details} />
       </div>
-      <div className="box-wrapper">
+      <div className="flex w-full space-x-5 flex-col md:flex-row">
+        <div className="flex-1 min-w-0">
+          <div className="box-wrapper">
+            <h2 className="h2-large">Submission Counts</h2>
+            {submissionError ? <p className="error">{submissionError}</p> : null}
+            <p>Submissions: {submissionCounts.submissionCount}</p>
+            <p>Unique Student Submissions: {submissionCounts.uniqueStudentSubmissionCount}</p>
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="box-wrapper">
             <h2 className="h2-large">Similarity Comparison</h2>
             {comparisonError ? <p className="error">{comparisonError}</p> : null}
             <button className="submit-button"
@@ -84,6 +115,8 @@ const InstructorAssignment = () => {
               >View Results</button>
             : null}
          </div>
+        </div>
+      </div>
       <div className="box-wrapper">
         <UpdateForm 
           handleSubmit={handleSubmit}
