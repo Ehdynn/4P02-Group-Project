@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate} from "react-router-dom";
 
-import SubmissionList from "../Submissions/SubmissionList";
 import { useLoadInstructorAssignment } from "./hooks/useLoadInstructorAssignment";
 import { useUpdateAssignment } from "./hooks/useUpdateAssignment";
 import AssignmentDetails from "./AssignmentDetails";
@@ -72,27 +71,19 @@ const InstructorAssignment = () => {
       <div className="box-wrapper">
         <AssignmentDetails details={details} />
       </div>
-      <div className="flex w-full space-x-5 flex-col md:flex-row">
-        <div className="flex-1 min-w-0">
-          <SubmissionList aid={aid} courseId={details.course} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="box-wrapper">
-          <h2 className="h2-large">Similarity Comparison</h2>
-          {comparisonError ? <p className="error">{comparisonError}</p> : null}
-          <button className="submit-button"
-                  onClick={handleCreateComparison}>
-            {!comparisonAvailable ? "Run Similarity Comparison" : "Run Similarity Comparison Again"}
-          </button>
-          {comparisonAvailable ? 
+      <div className="box-wrapper">
+            <h2 className="h2-large">Similarity Comparison</h2>
+            {comparisonError ? <p className="error">{comparisonError}</p> : null}
             <button className="submit-button"
-                    onClick={() => navigate(`/Comparison/${aid}`)}
-            >View Results</button>
-          : null}
-          
-      </div>
-        </div>
-      </div>
+                    onClick={handleCreateComparison}>
+              {!comparisonAvailable ? "Run Similarity Comparison" : "Run Similarity Comparison Again"}
+            </button>
+            {comparisonAvailable ? 
+              <button className="submit-button"
+                      onClick={() => navigate(`/Comparison/${aid}`)}
+              >View Results</button>
+            : null}
+         </div>
       <div className="box-wrapper">
         <UpdateForm 
           handleSubmit={handleSubmit}
