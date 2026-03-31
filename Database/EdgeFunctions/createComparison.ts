@@ -76,11 +76,27 @@ Deno.serve(async (req) => {
       });
     }
 
+    const { data: boilerPlateFile, error: boilerPlateError } = await dbClient
+      .from("Boiler_Plate_Uploads")
+      .select("id")
+      .eq("aid", aid)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (boilerPlateError) {
+      return new Response(JSON.stringify({ error: boilerPlateError.message }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: comparison, error: comparisonError } = await dbClient
       .from("Comparisons")
       .insert({
         aid: aid,
         status: "pending",
+        boiler_plate_file: boilerPlateFile?.id ?? null,
       })
       .select()
       .single();
