@@ -1,6 +1,6 @@
 # Progress Tracker
 
-## MUST BE FINISHED BY April 2 @ 11:59 
+## MUST BE FINISHED BY April 2 @ 4pm
 
 - [x] Boiler Plate Upload
 - [x] Boiler Plate RLS
@@ -9,6 +9,9 @@
 - [ ] Remove About page - Or add stuff to it
 - [ ] Fix errors when viewing a pending comparison
 - [ ] Handle hitting the string limit when creating the concatenated file.
+- [ ] Handle boilerplate code
+- [ ] Handle the repo in comparison
+- [ ] Add a % complete for comparison.
 
 
 
