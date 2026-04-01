@@ -3,7 +3,7 @@ import { submitAssignment } from "../../utils/DatabaseInteractions/Student/submi
 import useUser from "../../context/useUser";
 
 const Uploader = ({ aid, assignmentKey }) => {
-  const supportedExtensions = [".pdf", ".zip", ".py", ".cpp", ".java"];
+  const supportedExtensions = [".zip"];
   const [selectedFile, setSelectedFile] = useState(null);
   const [studentName, setStudentName] = useState("");
   const [studentNumber, setStudentNumber] = useState("");
@@ -104,7 +104,7 @@ const Uploader = ({ aid, assignmentKey }) => {
         {successMessage ? <p className="success">{successMessage}</p> : null}
         {badFileType && (
         <p style={{ color: "red" }}>
-          Unsupported file type. Please submit a .zip, .py, .cpp, .java or .pdf
+          Unsupported file type. Please submit a zip file
         </p>
       )}
         <button

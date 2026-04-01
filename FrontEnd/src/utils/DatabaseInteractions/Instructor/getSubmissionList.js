@@ -5,7 +5,7 @@ export async function getSubmissionList(aid) {
 
   const { data, error } = await supabase
     .from("File_Submissions_New")
-    .select("id, created_at, file_name, student_info")
+    .select("id, created_at, student_info")
     .eq("assignment_id", Number(aid));
 
   if (error) {

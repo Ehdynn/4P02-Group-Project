@@ -1,7 +1,7 @@
 import supabase from "../supabase";
-import uploadSubmission, { getStoredSubmissionFileName } from "./uploadSubmission";
+import uploadSubmission from "./uploadSubmission";
 
-const supportedExtensions = [".pdf", ".zip", ".py", ".cpp", ".java"];
+const supportedExtensions = [".zip"];
 
 function hasSupportedExtension(file) {
   const fileName = String(file?.name ?? "").toLowerCase();
@@ -54,9 +54,6 @@ export async function submitAssignment(file, name, studentNumber, aid, assignmen
   }
 
   const dueDate = new Date(dueDateRow?.due_date ?? "");
-  if (Number.isNaN(dueDate.getTime())) {
-    throw new Error("Failed to submit, invalid assignment due date.");
-  }
 
   if (dueDate.getTime() < Date.now()) {
     throw new Error(`Failed to submit, due date has already passed.`);
@@ -69,11 +66,9 @@ export async function submitAssignment(file, name, studentNumber, aid, assignmen
 
   const encryptedStudentName = await encryptValue(name, assignmentKey);
   const encryptedStudentNumber = await encryptValue(studentNumber, assignmentKey);
-  const storedFileName = getStoredSubmissionFileName(file);
 
   const { data, error } = await supabase.rpc("create_file_submission", {
     p_assignment_id: aid,
-    p_file_name: storedFileName,
     p_student_name: encryptedStudentName,
     p_student_number: encryptedStudentNumber,
   });

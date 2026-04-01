@@ -158,7 +158,7 @@ const SubmissionList = ({ aid, courseId }) => {
                 <tbody>
                   {selectedStudent.submissions.map((submission) => (
                     <tr key={submission.id}>
-                      <td className="border border-slate-300 px-3 py-2">{submission.file_name}</td>
+                      <td className="border border-slate-300 px-3 py-2">{submission.id}.txt</td>
                       <td className="border border-slate-300 px-3 py-2">
                         {new Date(submission.created_at).toLocaleString()}
                       </td>

@@ -1,7 +1,8 @@
 import supabase from "../supabase";
 
 export async function downloadSubmission(submission) {
-  const expectedPath = `${submission.suid}/${submission.id}/${submission.file_name}`;
+  const storedFileName = `${submission.id}.txt`;
+  const expectedPath = `${submission.suid}/${submission.id}/${storedFileName}`;
 
   const { data: directData, error: directError } = await supabase.storage
     .from("student_submissions")
@@ -21,7 +22,7 @@ export async function downloadSubmission(submission) {
 
   if (Array.isArray(folderFiles) && folderFiles.length > 0) {
     const exactMatch =
-      folderFiles.find((item) => item?.name === submission.file_name) ??
+      folderFiles.find((item) => item?.name === storedFileName) ??
       folderFiles[0];
     const fallbackPath = `${submission.suid}/${submission.id}/${exactMatch.name}`;
     const { data: fallbackData, error: fallbackError } = await supabase.storage
