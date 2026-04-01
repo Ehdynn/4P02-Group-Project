@@ -1,6 +1,5 @@
 create  function public.create_file_submission(
   p_assignment_id bigint,
-  p_file_name text,
   p_student_name text,
   p_student_number text
 )
@@ -14,11 +13,6 @@ declare
 begin
   if p_assignment_id is null then
     raise exception 'Missing assignment id.'
-      using errcode = 'P0001';
-  end if;
-
-  if nullif(btrim(coalesce(p_file_name, '')), '') is null then
-    raise exception 'Missing file name.'
       using errcode = 'P0001';
   end if;
 
@@ -44,12 +38,10 @@ begin
 
   insert into public."File_Submissions_New" (
     assignment_id,
-    file_name,
     student_info
   )
   values (
     p_assignment_id,
-    btrim(p_file_name),
     jsonb_build_object(
       'student_name', btrim(p_student_name),
       'student_number', btrim(p_student_number)
