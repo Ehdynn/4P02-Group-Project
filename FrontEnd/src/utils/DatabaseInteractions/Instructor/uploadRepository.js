@@ -1,12 +1,52 @@
 import supabase from "../supabase";
 
-function getRepositoryFileName(file) {
+function getZipBaseName(file) {
   const originalName = String(file?.name ?? "").trim();
-  if (!originalName) {
-    return "repository.zip";
+  if (!originalName.toLowerCase().endsWith(".zip")) {
+    return "";
   }
 
-  return originalName;
+  return originalName.slice(0, -4).trim();
+}
+
+async function getAssignmentByKey(key) {
+  const { data, error } = await supabase
+    .from("Assignments")
+    .select("id, key")
+    .eq("key", key)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to validate assignment key: ${error.message}`);
+  }
+
+  return data ?? null;
+}
+
+async function resolveRepositoryAssignmentKey(file, aid) {
+  const inferredKey = getZipBaseName(file);
+  if (inferredKey) {
+    const matchedAssignment = await getAssignmentByKey(inferredKey);
+    if (matchedAssignment) {
+      return inferredKey;
+    }
+  }
+
+  const providedKey = window.prompt(
+    "Repository zip name is not a valid assignment key for this assignment. Enter the assignment key:",
+    "",
+  );
+
+  if (!providedKey?.trim()) {
+    throw new Error("Assignment key is required to upload this repository.");
+  }
+
+  const matchedAssignment = await getAssignmentByKey(providedKey.trim());
+  if (!matchedAssignment) {
+    throw new Error("The provided assignment key does not exist.");
+  }
+
+  return providedKey.trim();
 }
 
 export async function uploadRepository(aid, file) {
@@ -22,11 +62,14 @@ export async function uploadRepository(aid, file) {
     throw new Error("Repository uploads must be .zip files.");
   }
 
+  const assignmentKey = await resolveRepositoryAssignmentKey(file, aid);
+  const repositoryFileName = `${assignmentKey}.zip`;
+
   const { data: repositoryRecord, error: insertError } = await supabase
     .from("Repositories")
     .insert({
       aid: Number(aid),
-      repository_name: getRepositoryFileName(file),
+      repository_name: repositoryFileName,
     })
     .select("id, created_at, repository_name")
     .single();
@@ -35,7 +78,7 @@ export async function uploadRepository(aid, file) {
     throw new Error(`Failed to create repository record: ${insertError.message}`);
   }
 
-  const repositoryName = repositoryRecord.repository_name || getRepositoryFileName(file);
+  const repositoryName = repositoryRecord.repository_name || repositoryFileName;
   const filePath = `${aid}/${repositoryRecord.id}/${repositoryName}`;
 
   const { data, error: uploadError } = await supabase.storage
