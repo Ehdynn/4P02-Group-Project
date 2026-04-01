@@ -7,12 +7,13 @@ import java.util.*;
 import static java.lang.Math.min;
 
 public class ComparisonEngine {
-    ComparisonEngine(){}
+    ComparisonEngine() {
+    }
 
-    public static Token[] tokensToArray(List<Token> tokens){
+    public static Token[] tokensToArray(List<Token> tokens) {
         Token[] tokenArray = new Token[tokens.size()];
         int i = 0;
-        for(Token t: tokens){
+        for (Token t : tokens) {
             tokenArray[i] = t;
             i++;
         }
@@ -20,31 +21,26 @@ public class ComparisonEngine {
         return tokenArray;
     }
 
-    public String buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore){
+    public String buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore) {
         FileHandler handler = new FileHandler();
         JSONObject comparisonJson = new JSONObject();
         List<Token> submissionCode = submission.getTokens();
         sequences.sort(Comparator.comparingInt(Sequence::getStart));
-        int sequenceStart = sequences.getFirst().getStart();
-        int sequenceIndex = 0;
-        String codeString = handler.getTokenListCSV(submissionCode);
-
         comparisonJson.put("submission_id", submission.getId());
+        comparisonJson.put("code", handler.getTokenListCSV(submissionCode));
 
-        /*JSONArray tokensArray = new JSONArray();
-        for(int i = 0; i < submissionCode.length; i++){
+        JSONArray tokensArray = new JSONArray();
+        for (Token token : submissionCode) {
             JSONObject tokenJson = new JSONObject();
-            tokenJson.put("token_type", submissionCode[i].getType());
-            tokenJson.put("token_value", submissionCode[i].getValue());
+            tokenJson.put("token_type", token.getType().toString());
+            tokenJson.put("token_value", token.getValue());
             tokensArray.put(tokenJson);
         }
 
-        comparisonJson.put("tokens", tokensArray);*/
-
-        comparisonJson.put("code", codeString);
+        comparisonJson.put("tokens", tokensArray);
 
         JSONArray sequenceArray = new JSONArray();
-        for(Sequence s: sequences){
+        for (Sequence s : sequences) {
             JSONObject sequenceJson = new JSONObject();
             sequenceJson.put("sequence_start", s.getStart());
             sequenceJson.put("sequence_length", s.getLength());
@@ -54,7 +50,6 @@ public class ComparisonEngine {
         }
 
         comparisonJson.put("similarity_sequences", sequenceArray);
-
         comparisonJson.put("similarity_score", similarityScore);
 
         return comparisonJson.toString(4);

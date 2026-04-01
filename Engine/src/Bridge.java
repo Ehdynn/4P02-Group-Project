@@ -47,23 +47,32 @@ class Bridge {
 
     public String[] tokenize(byte[] fileData){
         ArrayList<String> tokenLists = new ArrayList<>();
+        File archive = null;
+        File extractedDir = null;
         try {
-            File file = fileHandler.writeBytesToFile(fileData, "temp");
-            file = fileHandler.unzipFile(file);
-            Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(file.getPath());
+            archive = fileHandler.writeBytesToFile(fileData, "temp");
+            extractedDir = fileHandler.unzipFile(archive);
+            Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath());
 
             for(String s: fileNames) {
                 String extension = fileHandler.getFileExtension(s);
 
-                if (extension.matches("py|c(pp)?|java")) {
+                if (extension.matches("py|c(pp)?|java|txt")) {
 
-                    Lexer l = new Lexer(fileHandler.getSourceCode(new File(file.getPath() + "/" + s)));
+                    Lexer l = new Lexer(fileHandler.getSourceCode(new File(extractedDir.getPath() + "/" + s)));
                     tokenLists.add(fileHandler.getTokenListCSV(l.tokenize()));
                 }
             }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                fileHandler.deleteRecursively(extractedDir);
+                fileHandler.deleteRecursively(archive);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         String[] csvs = new String[tokenLists.size()];
@@ -73,30 +82,56 @@ class Bridge {
     }
 
     public String tokenizeCondensed(byte[] fileData){
-        String tokenLists = "type, value\n";
+        StringBuilder tokenLists = new StringBuilder();
+        File archive = null;
+        File extractedDir = null;
+
         try {
-            File file = fileHandler.writeBytesToFile(fileData, "temp");
-            file = fileHandler.unzipFile(file);
-            Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(file.getPath());
+            if (looksLikeZip(fileData)) {
+                archive = fileHandler.writeBytesToFile(fileData, "temp");
+                extractedDir = fileHandler.unzipFile(archive);
+                Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath());
 
-            for(String s: fileNames) {
-                String extension = fileHandler.getFileExtension(s);
+                for (String s : fileNames) {
+                    String extension = fileHandler.getFileExtension(s);
 
-                if (extension.matches("py|c(pp)?|java")) {
-
-                    Lexer l = new Lexer(fileHandler.getSourceCode(new File(file.getPath() + "/" + s)));
-                    tokenLists += fileHandler.getTokenListCSV(l.tokenize());
+                    if (extension.matches("py|c(pp)?|java|txt")) {
+                        File sourceFile = new File(extractedDir.getPath() + "/" + s);
+                        SourceCode sourceCode = fileHandler.getSourceCode(sourceFile);
+                        Lexer lexer = new Lexer(sourceCode.sourceCode());
+                        tokenLists.append(fileHandler.getTokenListCSV(lexer.tokenize()));
+                    }
                 }
+            } else {
+                String sourceText = new String(fileData);
+                Lexer lexer = new Lexer(sourceText);
+                tokenLists.append(fileHandler.getTokenListCSV(lexer.tokenize()));
             }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                fileHandler.deleteRecursively(extractedDir);
+                fileHandler.deleteRecursively(archive);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
-        return tokenLists;
+        return tokenLists.toString();
     }
 
-    public String getComparisonData(String databaseCSVs){
+    private boolean looksLikeZip(byte[] fileData) {
+        return fileData != null
+                && fileData.length >= 4
+                && fileData[0] == 'P'
+                && fileData[1] == 'K'
+                && (fileData[2] == 3 || fileData[2] == 5 || fileData[2] == 7)
+                && (fileData[3] == 4 || fileData[3] == 6 || fileData[3] == 8);
+    }
+
+    public String getComparisonData(String databaseCSVs, String boilerplate){
         JSONArray databaseParser = new JSONArray(databaseCSVs);
         FileHandler handler = new FileHandler();
         StringTiling tiling = new StringTiling();
@@ -112,7 +147,7 @@ class Bridge {
 
             byte[] decodedBytes = Base64.getDecoder().decode(file);
 
-            String tokenizedString = tokenizeCondensed(decodedBytes);
+            String tokenizedString = new String(decodedBytes);
 
             List<Token> tokens = handler.getTokensFromFile(tokenizedString);
 
