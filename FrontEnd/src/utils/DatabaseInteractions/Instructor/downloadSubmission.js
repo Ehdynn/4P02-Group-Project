@@ -1,7 +1,7 @@
 import supabase from "../supabase";
 
 export async function downloadSubmission(submission) {
-  const storedFileName = `${submission.id}.txt`;
+  const storedFileName = `${submission.id}.zip`;
   const expectedPath = `${submission.suid}/${submission.id}/${storedFileName}`;
 
   const { data: directData, error: directError } = await supabase.storage

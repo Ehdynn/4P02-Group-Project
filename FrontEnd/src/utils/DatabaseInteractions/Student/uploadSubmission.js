@@ -14,7 +14,7 @@ function getStoredSubmissionFileName(fid) {
     throw new Error("Missing submission id.");
   }
 
-  return `${submissionId}.txt`;
+  return `${submissionId}.zip`;
 }
 
 function isSupportedSourceFile(fileName) {
@@ -117,13 +117,13 @@ function stripComments(source) {
   return result;
 }
 
-async function getMergedSubmissionBlob(file) {
+async function getMergedSubmissionBlob(file, fid) {
   if (!isZipFile(file)) {
     throw new Error("Submission must be a zip file.");
   }
 
-  const zip = await JSZip.loadAsync(file);
-  const supportedFiles = Object.values(zip.files)
+  const inputZip = await JSZip.loadAsync(file);
+  const supportedFiles = Object.values(inputZip.files)
     .filter((entry) => !entry.dir && isSupportedSourceFile(entry.name))
     .sort((left, right) => left.name.localeCompare(right.name));
 
@@ -136,16 +136,23 @@ async function getMergedSubmissionBlob(file) {
   );
 
   const mergedSubmission = fileContents.join("\n\n");
-  return new Blob([mergedSubmission], { type: "text/plain" });
+  const submissionId = String(fid ?? "").trim();
+  if (!submissionId) {
+    throw new Error("Missing submission id.");
+  }
+
+  const outputZip = new JSZip();
+  outputZip.file(`${submissionId}.txt`, mergedSubmission);
+  return outputZip.generateAsync({ type: "blob" });
 }
 
 export default async function uploadSubmission(file, fid, aid) {
-  const uploadBody = await getMergedSubmissionBlob(file);
   const storedFileName = getStoredSubmissionFileName(fid);
+  const uploadBody = await getMergedSubmissionBlob(file, fid);
   const filePath = `${aid}/${fid}/${storedFileName}`;
   const { data, error } = await supabase.storage
     .from(uploadBucket)
-    .upload(filePath, uploadBody, { contentType: "text/plain" });
+    .upload(filePath, uploadBody, { contentType: "application/zip" });
 
   if (error) {
     throw new Error(`Could not submit assignment: ${error.message}`);

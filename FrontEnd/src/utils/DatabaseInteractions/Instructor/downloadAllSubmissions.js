@@ -19,11 +19,11 @@ export async function downloadAllSubmissions(selectedStudent) {
     const { signedUrl } = await downloadSubmission(submission);
     const response = await fetch(signedUrl);
     if (!response.ok) {
-      throw new Error(`Could not fetch ${submission.id || "submission file"}.txt.`);
+      throw new Error(`Could not fetch ${submission.id || "submission file"}.zip.`);
     }
 
     const blob = await response.blob();
-    const baseName = sanitizeFileName(submission.id ? `${submission.id}.txt` : `submission-${index + 1}.txt`);
+    const baseName = sanitizeFileName(submission.id ? `${submission.id}.zip` : `submission-${index + 1}.zip`);
     const count = nameCounts.get(baseName) ?? 0;
     const finalName = count === 0 ? baseName : `${count + 1}-${baseName}`;
     nameCounts.set(baseName, count + 1);
