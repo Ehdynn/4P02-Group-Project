@@ -8,6 +8,7 @@ from supabase import create_client, Client
 from realtime import AsyncRealtimeClient, RealtimePostgresChangesListenEvent
 from py4j.java_gateway import JavaGateway
 import io
+import json
 import zipfile
 
 comparison_queue = asyncio.Queue()
@@ -207,6 +208,26 @@ def encode_bytes(token_csvs):
 
     return encoded_bytes
 
+def upload_comparison_results(comparison_id, comparison_result_json):
+    comparison_results = json.loads(comparison_result_json)
+    if not isinstance(comparison_results, list):
+        raise ValueError("Comparison results must be a JSON array.")
+
+    for result in comparison_results:
+        submission_id = result.get("submission_id")
+        if not submission_id:
+            raise ValueError("Comparison result is missing submission_id.")
+
+        supabase.storage.from_("Comparisons").upload(
+            file=json.dumps(result),
+            path=f"{comparison_id}/{submission_id}.json",
+            file_options={
+                "cache-control": "3600",
+                "upsert": "false",
+                "content-type": "application/json",
+            },
+        )
+
 '''
 Handles each comparison request.
 '''
@@ -257,18 +278,17 @@ async def consume_comparison():
                 # TODO Add the actual variable then add it to the function call.
                 #encode_bytes_repo = encode_bytes() 
 
-                for primary_submission_id in submission_ids:
-                    comparison_result = entry_point.getComparisonData(encoded_bytes_csv, boilerplate_tokenized, primary_submission_id)
-                    response = (
-                        supabase.storage
-                        .from_("Comparisons")
-                        .upload(
-                            file=comparison_result,
-                            path=(comparison_id + "/" + primary_submission_id + ".json"),
-                            file_options={"cache-control": "3600", "upsert": "false"}
-                        )
-                    )
-                    # TODO Handle Errors
+                comparison_result = entry_point.getComparisonData(
+                    encoded_bytes_csv,
+                    boilerplate_tokenized,
+                )
+                await asyncio.to_thread(
+                    upload_comparison_results,
+                    comparison_id,
+                    comparison_result,
+                )
+                
+                # TODO Handle Errors
                 # TODO Update Table to reflect either error state or ready state
         except Exception as e:
             print(f"Error processing comparison {comparison_id}: {e}")
