@@ -11,6 +11,16 @@ import io
 import json
 import zipfile
 
+env_path = Path(__file__).with_name(".env.local")
+if env_path.exists():
+    load_dotenv(env_path)
+
+url = os.getenv("URL")
+key = os.getenv("SECRET_KEY")
+
+if not url or not key:
+    raise RuntimeError("Missing required environment variables: URL and/or SECRET_KEY")
+
 comparison_queue = asyncio.Queue()
 submission_queue = asyncio.Queue()
 
@@ -18,12 +28,6 @@ submission_state = {}
 submission_state_lock = asyncio.Lock()
 
 # Setting Up Supabase Client
-env_path = Path(__file__).with_name(".env.local")
-load_dotenv(env_path)
-
-url = os.getenv("URL")
-key = os.getenv("SECRET_KEY")
-
 supabase: Client = create_client(url, key)
 
 # Connect to the Java Gateway Server (default port is 25333)
