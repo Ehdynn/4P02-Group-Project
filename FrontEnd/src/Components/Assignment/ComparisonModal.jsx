@@ -24,6 +24,10 @@ function formatRepositoryLabel(repository, index) {
   return `${repositoryName} (${timestamp})`;
 }
 
+function formatSelectedFile(file, fallbackText) {
+  return String(file?.name ?? "").trim() || fallbackText;
+}
+
 const ComparisonModal = ({
   aid,
   isOpen,
@@ -205,13 +209,19 @@ const ComparisonModal = ({
           {mode === "new" ? (
             <label className="block">
               <span className="mb-1 block font-medium text-slate-700">Upload file</span>
-              <input
-                type="file"
-                className="input-default"
-                accept=".py,.cpp,.java,.c,.txt"
-                onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-                disabled={submitting}
-              />
+              <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-5">
+                <span className="block text-sm font-semibold text-slate-800">Choose Boiler Plate File</span>
+                <span className="mt-1 block text-sm text-slate-500">
+                  {formatSelectedFile(selectedFile, "No file selected")}
+                </span>
+                <input
+                  type="file"
+                  className="mt-3 block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-slate-700"
+                  accept=".py,.cpp,.java,.c,.txt"
+                  onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+                  disabled={submitting}
+                />
+              </div>
               <p className="mt-2 text-sm text-slate-500">
                 Accepted formats: `.txt`, `.py`, `.cpp`, `.java`, `.c`
               </p>
@@ -258,13 +268,19 @@ const ComparisonModal = ({
           {repositoryMode === "new" ? (
             <label className="block">
               <span className="mb-1 block font-medium text-slate-700">Upload repository</span>
-              <input
-                type="file"
-                className="input-default"
-                accept=".zip"
-                onChange={(event) => setSelectedRepositoryFile(event.target.files?.[0] ?? null)}
-                disabled={submitting}
-              />
+              <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-5">
+                <span className="block text-sm font-semibold text-slate-800">Choose Repository File</span>
+                <span className="mt-1 block text-sm text-slate-500">
+                  {formatSelectedFile(selectedRepositoryFile, "No file selected")}
+                </span>
+                <input
+                  type="file"
+                  className="mt-3 block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-slate-700"
+                  accept=".zip"
+                  onChange={(event) => setSelectedRepositoryFile(event.target.files?.[0] ?? null)}
+                  disabled={submitting}
+                />
+              </div>
               <p className="mt-2 text-sm text-slate-500">
                 Accepted format: `.zip`
               </p>
