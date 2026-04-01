@@ -14,6 +14,7 @@ import { getNumberOfSubmissions } from "../../utils/DatabaseInteractions/Instruc
 import { getRepositories } from "../../utils/DatabaseInteractions/Instructor/getRepositories";
 import { uploadBoilerPlateCode } from "../../utils/DatabaseInteractions/Instructor/uploadBoilerPlateCode";
 import { uploadRepository } from "../../utils/DatabaseInteractions/Instructor/uploadRepository";
+import { downloadExport } from "../../utils/DatabaseInteractions/Instructor/downloadExport";
 
 function formatTimestamp(value) {
   return value ? new Date(value).toLocaleString() : "Unknown upload time";
@@ -34,6 +35,7 @@ const InstructorAssignment = () => {
     uniqueStudentSubmissionCount: 0,
   });
   const [submissionError, setSubmissionError] = useState("");
+  const [downloadingExport, setDownloadingExport] = useState(false);
   const [boilerPlateUploads, setBoilerPlateUploads] = useState([]);
   const [boilerPlateError, setBoilerPlateError] = useState("");
   const [boilerPlateFile, setBoilerPlateFile] = useState(null);
@@ -161,6 +163,19 @@ const InstructorAssignment = () => {
     }
   };
 
+  const handleDownloadExport = async () => {
+    try {
+      setDownloadingExport(true);
+      setSubmissionError("");
+      await downloadExport(aid);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to export submissions.";
+      setSubmissionError(message);
+    } finally {
+      setDownloadingExport(false);
+    }
+  };
+
 
   if (loading) {return <div>Loading assignment...</div>;}
 
@@ -182,6 +197,13 @@ const InstructorAssignment = () => {
             {submissionError ? <p className="error">{submissionError}</p> : null}
             <p>Submissions: {submissionCounts.submissionCount}</p>
             <p>Unique Student Submissions: {submissionCounts.uniqueStudentSubmissionCount}</p>
+            <button
+              className="submit-button mt-3"
+              onClick={handleDownloadExport}
+              disabled={downloadingExport || submissionCounts.uniqueStudentSubmissionCount === 0}
+            >
+              {downloadingExport ? "Preparing Export..." : "Download Latest Submission Export"}
+            </button>
           </div>
         </div>
         <div className="flex-1 min-w-0">
