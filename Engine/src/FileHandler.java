@@ -1,11 +1,10 @@
-import org.postgresql.util.internal.FileUtils;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -48,11 +47,10 @@ public class FileHandler {
      * @throws IOException
      */
     public File unzipFile(File fileToUnzip) throws IOException {
-        String fileZip = fileToUnzip.getName();
-        File destDir = new File("Engine/src/resources/unzipped");
+        File destDir = Files.createTempDirectory("unzipped-").toFile();
 
         byte[] buffer = new byte[1024];
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(fileZip));
+        ZipInputStream zis = new ZipInputStream(new FileInputStream(fileToUnzip));
         ZipEntry zipEntry = zis.getNextEntry();
         while (zipEntry != null) {
             File newFile = newFile(destDir, zipEntry);
@@ -135,6 +133,7 @@ public class FileHandler {
             case "java" -> new SourceCode(Language.Java, content);
             case "c" -> new SourceCode(Language.C, content);
             case "cpp" -> new SourceCode(Language.CPP, content);
+            case "txt" -> new SourceCode(Language.Txt, content);
             default -> null;
         };
     }
@@ -211,7 +210,7 @@ public class FileHandler {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] l = line.split(",");
-                tokens.add(new Token(TokenType.valueOf(l[0]), l[1]));
+                tokens.add(new Token(TokenType.valueOf(l[0]), l[1].trim()));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -231,7 +230,7 @@ public class FileHandler {
         while(scanner.hasNextLine()){
             String line = scanner.nextLine();
             String[] l = line.split(",");
-            tokens.add(new Token(TokenType.valueOf(l[0]), l[1]));
+            tokens.add(new Token(TokenType.valueOf(l[0]), l[1].trim()));
         }
 
         return tokens;
@@ -246,10 +245,29 @@ public class FileHandler {
      */
     public File writeBytesToFile(byte[] bytes, String name) throws IOException {
         if(bytes.length == 0) return null;
-        Path path = Paths.get("Engine/src/resources/" + name);
-        Files.write(path, bytes);
 
-        return new File("Engine/src/resources/" + name);
+        String prefix = (name == null || name.isBlank()) ? "upload-" : name + "-";
+        Path path = Files.createTempFile(prefix, ".zip");
+        Files.write(path, bytes, StandardOpenOption.TRUNCATE_EXISTING);
+
+        return path.toFile();
+    }
+
+    public void deleteRecursively(File file) throws IOException {
+        if (file == null || !file.exists()) {
+            return;
+        }
+
+        if (file.isDirectory()) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+
+        Files.deleteIfExists(file.toPath());
     }
 
     public Set<String> listFilesUsingDirectoryStream(String dir) throws IOException {
