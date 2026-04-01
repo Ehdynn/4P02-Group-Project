@@ -219,14 +219,32 @@ def upload_comparison_results(comparison_id, comparison_result_json):
             raise ValueError("Comparison result is missing submission_id.")
 
         supabase.storage.from_("Comparisons").upload(
-            file=json.dumps(result),
             path=f"{comparison_id}/{submission_id}.json",
+            file=json.dumps(result).encode("utf-8"),
             file_options={
                 "cache-control": "3600",
                 "upsert": "false",
                 "content-type": "application/json",
             },
         )
+        print(f"Uploaded comparison result for: {comparison_id}")
+
+async def download_submission_with_retry(assignment_id, submission_id, attempts=10, delay=2):
+    path = f"{assignment_id}/{submission_id}/{submission_id}.zip"
+
+    last_error = None
+    for _ in range(attempts):
+        try:
+            return await asyncio.to_thread(
+                supabase.storage.from_("Submissions").download,
+                path,
+            )
+        except Exception as e:
+            last_error = e
+            await asyncio.sleep(delay)
+
+    raise last_error
+
 
 '''
 Handles each comparison request.
@@ -271,13 +289,11 @@ async def consume_comparison():
                     submission_ids,
                 )
                 print(f"Downloaded {len(token_csvs)} token csv file(s) for assignment {assignment_id}")
-
                 
-                encoded_bytes_csv = encode_bytes(token_csvs)
+                encoded_bytes_csv = json.dumps(encode_bytes(token_csvs))
                 
                 # TODO Add the actual variable then add it to the function call.
                 #encode_bytes_repo = encode_bytes() 
-
                 comparison_result = entry_point.getComparisonData(
                     encoded_bytes_csv,
                     boilerplate_tokenized,
@@ -309,26 +325,23 @@ async def consume_submission():
                 submission_id = submission_event["submission_id"]
             
                 print(f"Processing submission with id: {submission_id}")
-                path = f"{assignment_id}/{submission_id}/{submission_id}.zip"
-                file_bytes = await asyncio.to_thread(
-                    supabase.storage.from_("Submissions").download,
-                    path,
-                )
+                file_bytes = await download_submission_with_retry(assignment_id, submission_id)
                 print(f"Downloaded submission file for submission id: {submission_id}")
                 extracted_file_bytes = extract_submission(file_bytes, submission_id)
                 if extracted_file_bytes is not None:
-                    # TODO Call the java code and upload the results.
                     token_csv = entry_point.tokenizeCondensed(extracted_file_bytes)
+                    token_csv_bytes = token_csv.encode("utf-8")
                     print(f"Received token csv for submission: {submission_id}")
-                    response = (
-                        supabase.storage
-                        .from_("Tokens")
-                        .upload(
-                            token_csv,
-                            path=(assignment_id + "/" + submission_id + ".csv"),
-                            file_options={"cache-control": "3600", "upsert": "false"}
-                        )
+                    response = supabase.storage.from_("Tokens").upload(
+                        path=f"{assignment_id}/{submission_id}.csv",
+                        file=token_csv_bytes,
+                        file_options={
+                            "cache-control": "3600",
+                            "upsert": "false",
+                            "content-type": "text/csv",
+                        },
                     )
+                    print(f"Uploaded tokens for submission: {submission_id}")
                     # TODO Handle any errors if the tokens fail to upload
         except Exception as e:
             print(f"Error processing submission event {submission_event}: {e}")
