@@ -105,13 +105,13 @@ public class Lexer {
         }
 
         String[] tokenPatterns = {
-                "\\p{L}[\\p{L}0-9_]*",      // Identifiers
+                "\\p{L}[\\p{L}0-9_~-\\uDDEF]*",      // Identifiers
                 "\\d+",                     // Literals
                 "//[a-zA-Z0-9_]*",          // Single-Line Comments
                 "/\\*[a-zA-Z0-9_]*",        // Multi-Line Comments
                 "\\*/",                     // Comment End
                 "[+/*=<>!?&|^~:%@-]",       // Operators
-                "[.,;()#\\[\\]{}\"']",       // Punctuation
+                "[.,;()#\\[\\]{}\"'\\\\]",  // Punctuation
         };
 
         TokenType[] tokenTypes = {
