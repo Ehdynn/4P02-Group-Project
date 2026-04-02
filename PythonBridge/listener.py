@@ -367,7 +367,13 @@ async def consume_comparison():
                 )
                 
                 # TODO Handle Errors
-                # TODO Update Table to reflect either error state or ready state
+                update_response = (
+                    supabase.table("Comparisons")
+                    .update({"status":"completed"})
+                    .eq("id", comparison_id)
+                    .execute()
+                )
+                # TODO Handle Update Error
         except Exception as e:
             print(f"Error processing comparison {comparison_id}: {e}")
         finally:
