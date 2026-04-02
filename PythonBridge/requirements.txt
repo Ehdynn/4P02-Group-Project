@@ -2,3 +2,4 @@ python-dotenv
 supabase
 realtime
 py4j
+pycryptodome

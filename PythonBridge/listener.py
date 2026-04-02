@@ -1,9 +1,12 @@
 import base64
+import hashlib
 
 from dotenv import load_dotenv
 import asyncio
 import os
 from pathlib import Path
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
 from supabase import create_client, Client
 from realtime import AsyncRealtimeClient, RealtimePostgresChangesListenEvent
 from py4j.java_gateway import JavaGateway
@@ -26,6 +29,7 @@ submission_queue = asyncio.Queue()
 
 submission_state = {}
 submission_state_lock = asyncio.Lock()
+assignment_key_cache = {}
 
 # Setting Up Supabase Client
 supabase: Client = create_client(url, key)
@@ -96,22 +100,76 @@ def extract_submission(zip_bytes, submission_id):
             print(f"Missing {file_name} inside submission zip")
             return None
 
+def get_assignment_key(assignment_id):
+    cached_key = assignment_key_cache.get(assignment_id)
+    if cached_key is not None:
+        return cached_key
+
+    response = (
+        supabase.table("Assignments")
+        .select("key")
+        .eq("id", assignment_id)
+        .single()
+        .execute()
+    )
+
+    assignment_row = response.data or {}
+    assignment_key = assignment_row.get("key")
+    if not assignment_key:
+        raise ValueError(f"Assignment {assignment_id} is missing a key.")
+
+    assignment_key_cache[assignment_id] = assignment_key
+    return assignment_key
+
+def decrypt_value(encrypted_value, assignment_key):
+    if not encrypted_value:
+        return ""
+
+    iv_base64, ciphertext_base64 = encrypted_value.split(":", 1)
+    secret_key = hashlib.sha256(assignment_key.encode("utf-8")).digest()
+    iv = base64.b64decode(iv_base64)
+    ciphertext = base64.b64decode(ciphertext_base64)
+    cipher = AES.new(secret_key, AES.MODE_CBC, iv)
+    decrypted_bytes = unpad(cipher.decrypt(ciphertext), AES.block_size)
+    return decrypted_bytes.decode("utf-8")
+
 
 
 
 '''
 Get all of the ids from submissions
-TODO only get the most recent submission from each student
 '''
 def get_submission_ids_for_assignment(assignment_id):
+    assignment_key = get_assignment_key(assignment_id)
     response = (
         supabase.table("File_Submissions_New")
-        .select("id")
+        .select("id, created_at, student_info")
         .eq("assignment_id", assignment_id)
+        .order("created_at", desc=True)
+        .order("id", desc=True)
         .execute()
     )
 
-    return [row.get("id") for row in (response.data or []) if row.get("id") is not None]
+    latest_by_student = {}
+
+    for row in (response.data or []):
+        submission_id = row.get("id")
+        if submission_id is None:
+            continue
+
+        student_info = row.get("student_info") or {}
+        encrypted_student_number = str(student_info.get("student_number") or "")
+        student_number = decrypt_value(encrypted_student_number, assignment_key).strip()
+
+        if student_number:
+            student_key = f"number:{student_number}"
+        else:
+            student_key = f"submission:{submission_id}"
+
+        if student_key not in latest_by_student:
+            latest_by_student[student_key] = submission_id
+
+    return list(latest_by_student.values())
 
 '''
 Download all of the csvs to be compared from the db
