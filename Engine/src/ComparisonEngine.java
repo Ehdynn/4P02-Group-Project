@@ -46,6 +46,16 @@ public class ComparisonEngine {
             sequenceJson.put("sequence_length", s.getLength());
             sequenceJson.put("flagged_submission", s.getSubmissionId());
             sequenceJson.put("flagged_code", handler.getTokenListCSV(s.getTokens()));
+
+            SeverityLevel severityLevel = s.getSeverityLevel();
+
+            if(severityLevel == SeverityLevel.LOW){
+                sequenceJson.put("severity_level", "Low");
+            } else if(severityLevel == SeverityLevel.MEDIUM){
+                sequenceJson.put("severity_level", "Medium");
+            } else if(severityLevel == SeverityLevel.HIGH){
+                sequenceJson.put("severity_level", "High");
+            }
             sequenceArray.put(sequenceJson);
         }
 

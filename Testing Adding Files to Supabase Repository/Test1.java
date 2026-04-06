@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
  * - Replace "StudentSolution" with the class students must implement.
  * - Add or modify tests as needed.
  */
-public class StudentSubmissionTest {
+
+class StudentSubmissionTest1 {
 
     private StudentSolution solution;
 

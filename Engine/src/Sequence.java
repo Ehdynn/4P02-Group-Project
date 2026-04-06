@@ -7,6 +7,7 @@ public class Sequence {
     private int length;
     private List<Token> tokens;
     private String submissionId;
+    private SeverityLevel level;
 
     /** Sequence Constructor
      *
@@ -19,6 +20,14 @@ public class Sequence {
         this.length = len;
         this.tokens = new ArrayList<>();
         this.submissionId = submissionId;
+
+        if(len <= 10){
+            this.level = SeverityLevel.LOW;
+        } else if(len <= 25){
+            this.level = SeverityLevel.MEDIUM;
+        } else {
+            this.level = SeverityLevel.HIGH;
+        }
     }
 
     /** First token index
@@ -69,4 +78,10 @@ public class Sequence {
     public String toString() {
         return "(Start: " + start + ", length: " + length +")";
     }
+
+    /** Returns the severity level of the flagged sequence
+     *
+     * @return  Enum value of severity level
+     */
+    public SeverityLevel getSeverityLevel() { return level; }
 }
