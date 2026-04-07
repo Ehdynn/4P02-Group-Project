@@ -42,6 +42,9 @@ function stripComments(source) {
   let inString = false;
   let inChar = false;
   let escapeNext = false;
+  let lineHasCode = false;
+  let preserveLineBreakAfterLineComment = false;
+  let preserveLineBreakAfterBlockComment = false;
 
   while (index < source.length) {
     const current = source[index];
@@ -50,7 +53,11 @@ function stripComments(source) {
     if (inLineComment) {
       if (current === "\n") {
         inLineComment = false;
-        result += current;
+        if (preserveLineBreakAfterLineComment) {
+          result += "\n";
+        }
+        lineHasCode = false;
+        preserveLineBreakAfterLineComment = false;
       }
       index += 1;
       continue;
@@ -59,13 +66,19 @@ function stripComments(source) {
     if (inBlockComment) {
       if (current === "*" && next === "/") {
         inBlockComment = false;
+        if (preserveLineBreakAfterBlockComment) {
+          result += "\n";
+          lineHasCode = false;
+          preserveLineBreakAfterBlockComment = false;
+        }
         index += 2;
         continue;
       }
 
-      if (current === "\n") {
-        result += "\n";
+      if (current === "\n" && lineHasCode) {
+        preserveLineBreakAfterBlockComment = true;
       }
+
       index += 1;
       continue;
     }
@@ -98,12 +111,14 @@ function stripComments(source) {
 
     if (current === "/" && next === "/") {
       inLineComment = true;
+      preserveLineBreakAfterLineComment = lineHasCode;
       index += 2;
       continue;
     }
 
     if (current === "/" && next === "*") {
       inBlockComment = true;
+      preserveLineBreakAfterBlockComment = false;
       index += 2;
       continue;
     }
@@ -123,10 +138,21 @@ function stripComments(source) {
     }
 
     result += current;
+    if (current === "\n") {
+      lineHasCode = false;
+    } else if (!/\s/.test(current)) {
+      lineHasCode = true;
+    }
     index += 1;
   }
 
   return result;
+}
+
+function normalizeStrippedSource(source) {
+  return String(source ?? "")
+    .replace(/^\s+/, "")
+    .replace(/\s+$/, "");
 }
 
 async function getMergedSubmissionBlob(file, fid) {
@@ -157,7 +183,7 @@ async function getMergedSubmissionBlob(file, fid) {
     }
 
     const existingSources = groupedSourceByExtension.get(extension) ?? [];
-    existingSources.push(stripComments(await entry.async("string")));
+    existingSources.push(normalizeStrippedSource(stripComments(await entry.async("string"))));
     groupedSourceByExtension.set(extension, existingSources);
   }
 
