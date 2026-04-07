@@ -233,7 +233,7 @@ public class Lexer {
 
     /**Rewrites the type of any tokens that fit within the requirements to be a keyword token.
      * The token must not be part of a string token, and must fit within the language appropriate keyword regex.
-     * Also identifies and corrects any occurrences of null in C and Java, and converts said tokens into Literals.
+     * Also identifies and corrects any occurrences of null in C, CPP and Java, and converts said tokens into Literals.
      *
      * @param tokens    List of tokens to modify
      * @return  updated List
@@ -244,6 +244,7 @@ public class Lexer {
             case Java -> keywords = JAVA_KEYWORDS;
             case C -> keywords = C_KEYWORDS;
             case Python -> keywords = PYTHON_KEYWORDS;
+            case CPP -> keywords = CPP_KEYWORDS;
             default -> keywords = "";
         }
 
@@ -254,7 +255,7 @@ public class Lexer {
             if(token.getType() == TokenType.IDENTIFIER){
                 String s = token.getValue();
                 if(s.matches(keywords))token.updateType(TokenType.KEYWORD);
-                else if (s.equals("null") && (language == Language.Java || language == Language.C)) token.updateType(TokenType.LITERAL);
+                else if (s.equals("null") && (language == Language.Java || language == Language.C || language == Language.CPP)) token.updateType(TokenType.LITERAL);
             }
 
         }
