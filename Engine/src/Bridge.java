@@ -86,6 +86,7 @@ class Bridge {
         StringBuilder tokenLists = new StringBuilder();
         File archive = null;
         File extractedDir = null;
+        boolean wroteHeader = false;
 
         try {
             if (looksLikeZip(fileData)) {
@@ -101,7 +102,12 @@ class Bridge {
                         File sourceFile = new File(extractedDir.getPath() + "/" + s);
                         SourceCode sourceCode = fileHandler.getSourceCode(sourceFile);
                         Lexer lexer = new Lexer(sourceCode.sourceCode());
-                        tokenLists.append(fileHandler.getTokenListCSV(lexer.tokenize()));
+                        if (!wroteHeader) {
+                            tokenLists.append(fileHandler.getTokenListCSV(lexer.tokenize()));
+                            wroteHeader = true;
+                        } else {
+                            tokenLists.append(fileHandler.getHeadlessTokenListCSV(lexer.tokenize()));
+                        }
                     }
                 }
             } else {
