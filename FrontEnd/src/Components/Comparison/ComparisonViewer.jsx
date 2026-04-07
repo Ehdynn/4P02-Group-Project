@@ -22,7 +22,7 @@ const ComparisonViewer = ({ comparison, loading, outputs, selectedSubmissionId, 
       <p className="text-sm">
         Created: {comparison.created_at ? new Date(comparison.created_at).toLocaleString() : "N/A"}
       </p>
-      <p className="text-sm">Students Submitted: {comparison.number_of_students ?? 0}</p>
+      <p className="text-sm">Students Submitted: {comparison.submissions_compared.length}</p>
       {comparison.error_message ? (
         <p className="error mt-2">Error: {comparison.error_message}</p>
       ) : null}

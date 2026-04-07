@@ -398,7 +398,7 @@ async def consume_comparison():
                 # TODO Handle Errors
                 update_response = (
                     supabase.table("Comparisons")
-                    .update({"status":"completed", "number_of_students": len(submission_ids)})
+                    .update({"status":"completed"})
                     .eq("id", comparison_id)
                     .execute()
                 )

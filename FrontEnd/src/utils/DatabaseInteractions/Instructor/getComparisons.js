@@ -5,7 +5,7 @@ export async function getComparisons(aid) {
 
   const { data, error } = await supabase
     .from("Comparisons")
-    .select("id, created_at, updated_at, aid, status, error_message, number_of_students, submissions_compared")
+    .select("id, created_at, updated_at, aid, status, error_message, submissions_compared")
     .eq("aid", Number(aid))
     .order("created_at", { ascending: false });
 
