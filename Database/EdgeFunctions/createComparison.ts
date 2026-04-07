@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import CryptoJS from "npm:crypto-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,31 +10,6 @@ type CreateComparisonBody = {
   boilerPlateFileId?: string | null;
   repositoryId?: string | null;
 };
-
-function deriveKey(key: string) {
-  return CryptoJS.SHA256(key);
-}
-
-function decryptValue(value: string, key: string) {
-  if (!value || !key) {
-    return "";
-  }
-
-  const [ivBase64, ciphertext] = value.split(":");
-  if (!ivBase64 || !ciphertext) {
-    return "";
-  }
-
-  const iv = CryptoJS.enc.Base64.parse(ivBase64);
-  const secretKey = deriveKey(key);
-  const decrypted = CryptoJS.AES.decrypt(ciphertext, secretKey, {
-    iv,
-    mode: CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7,
-  });
-
-  return decrypted.toString(CryptoJS.enc.Utf8).trim();
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -140,30 +114,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    const { data: assignment, error: assignmentError } = await dbClient
-      .from("Assignments")
-      .select("key")
-      .eq("id", aid)
-      .single();
-
-    if (assignmentError) {
-      return new Response(JSON.stringify({ error: assignmentError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const assignmentKey = String(assignment?.key ?? "").trim();
-    if (!assignmentKey) {
-      return new Response(JSON.stringify({ error: "Assignment key is missing." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const { data: submissions, error: submissionError } = await dbClient
       .from("File_Submissions_New")
-      .select("id, created_at, student_info")
+      .select("id, created_at, student_identity_key")
       .eq("assignment_id", aid)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false });
@@ -183,9 +136,8 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const encryptedStudentNumber = String(row?.student_info?.student_number ?? "").trim();
-      const studentNumber = decryptValue(encryptedStudentNumber, assignmentKey);
-      const studentKey = studentNumber ? `number:${studentNumber}` : `submission:${submissionId}`;
+      const studentIdentityKey = String(row?.student_identity_key ?? "").trim();
+      const studentKey = studentIdentityKey ? `identity:${studentIdentityKey}` : `submission:${submissionId}`;
 
       if (!latestSubmissionIdsByStudent.has(studentKey)) {
         latestSubmissionIdsByStudent.set(studentKey, submissionId);

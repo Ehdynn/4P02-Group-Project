@@ -1,7 +1,8 @@
 create  function public.create_file_submission(
   p_assignment_id bigint,
   p_student_name text,
-  p_student_number text
+  p_student_number text,
+  p_student_identity_key text
 )
 returns uuid
 language plpgsql
@@ -26,6 +27,11 @@ begin
       using errcode = 'P0001';
   end if;
 
+  if nullif(btrim(coalesce(p_student_identity_key, '')), '') is null then
+    raise exception 'Missing student identity key.'
+      using errcode = 'P0001';
+  end if;
+
   if not exists (
     select 1
     from public."Assignments" a
@@ -38,14 +44,16 @@ begin
 
   insert into public."File_Submissions_New" (
     assignment_id,
-    student_info
+    student_info,
+    student_identity_key
   )
   values (
     p_assignment_id,
     jsonb_build_object(
       'student_name', btrim(p_student_name),
       'student_number', btrim(p_student_number)
-    )
+    ),
+    btrim(p_student_identity_key)
   )
   returning id into v_submission_id;
 

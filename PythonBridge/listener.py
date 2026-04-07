@@ -113,10 +113,9 @@ def decrypt_value(encrypted_value, assignment_key):
 Get all of the ids from submissions
 '''
 def get_submission_ids_for_assignment(assignment_id):
-    assignment_key = get_assignment_key(assignment_id)
     response = (
         supabase.table("File_Submissions_New")
-        .select("id, created_at, student_info")
+        .select("id, created_at, student_identity_key")
         .eq("assignment_id", assignment_id)
         .order("created_at", desc=True)
         .order("id", desc=True)
@@ -130,12 +129,10 @@ def get_submission_ids_for_assignment(assignment_id):
         if submission_id is None:
             continue
 
-        student_info = row.get("student_info") or {}
-        encrypted_student_number = str(student_info.get("student_number") or "")
-        student_number = decrypt_value(encrypted_student_number, assignment_key).strip()
+        student_identity_key = str(row.get("student_identity_key") or "").strip()
 
-        if student_number:
-            student_key = f"number:{student_number}"
+        if student_identity_key:
+            student_key = f"identity:{student_identity_key}"
         else:
             student_key = f"submission:{submission_id}"
 

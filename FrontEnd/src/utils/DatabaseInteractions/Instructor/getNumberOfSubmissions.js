@@ -16,7 +16,7 @@ export async function getNumberOfSubmissions(aid) {
 
   const { data, error: uniqueError } = await supabase
     .from("File_Submissions_New")
-    .select("student_info")
+    .select("student_identity_key")
     .eq("assignment_id", Number(aid));
 
   if (uniqueError) {
@@ -25,7 +25,7 @@ export async function getNumberOfSubmissions(aid) {
 
   const uniqueStudentNumbers = new Set(
     (data ?? [])
-      .map((row) => String(row?.student_info?.student_number ?? "").trim())
+      .map((row) => String(row?.student_identity_key ?? "").trim())
       .filter(Boolean),
   );
 
