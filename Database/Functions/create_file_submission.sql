@@ -1,4 +1,5 @@
 create  function public.create_file_submission(
+  p_submission_id uuid,
   p_assignment_id bigint,
   p_student_name text,
   p_student_number text,
@@ -12,6 +13,11 @@ as $function$
 declare
   v_submission_id uuid;
 begin
+  if p_submission_id is null then
+    raise exception 'Missing submission id.'
+      using errcode = 'P0001';
+  end if;
+
   if p_assignment_id is null then
     raise exception 'Missing assignment id.'
       using errcode = 'P0001';
@@ -43,11 +49,13 @@ begin
   end if;
 
   insert into public."File_Submissions_New" (
+    id,
     assignment_id,
     student_info,
     student_identity_key
   )
   values (
+    p_submission_id,
     p_assignment_id,
     jsonb_build_object(
       'student_name', btrim(p_student_name),

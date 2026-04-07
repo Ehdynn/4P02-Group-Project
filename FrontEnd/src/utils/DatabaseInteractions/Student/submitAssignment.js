@@ -85,8 +85,12 @@ export async function submitAssignment(file, name, studentNumber, aid, assignmen
   const encryptedStudentName = await encryptValue(name, assignmentKey);
   const encryptedStudentNumber = await encryptValue(normalizedStudentNumber, assignmentKey);
   const studentIdentityKey = await createStudentIdentityKey(normalizedStudentNumber);
+  const submissionId = crypto.randomUUID();
+
+  const uploadResult = await uploadSubmission(file, submissionId, aid);
 
   const { data, error } = await supabase.rpc("create_file_submission", {
+    p_submission_id: submissionId,
     p_assignment_id: aid,
     p_student_name: encryptedStudentName,
     p_student_number: encryptedStudentNumber,
@@ -94,12 +98,15 @@ export async function submitAssignment(file, name, studentNumber, aid, assignmen
   });
 
   if (error) {
+    await supabase.storage
+      .from("Submissions")
+      .remove([uploadResult.path])
+      .catch(() => undefined);
     throw new Error(`Could not create submission record: ${error.message}`);
   }
 
-  const uploadResult = await uploadSubmission(file, data, aid);
   return {
-    submissionId: data,
+    submissionId: data ?? submissionId,
     storagePath: uploadResult.path,
     message: "Submission uploaded successfully.",
   };
