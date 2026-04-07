@@ -291,7 +291,25 @@ public class Lexer {
 
         for(ArrayList<Token> list : StringTokens){
             String tokenValue = "";
-            int index = tokens.indexOf(list.getFirst());
+            int index;
+            if (list.isEmpty()) {
+                index = -1;
+                for (int i = 0; i < tokens.size() - 1; i++) {
+                    if (tokens.get(i).getValue().equals("\"") && tokens.get(i + 1).getValue().equals("\"")) {
+                        index = i;
+                        tokens.remove(i + 1);
+                        tokens.remove(i);
+                        break;
+                    }
+                }
+
+                if (index != -1) {
+                    tokens.add(index, new Token(TokenType.LITERAL, ""));
+                }
+                continue;
+            }
+
+            index = tokens.indexOf(list.getFirst());
             for(int i = 0; i < list.size(); i++){
                 Token token = list.get(i);
                 tokens.remove(token);
