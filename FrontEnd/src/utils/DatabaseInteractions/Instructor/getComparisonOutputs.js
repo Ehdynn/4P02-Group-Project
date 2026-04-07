@@ -20,8 +20,16 @@ async function decryptValue(value, key) {
   return String(data?.message ?? "").trim();
 }
 
-async function getLatestSubmissions(aid, assignmentKey) {
-  if (!aid) {
+async function getSubmissionsForComparison(aid, submissionIds, assignmentKey) {
+  if (!aid || !Array.isArray(submissionIds) || submissionIds.length === 0) {
+    return [];
+  }
+
+  const normalizedSubmissionIds = submissionIds
+    .map((submissionId) => String(submissionId ?? "").trim())
+    .filter(Boolean);
+
+  if (normalizedSubmissionIds.length === 0) {
     return [];
   }
 
@@ -29,45 +37,53 @@ async function getLatestSubmissions(aid, assignmentKey) {
     .from("File_Submissions_New")
     .select("id, student_info")
     .eq("assignment_id", Number(aid))
-    .order("created_at", { ascending: false });
+    .in("id", normalizedSubmissionIds);
 
   if (error) {
     throw new Error(`Failed to get submissions: ${error.message}`);
   }
 
-  const submissions = await Promise.all(
-    (data ?? []).map(async (row) => {
-      const id = String(row?.id ?? "").trim();
-      const encryptedStudentName = String(row?.student_info?.student_name ?? "").trim();
-      const encryptedStudentNumber = String(row?.student_info?.student_number ?? "").trim();
+  const submissionsById = new Map(
+    await Promise.all(
+      (data ?? []).map(async (row) => {
+        const id = String(row?.id ?? "").trim();
+        const encryptedStudentName = String(row?.student_info?.student_name ?? "").trim();
+        const encryptedStudentNumber = String(row?.student_info?.student_number ?? "").trim();
 
-      return {
-        id,
-        fileName: `${id}.json`,
-        studentName: assignmentKey
-          ? await decryptValue(encryptedStudentName, assignmentKey)
-          : encryptedStudentName,
-        studentNumber: assignmentKey
-          ? await decryptValue(encryptedStudentNumber, assignmentKey)
-          : encryptedStudentNumber,
-      };
-    }),
+        return [
+          id,
+          {
+            id,
+            fileName: `${id}.json`,
+            studentName: assignmentKey
+              ? await decryptValue(encryptedStudentName, assignmentKey)
+              : encryptedStudentName,
+            studentNumber: assignmentKey
+              ? await decryptValue(encryptedStudentNumber, assignmentKey)
+              : encryptedStudentNumber,
+          },
+        ];
+      }),
+    ),
   );
 
-  return submissions.filter((row) => row.id);
+  return normalizedSubmissionIds
+    .map((submissionId) => submissionsById.get(submissionId))
+    .filter((submission) => submission?.id);
 }
 
-export async function getComparisonOutputs(comparisonId, aid, assignmentKey) {
-  if (!comparisonId || !aid) {
+export async function getComparisonOutputs(comparison, aid, assignmentKey) {
+  const comparisonId = String(comparison?.id ?? "").trim();
+  const submissionsCompared = Array.isArray(comparison?.submissions_compared)
+    ? comparison.submissions_compared
+    : [];
+
+  if (!comparisonId || !aid || submissionsCompared.length === 0) {
     return [];
   }
 
-  const folderPath = String(comparisonId).trim();
-  const submissions = await getLatestSubmissions(aid, assignmentKey);
-
-  if (submissions.length === 0) {
-    return [];
-  }
+  const folderPath = comparisonId;
+  const submissions = await getSubmissionsForComparison(aid, submissionsCompared, assignmentKey);
 
   const downloads = await Promise.allSettled(
     submissions.map(async (submission) => {

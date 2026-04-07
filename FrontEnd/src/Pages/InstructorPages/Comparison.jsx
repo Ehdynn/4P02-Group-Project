@@ -99,7 +99,7 @@ const Comparison = () => {
       try {
         setOutputsLoading(true);
         setOutputsError("");
-        const outputs = await getComparisonOutputs(selectedComparison.id, aid, assignmentKey);
+        const outputs = await getComparisonOutputs(selectedComparison, aid, assignmentKey);
 
         if (!cancelled) {
           setComparisonOutputs(outputs);

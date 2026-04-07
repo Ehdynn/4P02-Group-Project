@@ -5,7 +5,7 @@ export async function getComparisonStudents(aid) {
 
   const { data, error } = await supabase
     .from("Comparisons")
-    .select("students_compared")
+    .select("submissions_compared")
     .eq("aid", Number(aid));
 
   if (error) {
@@ -13,7 +13,7 @@ export async function getComparisonStudents(aid) {
   }
 
   const students = (data ?? []).flatMap((row) =>
-    Array.isArray(row?.students_compared) ? row.students_compared : [],
+    Array.isArray(row?.submissions_compared) ? row.submissions_compared : [],
   );
 
   return [...new Set(students.map((student) => String(student)).filter(Boolean))];
