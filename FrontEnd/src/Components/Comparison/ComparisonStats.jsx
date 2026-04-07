@@ -1,6 +1,6 @@
 const ComparisonStats = ({ comparisons, loading }) => {
   const total = comparisons.length;
-  const ready = comparisons.filter((comparison) => String(comparison.status).toLowerCase() === "ready").length;
+  const completed = comparisons.filter((comparison) => String(comparison.status).toLowerCase() === "completed").length;
   const pending = comparisons.filter((comparison) => String(comparison.status).toLowerCase() === "pending").length;
   const failed = comparisons.filter((comparison) => String(comparison.status).toLowerCase() === "failed").length;
 
@@ -11,7 +11,7 @@ const ComparisonStats = ({ comparisons, loading }) => {
       {!loading ? (
         <div className="grid grid-cols-2 gap-3 text-sm">
           <p>Total runs: {total}</p>
-          <p>Ready: {ready}</p>
+          <p>Completed: {completed}</p>
           <p>Pending: {pending}</p>
           <p>Failed: {failed}</p>
         </div>
