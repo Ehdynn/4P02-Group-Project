@@ -9,7 +9,6 @@ function hasSupportedExtension(file) {
 }
 
 async function encryptValue(value, key) {
-
   if (!value || !key) {
     throw new Error("Missing value or assignment key for encryption.");
   }
@@ -27,6 +26,25 @@ async function encryptValue(value, key) {
   }
 
   return String(data?.message ?? "").trim();
+}
+
+async function createStudentIdentityKey(studentNumber) {
+  const normalizedStudentNumber = String(studentNumber ?? "").trim();
+  if (!normalizedStudentNumber) {
+    throw new Error("Missing student number for identity key generation.");
+  }
+
+  const { data, error } = await supabase.functions.invoke("createStudentIdentityKey", {
+    body: {
+      studentNumber: normalizedStudentNumber,
+    },
+  });
+
+  if (error) {
+    throw new Error(`Failed to create student identity key: ${error.message}`);
+  }
+
+  return String(data?.key ?? "").trim();
 }
 
 export async function submitAssignment(file, name, studentNumber, aid, assignmentKey){
@@ -63,14 +81,16 @@ export async function submitAssignment(file, name, studentNumber, aid, assignmen
   if (!hasSupportedExtension(file)){
     throw new Error('Invalid File Format.');
   }
-
+  const normalizedStudentNumber = studentNumber.trim();
   const encryptedStudentName = await encryptValue(name, assignmentKey);
-  const encryptedStudentNumber = await encryptValue(studentNumber, assignmentKey);
+  const encryptedStudentNumber = await encryptValue(normalizedStudentNumber, assignmentKey);
+  const studentIdentityKey = await createStudentIdentityKey(normalizedStudentNumber);
 
   const { data, error } = await supabase.rpc("create_file_submission", {
     p_assignment_id: aid,
     p_student_name: encryptedStudentName,
     p_student_number: encryptedStudentNumber,
+    p_student_identity_key: studentIdentityKey,
   });
 
   if (error) {
