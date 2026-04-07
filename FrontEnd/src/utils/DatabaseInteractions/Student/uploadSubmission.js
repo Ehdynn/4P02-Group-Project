@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import supabase from "../supabase";
 
-const supportedSourceExtensions = [".java", ".cpp", ".c"];
+const supportedSourceExtensions = [".java", ".cpp", ".c", ".py"];
 const uploadBucket = "Submissions";
 
 function isZipFile(file) {
@@ -20,6 +20,18 @@ function getStoredSubmissionFileName(fid) {
 function isSupportedSourceFile(fileName) {
   const normalizedName = String(fileName ?? "").toLowerCase();
   return supportedSourceExtensions.some((extension) => normalizedName.endsWith(extension));
+}
+
+function getSourceExtension(fileName) {
+  const normalizedName = String(fileName ?? "").toLowerCase();
+
+  for (const extension of supportedSourceExtensions) {
+    if (normalizedName.endsWith(extension)) {
+      return extension;
+    }
+  }
+
+  return "";
 }
 
 function stripComments(source) {
@@ -128,21 +140,38 @@ async function getMergedSubmissionBlob(file, fid) {
     .sort((left, right) => left.name.localeCompare(right.name));
 
   if (supportedFiles.length === 0) {
-    throw new Error("Zip file must contain at least one .java, .cpp, or .c file.");
+    throw new Error("Zip file must contain at least one .java, .cpp, .c, or .py file.");
   }
 
-  const fileContents = await Promise.all(
-    supportedFiles.map(async (entry) => stripComments(await entry.async("string"))),
-  );
-
-  const mergedSubmission = fileContents.join("\n\n");
   const submissionId = String(fid ?? "").trim();
   if (!submissionId) {
     throw new Error("Missing submission id.");
   }
 
+  const groupedSourceByExtension = new Map();
+
+  for (const entry of supportedFiles) {
+    const extension = getSourceExtension(entry.name);
+    if (!extension) {
+      continue;
+    }
+
+    const existingSources = groupedSourceByExtension.get(extension) ?? [];
+    existingSources.push(stripComments(await entry.async("string")));
+    groupedSourceByExtension.set(extension, existingSources);
+  }
+
   const outputZip = new JSZip();
-  outputZip.file(`${submissionId}.txt`, mergedSubmission);
+
+  for (const extension of supportedSourceExtensions) {
+    const groupedSources = groupedSourceByExtension.get(extension);
+    if (!groupedSources?.length) {
+      continue;
+    }
+
+    outputZip.file(`${submissionId}${extension}`, groupedSources.join("\n\n"));
+  }
+
   return outputZip.generateAsync({ type: "blob" });
 }
 

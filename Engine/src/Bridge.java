@@ -52,7 +52,8 @@ class Bridge {
         try {
             archive = fileHandler.writeBytesToFile(fileData, "temp");
             extractedDir = fileHandler.unzipFile(archive);
-            Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath());
+            List<String> fileNames = new ArrayList<>(fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath()));
+            Collections.sort(fileNames);
 
             for(String s: fileNames) {
                 String extension = fileHandler.getFileExtension(s);
@@ -90,7 +91,8 @@ class Bridge {
             if (looksLikeZip(fileData)) {
                 archive = fileHandler.writeBytesToFile(fileData, "temp");
                 extractedDir = fileHandler.unzipFile(archive);
-                Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath());
+                List<String> fileNames = new ArrayList<>(fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath()));
+                Collections.sort(fileNames);
 
                 for (String s : fileNames) {
                     String extension = fileHandler.getFileExtension(s);

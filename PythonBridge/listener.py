@@ -10,9 +10,7 @@ from Crypto.Util.Padding import unpad
 from supabase import create_client, Client
 from realtime import AsyncRealtimeClient, RealtimePostgresChangesListenEvent
 from py4j.java_gateway import JavaGateway
-import io
 import json
-import zipfile
 
 env_path = Path(__file__).with_name(".env.local")
 if env_path.exists():
@@ -84,21 +82,6 @@ async def register_comparison_snapshot(assignment_id):
     state = await get_assignment_state(assignment_id)
     async with state["condition"]:
         return state["submitted"]
-
-'''
-Extracts the concatenated submission file from the zip wrapper
-returns either the file read, or None if it fails.
-'''
-def extract_submission(zip_bytes, submission_id):
-    file_name = f"{submission_id}.txt"
-    
-    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zip:
-        try:
-            with zip.open(file_name) as file:
-                return file.read()
-        except KeyError:
-            print(f"Missing {file_name} inside submission zip")
-            return None
 
 def get_assignment_key(assignment_id):
     cached_key = assignment_key_cache.get(assignment_id)
@@ -395,9 +378,8 @@ async def consume_submission():
                 print(f"Processing submission with id: {submission_id}")
                 file_bytes = await download_submission_with_retry(assignment_id, submission_id)
                 print(f"Downloaded submission file for submission id: {submission_id}")
-                extracted_file_bytes = extract_submission(file_bytes, submission_id)
-                if extracted_file_bytes is not None:
-                    token_csv = entry_point.tokenizeCondensed(extracted_file_bytes)
+                if file_bytes is not None:
+                    token_csv = entry_point.tokenizeCondensed(file_bytes)
                     token_csv_bytes = token_csv.encode("utf-8")
                     print(f"Received token csv for submission: {submission_id}")
                     response = supabase.storage.from_("Tokens").upload(
