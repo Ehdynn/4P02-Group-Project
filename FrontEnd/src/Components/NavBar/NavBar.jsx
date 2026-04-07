@@ -25,9 +25,9 @@ const Navbar = () => {
             >{user && roleReady ? "Overview" : "Home"}</Link>
 
             <div className="ml-auto flex items-center gap-1">
-              <Link to="/about" className="link-default">
+              {/* <Link to="/about" className="link-default">
                 About
-              </Link>
+              </Link> */}
               {!isProfessor && 
                 <Link to={'/Submit'} className="link-default">
                 Submit Assignment
