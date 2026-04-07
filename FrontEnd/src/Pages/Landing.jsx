@@ -1,9 +1,15 @@
 import useUser from "../context/useUser"
-import {useNavigate} from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Landing = () => {
-  const {isProfessor, roleReady } = useUser();
+  const { user, roleReady } = useUser();
   const navigate = useNavigate();
+
+  if (!roleReady) return null;
+  if (user) {
+    return <Navigate to="/Overview" replace />;
+  }
+
   return (
     <main className="outer-container-3qw">
       <h1 className="h1-default text-center">Team Won Code Comparison</h1>
