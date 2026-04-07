@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import CryptoJS from "npm:crypto-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,31 @@ type CreateComparisonBody = {
   boilerPlateFileId?: string | null;
   repositoryId?: string | null;
 };
+
+function deriveKey(key: string) {
+  return CryptoJS.SHA256(key);
+}
+
+function decryptValue(value: string, key: string) {
+  if (!value || !key) {
+    return "";
+  }
+
+  const [ivBase64, ciphertext] = value.split(":");
+  if (!ivBase64 || !ciphertext) {
+    return "";
+  }
+
+  const iv = CryptoJS.enc.Base64.parse(ivBase64);
+  const secretKey = deriveKey(key);
+  const decrypted = CryptoJS.AES.decrypt(ciphertext, secretKey, {
+    iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+
+  return decrypted.toString(CryptoJS.enc.Utf8).trim();
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -114,23 +140,67 @@ Deno.serve(async (req) => {
       }
     }
 
-    const{data: students, error: studentError} = await dbClient
-      .from("File_Submissions")
-      .select("suid")
-      .eq("assignment_id", aid);
+    const { data: assignment, error: assignmentError } = await dbClient
+      .from("Assignments")
+      .select("key")
+      .eq("id", aid)
+      .single();
 
-    if (studentError) {
-      return new Response(JSON.stringify({ error: studentError.message }), {
+    if (assignmentError) {
+      return new Response(JSON.stringify({ error: assignmentError.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const assignmentKey = String(assignment?.key ?? "").trim();
+    if (!assignmentKey) {
+      return new Response(JSON.stringify({ error: "Assignment key is missing." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: submissions, error: submissionError } = await dbClient
+      .from("File_Submissions_New")
+      .select("id, created_at, student_info")
+      .eq("assignment_id", aid)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
+
+    if (submissionError) {
+      return new Response(JSON.stringify({ error: submissionError.message }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const latestSubmissionIdsByStudent = new Map<string, string>();
+
+    for (const row of submissions ?? []) {
+      const submissionId = String(row?.id ?? "").trim();
+      if (!submissionId) {
+        continue;
+      }
+
+      const encryptedStudentNumber = String(row?.student_info?.student_number ?? "").trim();
+      const studentNumber = decryptValue(encryptedStudentNumber, assignmentKey);
+      const studentKey = studentNumber ? `number:${studentNumber}` : `submission:${submissionId}`;
+
+      if (!latestSubmissionIdsByStudent.has(studentKey)) {
+        latestSubmissionIdsByStudent.set(studentKey, submissionId);
+      }
+    }
+
+    const submissionsCompared = [...latestSubmissionIdsByStudent.values()];
 
     const { data: comparison, error: comparisonError } = await dbClient
       .from("Comparisons")
       .insert({
         aid: aid,
         status: "pending",
+        submissions_compared: submissionsCompared,
+        number_of_students: submissionsCompared.length,
         boiler_plate_file: boilerPlateFileId,
         repository: repositoryId,
       })
