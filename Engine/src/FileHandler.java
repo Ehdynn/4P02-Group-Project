@@ -229,7 +229,16 @@ public class FileHandler {
         scanner.nextLine();
         while(scanner.hasNextLine()){
             String line = scanner.nextLine();
+            if (line.isBlank()) {
+                continue;
+            }
             String[] l = line.split(",");
+            if (l.length < 2) {
+                continue;
+            }
+            if (l[0].trim().equals("type")) {
+                continue;
+            }
             tokens.add(new Token(TokenType.valueOf(l[0]), l[1].trim()));
         }
 
