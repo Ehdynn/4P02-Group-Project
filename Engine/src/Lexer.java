@@ -4,13 +4,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Takes in code in the form of a String, outputs a list of Tokens that categorizes and orders each piece of code.
- *  These tokens will be used for comparisons for plagiarism detection.
- *  These tokens will be used to reconstruct the report later.
+ *  These tokens are used for comparisons for plagiarism detection.
+ *  These tokens are used to reconstruct the report.
  *
  *
  *  Based on Enzo Jade's Tokenizer from the linked tutorial: https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f
  *  Modified to support comments, Strings, and non-Java languages
  *  Modified to make Keywords not break the lexer if not the first keyword in a list
+ *  Modified beyond recognition. 
  *
  * @Version 1.2.1 (March 8th, 2026)
  */
@@ -86,7 +87,6 @@ public class Lexer {
      *  Compares the current string to the regular expressions representing the different types of Tokens.
      *  Does not identify strings, chars or keywords. Those must be done independently, later with the correctKeywords,
      *  correctCharacters, and correctKeywords functions.
-     *  TODO Need to make this more resilient. Currently handles errors poorly
      *
      * @return  null if something fails, token made from next token of code otherwise
      */
@@ -105,13 +105,14 @@ public class Lexer {
         }
 
         String[] tokenPatterns = {
-                "\\p{L}[\\p{L}0-9_~-\\uDDEF`]*",      // Identifiers
+                "[a-zA-Z_][a-zA-Z0-9_]*",   // Identifiers
                 "\\d+",                     // Literals
                 "//[a-zA-Z0-9_]*",          // Single-Line Comments
                 "/\\*[a-zA-Z0-9_]*",        // Multi-Line Comments
                 "\\*/",                     // Comment End
                 "[+/*=<>!?&|^~:%@-]",       // Operators
-                "[.,;()$#\\[\\]{}\"'\\\\]",  // Punctuation
+                "[.,;()$#\\[\\]{}\"'\\\\]", // Punctuation
+                "\\p{all}"                  // Catch-All for missing unicode characters. Should only appear as parts of strings. Also identifiers. Abuses Matcher using a greedy algorithm. 
         };
 
         TokenType[] tokenTypes = {
@@ -121,7 +122,8 @@ public class Lexer {
                 TokenType.MULTI_LINE_COMMENT,
                 TokenType.COMMENT_END,
                 TokenType.OPERATOR,
-                TokenType.PUNCTUATION
+                TokenType.PUNCTUATION,
+                TokenType.IDENTIFIER
         };
 
         for (int i = 0; i < tokenPatterns.length; i++) {
