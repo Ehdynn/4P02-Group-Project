@@ -79,12 +79,14 @@ const Comparison = () => {
   const selectedComparison = comparisons.find((comparison) => comparison.id === selectedComparisonId)
     ?? comparisons[0]
     ?? null;
+  const selectedComparisonStatus = String(selectedComparison?.status ?? "").toLowerCase();
+  const isSelectedComparisonCompleted = selectedComparisonStatus === "completed";
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadComparisonOutputs() {
-      if (!selectedComparison?.id) {
+      if (!selectedComparison?.id || !isSelectedComparisonCompleted) {
         setComparisonOutputs([]);
         setSelectedSubmissionId(null);
         setSecondarySelected(null);
@@ -138,7 +140,7 @@ const Comparison = () => {
     return () => {
       cancelled = true;
     };
-  }, [aid, assignmentKey, selectedComparison?.id]);
+  }, [aid, assignmentKey, isSelectedComparisonCompleted, selectedComparison?.id]);
 
   // Primary Output
   const selectedOutput = comparisonOutputs.find((output) => output.submissionId === selectedSubmissionId) ?? null;
@@ -197,7 +199,10 @@ const Comparison = () => {
           />
           {outputsLoading ? <div className="box-wrapper">Loading comparison output files...</div> : null}
           {outputsError ? <p className="error">{outputsError}</p> : null}
-          {!outputsLoading && !outputsError && comparisonOutputs.length === 0 && selectedComparison ? (
+          {!outputsLoading && !outputsError && selectedComparison && !isSelectedComparisonCompleted ? (
+            <div className="box-wrapper">Comparison output files are available after the run is completed.</div>
+          ) : null}
+          {!outputsLoading && !outputsError && comparisonOutputs.length === 0 && selectedComparison && isSelectedComparisonCompleted ? (
             <div className="box-wrapper">No comparison JSON files found for this run.</div>
           ) : null}
           {selectedOutput ? ( // A Submission is Selected
