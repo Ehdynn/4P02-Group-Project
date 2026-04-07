@@ -5,7 +5,6 @@ create table public."Comparisons" (
   aid bigint not null,
   status text not null default 'pending'::text,
   error_message text null,
-  number_of_students integer null,
   boiler_plate_file uuid null,
   repository uuid null,
   submissions_compared uuid[] null,
