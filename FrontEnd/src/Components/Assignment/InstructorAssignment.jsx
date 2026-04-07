@@ -27,7 +27,7 @@ function formatSelectedFile(file, fallbackText) {
 const InstructorAssignment = () => {
   const navigate = useNavigate();
   const { aid } = useParams();
-  const [comparisonAvailable, setComparisonAvailable] = useState(true);
+  const [comparisonAvailable, setComparisonAvailable] = useState(false);
   const [comparisonError, setComparisonError] = useState("");
   const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
   const [submissionCounts, setSubmissionCounts] = useState({

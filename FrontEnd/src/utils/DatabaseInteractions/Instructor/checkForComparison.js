@@ -12,5 +12,5 @@ export async function checkForComparison(aid) {
 
     if (!Array.isArray(data) || data.length === 0) return false;
 
-    return data.some((row) => String(row.status).toLowerCase() === "ready" || String(row.status).toLowerCase() === "pending");
+    return data.length > 0;
 }
