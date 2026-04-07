@@ -8,7 +8,7 @@ const AssignmentDetails = ({details}) => {
     <div className="box-wrapper-square">
         <h2 className="h2-large text-center">Description</h2>
         <hr className="h-px my-8 bg-neutral-quaternary border-sm border-gray-500"/>
-        <p>{details.description ?? "No description provided."}</p>
+        <p className="whitespace-pre-line">{details.description ?? "No description provided."}</p>
     </div>
     
     </>
