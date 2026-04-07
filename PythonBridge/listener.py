@@ -40,10 +40,9 @@ entry_point = gateway.entry_point
 
 def make_assignment_state():
     return {
-        "submitted": 0,
-        "completed": 0,
         "condition": asyncio.Condition(),
         "lock": asyncio.Lock(),
+        "completed_submission_ids": set(),
     }
 
 async def get_assignment_state(assignment_id):
@@ -55,17 +54,13 @@ async def get_assignment_state(assignment_id):
         return state
 
 async def register_submission_event(assignment_id):
-    state = await get_assignment_state(assignment_id)
-    async with state["condition"]:
-        state["submitted"] += 1
+    await get_assignment_state(assignment_id)
 
 async def enqueue_comparison_event(comparison_id, assignment_id):
-    target_count = await register_comparison_snapshot(assignment_id)
     comparison_queue.put_nowait(
         {
             "comparison_id": comparison_id,
             "assignment_id": assignment_id,
-            "target_submission_count": target_count,
         }
     )
 
@@ -77,11 +72,6 @@ async def enqueue_submission_event(assignment_id, submission_id):
             "submission_id": submission_id,
         }
     )
-    
-async def register_comparison_snapshot(assignment_id):
-    state = await get_assignment_state(assignment_id)
-    async with state["condition"]:
-        return state["submitted"]
 
 def get_assignment_key(assignment_id):
     cached_key = assignment_key_cache.get(assignment_id)
@@ -153,6 +143,67 @@ def get_submission_ids_for_assignment(assignment_id):
             latest_by_student[student_key] = submission_id
 
     return list(latest_by_student.values())
+
+def get_submission_ids_for_comparison(comparison_id):
+    response = (
+        supabase.table("Comparisons")
+        .select("submissions_compared")
+        .eq("id", comparison_id)
+        .single()
+        .execute()
+    )
+
+    comparison_row = response.data or {}
+    submission_ids = comparison_row.get("submissions_compared") or []
+
+    return [
+        str(submission_id).strip()
+        for submission_id in submission_ids
+        if str(submission_id).strip()
+    ]
+
+def token_csv_exists(assignment_id, submission_id):
+    path = f"{assignment_id}/{submission_id}.csv"
+
+    try:
+        supabase.storage.from_("Tokens").download(path)
+        return True
+    except Exception:
+        return False
+
+async def wait_for_comparison_submissions(assignment_id, submission_ids):
+    if not submission_ids:
+        return
+
+    state = await get_assignment_state(assignment_id)
+    pending_submission_ids = set(submission_ids)
+
+    while pending_submission_ids:
+        async with state["condition"]:
+            pending_submission_ids = {
+                submission_id
+                for submission_id in pending_submission_ids
+                if submission_id not in state["completed_submission_ids"]
+            }
+
+            if not pending_submission_ids:
+                return
+
+        resolved_submission_ids = {
+            submission_id
+            for submission_id in pending_submission_ids
+            if await asyncio.to_thread(token_csv_exists, assignment_id, submission_id)
+        }
+
+        if resolved_submission_ids:
+            async with state["condition"]:
+                state["completed_submission_ids"].update(resolved_submission_ids)
+                pending_submission_ids -= resolved_submission_ids
+                if not pending_submission_ids:
+                    return
+
+        async with state["condition"]:
+            await state["condition"].wait()
 
 '''
 Download all of the csvs to be compared from the db
@@ -299,15 +350,13 @@ async def consume_comparison():
         comparison_event = await comparison_queue.get()
         assignment_id = comparison_event["assignment_id"]
         comparison_id = comparison_event["comparison_id"]
-        target_count = comparison_event["target_submission_count"]
         state = await get_assignment_state(assignment_id)
         
         try:
-            # Wait until all submissions for an assignment that were submitted before the comparison was called have been processed
-            async with state["condition"]:
-                await state["condition"].wait_for(
-                    lambda: state["completed"] >= target_count
-                )
+            submission_ids = await asyncio.to_thread(get_submission_ids_for_comparison, comparison_id)
+            print(f"{len(submission_ids)} submission(s) were stored for comparison {comparison_id}: ")
+            await wait_for_comparison_submissions(assignment_id, submission_ids)
+
             async with state["lock"]:
                 print(f"Processing comparison with id: {comparison_id}")
                                     
@@ -324,9 +373,6 @@ async def consume_comparison():
                     boilerplate_tokenized = entry_point.tokenizeCondensed(boilerplate_bytes)
                 
                 # TODO Tokenize the repo (For each file check if it has already been tokenized, then tokenize any remaining, or just add an error for the ones that hadn't been tokenized prev)
-                
-                submission_ids = await asyncio.to_thread(get_submission_ids_for_assignment,assignment_id,)
-                print(f"{len(submission_ids)} submission(s) where found for assignment {assignment_id}: ")
                 
                 token_csvs = await asyncio.to_thread(
                     download_token_csvs_for_assignment,
@@ -370,11 +416,11 @@ async def consume_submission():
     while True:
         submission_event = await submission_queue.get()
         assignment_id = submission_event["assignment_id"]
+        submission_id = submission_event["submission_id"]
         state = await get_assignment_state(assignment_id)
+        submission_processed = False
         try:
             async with state["lock"]:
-                submission_id = submission_event["submission_id"]
-            
                 print(f"Processing submission with id: {submission_id}")
                 file_bytes = await download_submission_with_retry(assignment_id, submission_id)
                 print(f"Downloaded submission file for submission id: {submission_id}")
@@ -392,12 +438,14 @@ async def consume_submission():
                         },
                     )
                     print(f"Uploaded tokens for submission: {submission_id}")
+                    submission_processed = True
                     # TODO Handle any errors if the tokens fail to upload
         except Exception as e:
             print(f"Error processing submission event {submission_event}: {e}")
         finally:
             async with state["condition"]:
-                state["completed"] += 1
+                if submission_processed:
+                    state["completed_submission_ids"].add(submission_id)
                 state["condition"].notify_all()
             submission_queue.task_done()
 
