@@ -38,6 +38,7 @@ def make_assignment_state():
         "condition": asyncio.Condition(),
         "lock": asyncio.Lock(),
         "completed_submission_ids": set(),
+        "queued_submission_ids": set(),
     }
 
 async def get_assignment_state(assignment_id):
@@ -57,13 +58,22 @@ async def enqueue_comparison_event(comparison_id, assignment_id):
     )
 
 async def enqueue_submission_event(assignment_id, submission_id):
-    await get_assignment_state(assignment_id)
+    state = await get_assignment_state(assignment_id)
+    if not submission_id:
+        return
+
+    async with state["condition"]:
+        if submission_id in state["queued_submission_ids"]:
+            return
+        state["queued_submission_ids"].add(submission_id)
+
     submission_queue.put_nowait(
         {
             "assignment_id": assignment_id,
             "submission_id": submission_id,
         }
     )
+    print(f"@submission Queued submission {submission_id} for assignment {assignment_id}.")
 
 def get_submission_ids_for_comparison(comparison_id):
     response = (
@@ -83,6 +93,24 @@ def get_submission_ids_for_comparison(comparison_id):
         if str(submission_id).strip()
     ]
 
+def get_pending_comparisons():
+    response = (
+        supabase.table("Comparisons")
+        .select("id, aid")
+        .eq("status", "pending")
+        .order("created_at", desc=False)
+        .execute()
+    )
+
+    return response.data or []
+
+
+class MissingTokenCsvError(Exception):
+    def __init__(self, submission_ids):
+        self.submission_ids = submission_ids
+        joined_ids = ", ".join(submission_ids)
+        super().__init__(f"Missing token CSVs for submission(s): {joined_ids}")
+
 def token_csv_exists(assignment_id, submission_id):
     path = f"{assignment_id}/{submission_id}.csv"
 
@@ -94,10 +122,15 @@ def token_csv_exists(assignment_id, submission_id):
 
 async def wait_for_comparison_submissions(assignment_id, submission_ids):
     if not submission_ids:
+        print(f"@wait No submissions queued for assignment {assignment_id}; continuing to comparison.")
         return
 
     state = await get_assignment_state(assignment_id)
     pending_submission_ids = set(submission_ids)
+    print(
+        f"@wait Waiting for {len(pending_submission_ids)} submission token file(s) "
+        f"for assignment {assignment_id}."
+    )
 
     while pending_submission_ids:
         async with state["condition"]:
@@ -108,6 +141,7 @@ async def wait_for_comparison_submissions(assignment_id, submission_ids):
             }
 
             if not pending_submission_ids:
+                print(f"@wait All submission token files are ready for assignment {assignment_id}.")
                 return
 
         resolved_submission_ids = {
@@ -120,9 +154,18 @@ async def wait_for_comparison_submissions(assignment_id, submission_ids):
             async with state["condition"]:
                 state["completed_submission_ids"].update(resolved_submission_ids)
                 pending_submission_ids -= resolved_submission_ids
+                print(
+                    f"@wait Found {len(resolved_submission_ids)} existing token file(s) "
+                    f"for assignment {assignment_id}. {len(pending_submission_ids)} remaining."
+                )
                 if not pending_submission_ids:
+                    print(f"@wait All submission token files are ready for assignment {assignment_id}.")
                     return
 
+        print(
+            f"@wait Still waiting on {len(pending_submission_ids)} submission(s) for assignment "
+            f"{assignment_id}: {sorted(pending_submission_ids)}"
+        )
         async with state["condition"]:
             await state["condition"].wait()
 
@@ -131,10 +174,15 @@ Download all of the csvs to be compared from the db
 '''
 def download_token_csvs_for_assignment(assignment_id, submission_ids):
     token_csvs = []
+    missing_submission_ids = []
 
     for submission_id in submission_ids:
         path = f"{assignment_id}/{submission_id}.csv"
-        file_bytes = supabase.storage.from_("Tokens").download(path)
+        try:
+            file_bytes = supabase.storage.from_("Tokens").download(path)
+        except Exception:
+            missing_submission_ids.append(str(submission_id))
+            continue
 
         token_csvs.append(
             {
@@ -143,7 +191,22 @@ def download_token_csvs_for_assignment(assignment_id, submission_ids):
             }
         )
 
+    if missing_submission_ids:
+        raise MissingTokenCsvError(missing_submission_ids)
+
     return token_csvs
+
+
+async def requeue_missing_submissions(assignment_id, submission_ids):
+    if not submission_ids:
+        return
+
+    print(
+        f"@requeue Re-queueing {len(submission_ids)} submission(s) with missing token CSVs "
+        f"for assignment {assignment_id}: {submission_ids}"
+    )
+    for submission_id in submission_ids:
+        await enqueue_submission_event(assignment_id, submission_id)
 
 '''
 Downloads the boiler plate file selected for a comparison, if one exists.
@@ -244,7 +307,7 @@ def upload_comparison_results(comparison_id, comparison_result_json):
                 "content-type": "application/json",
             },
         )
-        print(f"Uploaded comparison result for: {comparison_id}")
+        print(f"@comparison Uploaded comparison result for: {comparison_id}")
 
 async def download_submission_with_retry(assignment_id, submission_id, attempts=10, delay=2):
     path = f"{assignment_id}/{submission_id}/{submission_id}.zip"
@@ -275,11 +338,14 @@ async def consume_comparison():
         
         try:
             submission_ids = await asyncio.to_thread(get_submission_ids_for_comparison, comparison_id)
-            print(f"{len(submission_ids)} submission(s) were stored for comparison {comparison_id}: ")
+            print(
+                f"@comparison {len(submission_ids)} submission(s) were stored for comparison "
+                f"{comparison_id}: {submission_ids}"
+            )
             await wait_for_comparison_submissions(assignment_id, submission_ids)
 
             async with state["lock"]:
-                print(f"Processing comparison with id: {comparison_id}")
+                print(f"@comparison Processing comparison with id: {comparison_id}")
                                     
                 boilerplate_bytes = await asyncio.to_thread(
                     download_boilerplate_for_comparison,
@@ -287,7 +353,7 @@ async def consume_comparison():
                     assignment_id,
                 )
                 if boilerplate_bytes is not None:
-                    print(f"Downloaded boiler plate for comparison {comparison_id}")
+                    print(f"@comparison Downloaded boiler plate for comparison {comparison_id}")
                 
                 boilerplate_tokenized = None
                 if boilerplate_bytes is not None:
@@ -300,7 +366,7 @@ async def consume_comparison():
                     assignment_id,
                     submission_ids,
                 )
-                print(f"Downloaded {len(token_csvs)} token csv file(s) for assignment {assignment_id}")
+                print(f"@comparison Downloaded {len(token_csvs)} token csv file(s) for assignment {assignment_id}")
                 
                 encoded_bytes_csv = json.dumps(encode_bytes(token_csvs))
                 
@@ -317,15 +383,23 @@ async def consume_comparison():
                 )
                 
                 # TODO Handle Errors
-                update_response = (
+                (
                     supabase.table("Comparisons")
                     .update({"status":"completed"})
                     .eq("id", comparison_id)
                     .execute()
                 )
+                print(f"@comparison Marked comparison {comparison_id} as completed.")
                 # TODO Handle Update Error
+        except MissingTokenCsvError as e:
+            await requeue_missing_submissions(assignment_id, e.submission_ids)
+            print(
+                f"@comparison Comparison {comparison_id} is waiting for re-queued submission(s): "
+                f"{e.submission_ids}"
+            )
+            await enqueue_comparison_event(comparison_id, assignment_id)
         except Exception as e:
-            print(f"Error processing comparison {comparison_id}: {e}")
+            print(f"@comparison Error processing comparison {comparison_id}: {e}")
         finally:
             comparison_queue.task_done()
 
@@ -342,14 +416,14 @@ async def consume_submission():
         submission_processed = False
         try:
             async with state["lock"]:
-                print(f"Processing submission with id: {submission_id}")
+                print(f"@submission Processing submission with id: {submission_id}")
                 file_bytes = await download_submission_with_retry(assignment_id, submission_id)
-                print(f"Downloaded submission file for submission id: {submission_id}")
+                print(f"@submission Downloaded submission file for submission id: {submission_id}")
                 if file_bytes is not None:
                     token_csv = entry_point.tokenizeCondensed(file_bytes)
                     token_csv_bytes = token_csv.encode("utf-8")
-                    print(f"Received token csv for submission: {submission_id}")
-                    response = supabase.storage.from_("Tokens").upload(
+                    print(f"@submission Received token csv for submission: {submission_id}")
+                    supabase.storage.from_("Tokens").upload(
                         path=f"{assignment_id}/{submission_id}.csv",
                         file=token_csv_bytes,
                         file_options={
@@ -358,13 +432,14 @@ async def consume_submission():
                             "content-type": "text/csv",
                         },
                     )
-                    print(f"Uploaded tokens for submission: {submission_id}")
+                    print(f"@submission Uploaded tokens for submission: {submission_id}")
                     submission_processed = True
                     # TODO Handle any errors if the tokens fail to upload
         except Exception as e:
-            print(f"Error processing submission event {submission_event}: {e}")
+            print(f"@submission Error processing submission event {submission_event}: {e}")
         finally:
             async with state["condition"]:
+                state["queued_submission_ids"].discard(submission_id)
                 if submission_processed:
                     state["completed_submission_ids"].add(submission_id)
                 state["condition"].notify_all()
@@ -381,6 +456,19 @@ async def main():
         asyncio.create_task(consume_comparison())
         asyncio.create_task(consume_submission())
 
+        pending_comparisons = await asyncio.to_thread(get_pending_comparisons)
+        if pending_comparisons:
+            print(f"@startup Re-queueing {len(pending_comparisons)} pending comparison(s) on startup.")
+            for comparison in pending_comparisons:
+                comparison_id = comparison.get("id")
+                assignment_id = comparison.get("aid")
+                if comparison_id is None or assignment_id is None:
+                    continue
+                await enqueue_comparison_event(comparison_id, assignment_id)
+                print(f"@startup Queued pending comparison {comparison_id} for assignment {assignment_id}.")
+        else:
+            print("@startup No pending comparisons found on startup.")
+
         # Comparison Listener
         comparison_channel = client.channel("realtime:public:Comparisons")
         comparison_channel.on_postgres_changes(
@@ -390,7 +478,7 @@ async def main():
             table="Comparisons",
         )
         await comparison_channel.subscribe()
-        print(f"Subscribed to inserts on 'Comparisons'. Listening for changes...")
+        print(f"@startup Subscribed to inserts on 'Comparisons'. Listening for changes...")
 
         # Submission Listener
         submissions_channel = client.channel("realtime:public:File_Submissions_New")
@@ -401,13 +489,13 @@ async def main():
             table="File_Submissions_New",
         )
         await submissions_channel.subscribe()
-        print(f"Subscribed to inserts on 'Submissions'. Listening for changes...")
+        print(f"@startup Subscribed to inserts on 'Submissions'. Listening for changes...")
 
         # Keep the program alive while waiting for events.
         await asyncio.Event().wait()
     except Exception as e:
         # TODO More verbose error msg
-        print(f"An unexpected error occurred: {e}")
+        print(f"@startup An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())
