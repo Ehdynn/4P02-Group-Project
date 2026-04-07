@@ -200,7 +200,6 @@ Deno.serve(async (req) => {
         aid: aid,
         status: "pending",
         submissions_compared: submissionsCompared,
-        number_of_students: submissionsCompared.length,
         boiler_plate_file: boilerPlateFileId,
         repository: repositoryId,
       })
