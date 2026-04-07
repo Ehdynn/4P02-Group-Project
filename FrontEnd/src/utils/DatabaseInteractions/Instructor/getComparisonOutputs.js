@@ -71,14 +71,22 @@ export async function getComparisonOutputs(comparisonId, aid, assignmentKey) {
 
   const downloads = await Promise.allSettled(
     submissions.map(async (submission) => {
+      let blob;
+      let downloadError;
       const filePath = `${folderPath}/${submission.fileName}`;
-      const { data: blob, error: downloadError } = await supabase.storage
-        .from("Comparisons")
-        .download(filePath);
-
-      if (downloadError) {
-        throw new Error(`Failed to download ${filePath}: ${downloadError.message ?? "{}"}`);
+      try {
+        const response = await supabase.storage
+          .from("Comparisons")
+          .download(filePath);
+        blob = response.data;
+        downloadError = response.error;
+        if (downloadError || !blob) {
+          throw new Error(downloadError?.message ?? "Unknown error");
+        }
+      } catch (error) {
+        throw new Error(`Failed to download ${filePath}: ${error.message ?? "{}"}`);
       }
+      
 
       const rawText = await blob.text();
 
