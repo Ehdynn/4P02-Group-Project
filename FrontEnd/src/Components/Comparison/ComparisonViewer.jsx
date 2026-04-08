@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const formatSimilarityScore = (score) => {
   if (typeof score !== "number" || Number.isNaN(score)) {
     return "N/A";
@@ -6,7 +8,15 @@ const formatSimilarityScore = (score) => {
   return `${score.toFixed(2)}%`;
 };
 
+const SOURCE_FILTERS = {
+  all: "All sources",
+  submission: "Submissions only",
+  repository: "Repositories only",
+};
+
 const ComparisonViewer = ({ comparison, loading, outputs, selectedSubmissionId, onSelectSubmission }) => {
+  const [sourceFilter, setSourceFilter] = useState("all");
+
   if (loading) {
     return <div className="box-wrapper">Loading comparison details...</div>;
   }
@@ -14,6 +24,30 @@ const ComparisonViewer = ({ comparison, loading, outputs, selectedSubmissionId, 
   if (!comparison) {
     return <div className="box-wrapper">No comparison selected.</div>;
   }
+
+  const filteredOutputs = (outputs ?? [])
+    .filter((output) => {
+      if (sourceFilter === "submission") {
+        return output.sourceLabel === "Submission";
+      }
+
+      if (sourceFilter === "repository") {
+        return output.sourceLabel === "Repository";
+      }
+
+      return true;
+    })
+    .sort((left, right) => {
+      const leftSource = String(left?.sourceLabel ?? "");
+      const rightSource = String(right?.sourceLabel ?? "");
+      if (leftSource !== rightSource) {
+        return leftSource.localeCompare(rightSource);
+      }
+
+      const leftName = String(left?.studentName ?? "");
+      const rightName = String(right?.studentName ?? "");
+      return leftName.localeCompare(rightName);
+    });
 
   return (
     <div className="box-wrapper">
@@ -26,10 +60,22 @@ const ComparisonViewer = ({ comparison, loading, outputs, selectedSubmissionId, 
       {comparison.error_message ? (
         <p className="error mt-2">Error: {comparison.error_message}</p>
       ) : null}
+      <label className="mt-3 block">
+        <span className="mb-1 block text-sm font-medium text-slate-700">Source filter</span>
+        <select
+          className="input-default"
+          value={sourceFilter}
+          onChange={(event) => setSourceFilter(event.target.value)}
+        >
+          {Object.entries(SOURCE_FILTERS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+      </label>
       <h3 className="mt-3 font-semibold">Submitted Students</h3>
-      {outputs?.length ? (
+      {filteredOutputs.length ? (
         <ul className="mt-2 space-y-2">
-          {outputs.map((output) => (
+          {filteredOutputs.map((output) => (
             <li key={output.path}>
               <button
                 type="button"

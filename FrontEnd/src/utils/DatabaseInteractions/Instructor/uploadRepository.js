@@ -1,17 +1,9 @@
 import supabase from "../supabase";
 
-async function getAssignmentById(aid) {
-  const { data, error } = await supabase
-    .from("Assignments")
-    .select("id, key")
-    .eq("id", Number(aid))
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(`Failed to load assignment details: ${error.message}`);
-  }
-
-  return data ?? null;
+function getRepositoryFileName(file) {
+  const originalName = String(file?.name ?? "").trim();
+  const sanitizedName = originalName.replace(/[\\/]/g, "_");
+  return sanitizedName || "repository.zip";
 }
 
 export async function uploadRepository(aid, file) {
@@ -27,13 +19,7 @@ export async function uploadRepository(aid, file) {
     throw new Error("Repository uploads must be .zip files.");
   }
 
-  const assignment = await getAssignmentById(aid);
-  const assignmentKey = String(assignment?.key ?? "").trim();
-  if (!assignmentKey) {
-    throw new Error("Assignment key could not be loaded for this assignment.");
-  }
-
-  const repositoryFileName = `${assignmentKey}.zip`;
+  const repositoryFileName = getRepositoryFileName(file);
 
   const { data: repositoryRecord, error: insertError } = await supabase
     .from("Repositories")
