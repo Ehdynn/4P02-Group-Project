@@ -202,7 +202,7 @@ const InstructorAssignment = () => {
               onClick={handleDownloadExport}
               disabled={downloadingExport || submissionCounts.uniqueStudentSubmissionCount === 0}
             >
-              {downloadingExport ? "Preparing Export..." : "Download Latest Submission Export"}
+              {downloadingExport ? "Preparing Export..." : "Download Repository Export"}
             </button>
           </div>
         </div>

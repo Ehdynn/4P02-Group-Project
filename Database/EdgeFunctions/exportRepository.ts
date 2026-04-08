@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import JSZip from "https://esm.sh/jszip@3.10.1";
+import CryptoJS from "npm:crypto-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,7 @@ type AssignmentRow = {
 
 type SubmissionRow = {
   id: string;
+  created_at: string;
   student_info: {
     student_name?: string | null;
     student_number?: string | null;
@@ -42,18 +44,35 @@ function sanitizeFileName(value: string | null | undefined, fallback: string) {
     .slice(0, 120) || fallback;
 }
 
-function getStudentIdentityKey(studentInfo: SubmissionRow["student_info"], submissionId: string) {
-  const studentNumber = String(studentInfo?.student_number ?? "").trim();
-  if (studentNumber) {
-    return `number:${studentNumber}`;
+type DecryptedSubmissionRow = SubmissionRow & {
+  decryptedStudentName: string;
+  decryptedStudentNumber: string;
+};
+
+function deriveKey(key: string) {
+  return CryptoJS.SHA256(key);
+}
+
+function decryptValue(value: string | null | undefined, key: string) {
+  const normalizedValue = String(value ?? "").trim();
+  if (!normalizedValue) {
+    return "";
   }
 
-  const studentName = String(studentInfo?.student_name ?? "").trim();
-  if (studentName) {
-    return `name:${studentName}`;
+  const [ivBase64, ciphertext] = normalizedValue.split(":");
+  if (!ivBase64 || !ciphertext) {
+    return "";
   }
 
-  return `submission:${submissionId}`;
+  const iv = CryptoJS.enc.Base64.parse(ivBase64);
+  const secretKey = deriveKey(key);
+  const decrypted = CryptoJS.AES.decrypt(ciphertext, secretKey, {
+    iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+
+  return decrypted.toString(CryptoJS.enc.Utf8).trim();
 }
 
 function parseAssignmentId(body: { assignmentId?: number | string } | null) {
@@ -62,16 +81,38 @@ function parseAssignmentId(body: { assignmentId?: number | string } | null) {
   return Number.isInteger(aid) && aid > 0 ? aid : null;
 }
 
-function getLatestSubmissionsByStudent(submissions: SubmissionRow[]) {
-  const latestByStudent = new Map<string, SubmissionRow>();
+function getSubmissionExportId(submission: DecryptedSubmissionRow) {
+  const studentName = String(submission.decryptedStudentName ?? "").trim();
+  const studentNumber = String(submission.decryptedStudentNumber ?? "").trim();
+
+  if (studentName && studentNumber) {
+    return sanitizeFileName(`${studentName}_${studentNumber}`, submission.id);
+  }
+
+  return sanitizeFileName(studentName || studentNumber || submission.id, submission.id);
+}
+
+function getStudentIdentityKey(submission: DecryptedSubmissionRow) {
+  if (submission.decryptedStudentNumber) {
+    return `number:${submission.decryptedStudentNumber}`;
+  }
+
+  if (submission.decryptedStudentName) {
+    return `name:${submission.decryptedStudentName}`;
+  }
+
+  return `submission:${submission.id}`;
+}
+
+function getLatestSubmissionsByStudent(submissions: DecryptedSubmissionRow[]) {
+  const latestByStudent = new Map<string, DecryptedSubmissionRow>();
 
   for (const submission of submissions) {
-    const studentKey = getStudentIdentityKey(submission.student_info, submission.id);
+    const studentKey = getStudentIdentityKey(submission);
     if (!latestByStudent.has(studentKey)) {
       latestByStudent.set(studentKey, submission);
     }
   }
-
   return Array.from(latestByStudent.values());
 }
 
@@ -172,7 +213,7 @@ Deno.serve(async (req) => {
 
     const { data: submissions, error: submissionsError } = await authResult.dbClient
       .from("File_Submissions_New")
-      .select("id, student_info")
+      .select("id, created_at, student_info")
       .eq("assignment_id", aid)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false });
@@ -181,25 +222,40 @@ Deno.serve(async (req) => {
       return json({ error: `Failed to load submissions: ${submissionsError.message}` }, 400);
     }
 
-    const latestSubmissions = getLatestSubmissionsByStudent((submissions ?? []) as SubmissionRow[]);
+    const decryptedSubmissions = ((submissions ?? []) as SubmissionRow[]).map((submission) => ({
+      ...submission,
+      decryptedStudentName: decryptValue(submission.student_info?.student_name, assignmentResult.assignment.key),
+      decryptedStudentNumber: decryptValue(submission.student_info?.student_number, assignmentResult.assignment.key),
+    }));
+
+    const latestSubmissions = getLatestSubmissionsByStudent(decryptedSubmissions);
     if (latestSubmissions.length === 0) {
       return json({ error: "No submissions found." }, 404);
     }
 
     const zip = new JSZip();
+    const usedFileNames = new Set<string>();
     for (const submission of latestSubmissions) {
-      const fileName = `${submission.id}.zip`;
-      const filePath = `${aid}/${submission.id}/${fileName}`;
+      const storedFileName = `${submission.id}.zip`;
+      const exportBaseName = getSubmissionExportId(submission);
+      let exportFileName = `${exportBaseName}.zip`;
+      let duplicateCounter = 2;
+      while (usedFileNames.has(exportFileName)) {
+        exportFileName = `${exportBaseName}_${duplicateCounter}.zip`;
+        duplicateCounter += 1;
+      }
+      usedFileNames.add(exportFileName);
+      const filePath = `${aid}/${submission.id}/${storedFileName}`;
       const { data: fileBlob, error: downloadError } = await authResult.dbClient.storage
         .from("Submissions")
         .download(filePath);
 
       if (downloadError) {
-        return json({ error: `Failed to download ${fileName}: ${downloadError.message}` }, 500);
+        return json({ error: `Failed to download ${storedFileName}: ${downloadError.message}` }, 500);
       }
 
       const content = await fileBlob.arrayBuffer();
-      zip.file(fileName, new Uint8Array(content));
+      zip.file(exportFileName, new Uint8Array(content));
     }
 
     const zipBytes = await zip.generateAsync({ type: "uint8array" });

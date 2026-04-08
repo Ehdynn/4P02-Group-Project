@@ -3,7 +3,8 @@ create  function public.create_file_submission(
   p_assignment_id bigint,
   p_student_name text,
   p_student_number text,
-  p_student_identity_key text
+  p_student_identity_key text,
+  p_repository_id uuid default null
 )
 returns uuid
 language plpgsql
@@ -38,13 +39,22 @@ begin
       using errcode = 'P0001';
   end if;
 
-  if not exists (
+  if p_repository_id is null then
+    if not exists (
+      select 1
+      from public."Assignments" a
+      where a.id = p_assignment_id
+        and a.due_date >= now()
+    ) then
+      raise exception 'Assignment not found or due date has passed.'
+        using errcode = '42501';
+    end if;
+  elsif not exists (
     select 1
     from public."Assignments" a
     where a.id = p_assignment_id
-      and a.due_date >= now()
   ) then
-    raise exception 'Assignment not found or due date has passed.'
+    raise exception 'Assignment not found.'
       using errcode = '42501';
   end if;
 
@@ -52,7 +62,8 @@ begin
     id,
     assignment_id,
     student_info,
-    student_identity_key
+    student_identity_key,
+    repository_id
   )
   values (
     p_submission_id,
@@ -61,7 +72,8 @@ begin
       'student_name', btrim(p_student_name),
       'student_number', btrim(p_student_number)
     ),
-    btrim(p_student_identity_key)
+    btrim(p_student_identity_key),
+    p_repository_id
   )
   returning id into v_submission_id;
 

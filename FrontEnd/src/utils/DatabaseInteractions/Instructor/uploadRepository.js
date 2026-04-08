@@ -94,10 +94,35 @@ export async function uploadRepository(aid, file) {
     throw new Error(`Failed to upload repository file: ${uploadError.message}`);
   }
 
+  const { data: importResult, error: importError } = await supabase.functions.invoke("importRepository", {
+    body: {
+      assignmentId: Number(aid),
+      repositoryId: repositoryRecord.id,
+    },
+  });
+
+  if (importError || importResult?.error) {
+    await supabase.storage
+      .from("Repositories")
+      .remove([filePath])
+      .catch(() => undefined);
+    await supabase
+      .from("Repositories")
+      .delete()
+      .eq("id", repositoryRecord.id);
+
+    throw new Error(
+      importError?.message
+        ?? importResult?.error
+        ?? "Failed to unpack repository into submissions.",
+    );
+  }
+
   return {
     id: repositoryRecord.id,
     created_at: repositoryRecord.created_at,
     repository_name: repositoryRecord.repository_name,
     path: data?.path ?? filePath,
+    importSummary: importResult,
   };
 }
