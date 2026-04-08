@@ -146,6 +146,15 @@ class Bridge {
         SimilarityScore score = new SimilarityScore();
         ComparisonEngine comparison = new ComparisonEngine();
         List<Submission> database = new ArrayList<Submission>();
+        Submission boilerplateSubmission = null;
+
+        String normalizedBoilerplate = boilerplate == null ? "" : boilerplate.trim();
+        if (!normalizedBoilerplate.isEmpty()) {
+            List<Token> boilerplateTokens = handler.getTokensFromFile(normalizedBoilerplate);
+            if (!boilerplateTokens.isEmpty()) {
+                boilerplateSubmission = new Submission(boilerplateTokens, "__boilerplate__");
+            }
+        }
 
         for (int i = 0; i < databaseParser.length(); i++) {
             JSONObject obj = databaseParser.getJSONObject(i);
@@ -166,9 +175,12 @@ class Bridge {
         JSONArray comparisonData = new JSONArray();
 
         for(Submission s: database){
-            List<Sequence> flaggedSequences = tiling.tile(s, database, 5);
+            boolean[] boilerplateMask = boilerplateSubmission == null
+                    ? new boolean[s.getTokens().size()]
+                    : tiling.getMatchedTokenMask(s, boilerplateSubmission, 5);
+            List<Sequence> flaggedSequences = tiling.tile(s, database, 5, boilerplateMask);
 
-            double similarityScore = score.getSimilarityScore(s.getTokens(), flaggedSequences);
+            double similarityScore = score.getSimilarityScore(s.getTokens(), flaggedSequences, boilerplateMask);
 
             comparisonData.put(new JSONObject(comparison.buildComparisonData(s, flaggedSequences, similarityScore)));
         }

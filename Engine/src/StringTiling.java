@@ -13,6 +13,10 @@ public class StringTiling {
      * @Version 1.2 (Mar 12th, 2026)
      */
     public List<Sequence> tile(Submission current, List<Submission> database, int tolerance){
+        return tile(current, database, tolerance, new boolean[current.getTokens().size()]);
+    }
+
+    public List<Sequence> tile(Submission current, List<Submission> database, int tolerance, boolean[] ignoredTokens){
         List<Token> submission = current.getTokens();
         List<Sequence> matches = new ArrayList<>();
         boolean[] marked = new boolean[submission.size()];
@@ -33,7 +37,7 @@ public class StringTiling {
                 int lcs = tolerance;
 
                 for (int i = 0; i < submission.size(); i++) {
-                    if (marked[i]) continue;
+                    if (marked[i] || isIgnored(ignoredTokens, i)) continue;
 
                     for (int j = 0; j < comparison.size(); j++) {
 
@@ -43,6 +47,7 @@ public class StringTiling {
                         while (i + n < submission.size() &&
                                 j + n < comparison.size() &&
                                 !marked[i + n] &&
+                                !isIgnored(ignoredTokens, i + n) &&
                                 submission.get(i + n).compareTo(comparison.get(j + n)) >= 0) {
                             Token copy = submission.get(i + n).copy();
                             if(submission.get(i + n).compareTo(comparison.get(j + n)) == 1){
@@ -94,5 +99,66 @@ public class StringTiling {
         }
 
         return matches;
+    }
+
+    public boolean[] getMatchedTokenMask(Submission current, Submission reference, int tolerance) {
+        List<Token> submission = current.getTokens();
+        List<Token> comparison = reference.getTokens();
+        boolean[] matched = new boolean[submission.size()];
+        if (submission.isEmpty() || comparison.isEmpty()) {
+            return matched;
+        }
+
+        boolean[] marked = new boolean[submission.size()];
+        int numMatches = 1;
+
+        while (numMatches != 0) {
+            List<int[]> subMatches = new ArrayList<>();
+            List<Integer> matchStarts = new ArrayList<>();
+            int lcs = tolerance;
+
+            for (int i = 0; i < submission.size(); i++) {
+                if (marked[i]) continue;
+
+                for (int j = 0; j < comparison.size(); j++) {
+                    int n = 0;
+
+                    while (i + n < submission.size() &&
+                            j + n < comparison.size() &&
+                            !marked[i + n] &&
+                            submission.get(i + n).compareTo(comparison.get(j + n)) >= 0) {
+                        n++;
+                    }
+
+                    if (n > lcs) {
+                        subMatches.clear();
+                        matchStarts.clear();
+                        lcs = n;
+                        subMatches.add(new int[]{i, n});
+                        matchStarts.add(i);
+                    } else if (n == lcs && !matchStarts.contains(i)) {
+                        subMatches.add(new int[]{i, n});
+                        matchStarts.add(i);
+                    }
+                }
+            }
+
+            for (int[] match : subMatches) {
+                int start = match[0];
+                int length = match[1];
+                for (int k = 0; k < length; k++) {
+                    marked[start + k] = true;
+                    matched[start + k] = true;
+                }
+            }
+
+            numMatches = subMatches.size();
+        }
+
+        return matched;
+    }
+
+    private boolean isIgnored(boolean[] ignoredTokens, int index) {
+        return ignoredTokens != null && index >= 0 && index < ignoredTokens.length && ignoredTokens[index];
     }
 }
