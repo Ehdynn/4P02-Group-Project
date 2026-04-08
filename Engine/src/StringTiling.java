@@ -61,14 +61,14 @@ public class StringTiling {
                             subMatches.clear();
                             matchStarts.clear();
                             lcs = n;
-                            Sequence newSequence = new Sequence(i, n, submissions.getId());
+                            Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
                             for(Token t: tempTokens){
                                 newSequence.addToken(t);
                             }
                             subMatches.add(newSequence);
                             matchStarts.add(i);
                         } else if(n == lcs && !matchStarts.contains(i)){
-                            Sequence newSequence = new Sequence(i, n, submissions.getId());
+                            Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
                             for(Token t: tempTokens){
                                 newSequence.addToken(t);
                             }

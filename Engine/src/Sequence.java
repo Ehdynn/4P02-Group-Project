@@ -5,6 +5,7 @@ import java.util.List;
 public class Sequence {
     private int start;
     private int length;
+    private int flaggedStart;
     private List<Token> tokens;
     private String submissionId;
     private SeverityLevel level;
@@ -14,10 +15,12 @@ public class Sequence {
      * @param start Index of first token in sequence
      * @param len   Length of sequence
      * @param submissionId   ID of flagged submission
+     * @param flaggedStart Index of first matching token in the flagged submission
      */
-    Sequence(int start, int len, String submissionId) {
+    Sequence(int start, int len, String submissionId, int flaggedStart) {
         this.start = start;
         this.length = len;
+        this.flaggedStart = flaggedStart;
         this.tokens = new ArrayList<>();
         this.submissionId = submissionId;
 
@@ -52,6 +55,10 @@ public class Sequence {
      */
     public String getSubmissionId() {
         return submissionId;
+    }
+
+    public int getFlaggedStart() {
+        return flaggedStart;
     }
 
     /** Token list

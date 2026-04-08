@@ -45,6 +45,7 @@ public class ComparisonEngine {
             sequenceJson.put("sequence_start", s.getStart());
             sequenceJson.put("sequence_length", s.getLength());
             sequenceJson.put("flagged_submission", s.getSubmissionId());
+            sequenceJson.put("flagged_sequence_start", s.getFlaggedStart());
             sequenceJson.put("flagged_code", handler.getTokenListCSV(s.getTokens()));
 
             SeverityLevel severityLevel = s.getSeverityLevel();
