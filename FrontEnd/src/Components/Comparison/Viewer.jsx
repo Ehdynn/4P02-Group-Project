@@ -553,7 +553,7 @@ const Viewer = ({
       </div>
       <div
         ref={viewerBodyRef}
-        className="mt-3 h-[32rem] overflow-auto rounded-xl border border-slate-200 bg-slate-950"
+        className="mt-3 h-128 overflow-auto rounded-xl border border-slate-200 bg-slate-950"
         onMouseDown={() => {
           setActivePopup(null);
           if (navigationTarget && onClearNavigationTarget) {

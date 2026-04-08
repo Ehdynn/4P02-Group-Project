@@ -13,9 +13,9 @@ const Landing = () => {
   return (
     <main className="outer-container-3qw">
       <h1 className="h1-default text-center">Team Won Code Comparison</h1>
-      <section className="py-28 px-6 bg-gradient-to-b from-white to-gray-50 text-center">
+      <section className="py-28 px-6 bg-linear-to-b from-white to-gray-50 text-center">
       <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-        Are you a -
+        Continue As A
       </h2>
       <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
 
