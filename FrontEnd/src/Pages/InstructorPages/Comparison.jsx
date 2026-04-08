@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ComparisonList from "../../Components/Comparison/ComparisonList";
 import ComparisonViewer from "../../Components/Comparison/ComparisonViewer";
 import ComparisonStats from "../../Components/Comparison/ComparisonStats";
@@ -24,6 +24,8 @@ const Comparison = () => {
   const [outputsError, setOutputsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const viewerSectionRef = useRef(null);
+  const shouldScrollToViewerRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -79,8 +81,19 @@ const Comparison = () => {
   const selectedComparison = comparisons.find((comparison) => comparison.id === selectedComparisonId)
     ?? comparisons[0]
     ?? null;
-  const selectedComparisonStatus = String(selectedComparison?.status ?? "").toLowerCase();
-  const isSelectedComparisonCompleted = selectedComparisonStatus === "completed";
+  const isSelectedComparisonCompleted = String(selectedComparison?.status ?? "").toLowerCase() === "completed";
+
+  const selectedOutput = comparisonOutputs.find((output) => output.submissionId === selectedSubmissionId) ?? null;
+  const secondaryOutput = comparisonOutputs.find((output) => output.submissionId === secondarySelected) ?? null;
+
+  useEffect(() => {
+    if (!shouldScrollToViewerRef.current || !selectedOutput) {
+      return;
+    }
+
+    viewerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    shouldScrollToViewerRef.current = false;
+  }, [selectedOutput, secondarySelected]);
 
   useEffect(() => {
     let cancelled = false;
@@ -142,17 +155,9 @@ const Comparison = () => {
     };
   }, [aid, assignmentKey, isSelectedComparisonCompleted, selectedComparison?.id]);
 
-  // Primary Output
-  const selectedOutput = comparisonOutputs.find((output) => output.submissionId === selectedSubmissionId) ?? null;
-  
-  // Secondary output
-  const secondaryOutput = comparisonOutputs.find((output) => output.submissionId === secondarySelected) ?? null;
-
-  // Allows both the primary and secondary to be set at the same time,
-  // Or just the primary if no secondary is provided. At which point the secondary is set to null.
-  // If no secondary is given it closes the side by side view if it is open
   function selectSubmission(submissionId, secondaryId, navigationTarget = null){
     if(submissionId){
+      shouldScrollToViewerRef.current = true;
       setSelectedSubmissionId(submissionId);
       if(secondaryId){
         setSecondarySelected(secondaryId);
@@ -164,13 +169,40 @@ const Comparison = () => {
     }
   }
 
-  // Swaps the secondary to the RHS and opens the new secondary on the LHS
   function selectSubmissionFromSecondary(newSecondary, navigationTarget = null){
     if(newSecondary){
+      shouldScrollToViewerRef.current = true;
       setSelectedSubmissionId(secondarySelected);
       setSecondarySelected(newSecondary);
       setSecondaryNavigationTarget(navigationTarget);
     }
+  }
+
+  function closePrimaryViewer() {
+    if (secondarySelected) {
+      setSelectedSubmissionId(secondarySelected);
+      setSecondarySelected(null);
+      setSecondaryNavigationTarget(null);
+      return;
+    }
+
+    setSelectedSubmissionId(null);
+    setSecondarySelected(null);
+    setSecondaryNavigationTarget(null);
+  }
+
+  function closeSecondaryViewer() {
+    setSecondarySelected(null);
+    setSecondaryNavigationTarget(null);
+  }
+
+  function openSecondaryViewer(submissionId, navigationTarget) {
+    setSecondarySelected(submissionId);
+    setSecondaryNavigationTarget(navigationTarget);
+  }
+
+  function clearSecondaryNavigationTarget() {
+    setSecondaryNavigationTarget(null);
   }
 
   return (
@@ -205,44 +237,44 @@ const Comparison = () => {
           {!outputsLoading && !outputsError && comparisonOutputs.length === 0 && selectedComparison && isSelectedComparisonCompleted ? (
             <div className="box-wrapper">No comparison JSON files found for this run.</div>
           ) : null}
-          {selectedOutput ? ( // A Submission is Selected
-            !secondarySelected ? ( // Only One is Selected
-              <div key={selectedOutput.path} className="mt-6">
-                <Viewer
-                  data={selectedOutput.data}
-                  title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
-                  onSelectSubmission={(submissionId, navigationTarget) => {
-                    setSecondarySelected(submissionId);
-                    setSecondaryNavigationTarget(navigationTarget);
-                  }}
-                />
-              </div>
-            ) : ( // Side by side view
-              <div className="flex w-full space-x-5 flex-col md:flex-row">
-                <div className="flex-1 min-w-0"> {/* RHS */}
-                  <div key={selectedOutput.path} className="mt-6">
-                    <Viewer
-                      data={selectedOutput.data}
-                      title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
-                      onSelectSubmission={(submissionId, navigationTarget) => {
-                        setSecondarySelected(submissionId);
-                        setSecondaryNavigationTarget(navigationTarget);
-                      }}
-                    />
+          {selectedOutput ? (
+            <div ref={viewerSectionRef}>
+              {!secondarySelected ? (
+                <div key={selectedOutput.path} className="mt-6">
+                  <Viewer
+                    data={selectedOutput.data}
+                    title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                    onClose={closePrimaryViewer}
+                    onSelectSubmission={openSecondaryViewer}
+                  />
+                </div>
+              ) : (
+                <div className="flex w-full space-x-5 flex-col md:flex-row">
+                  <div className="flex-1 min-w-0">
+                    <div key={selectedOutput.path} className="mt-6">
+                      <Viewer
+                        data={selectedOutput.data}
+                        title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                        onClose={closePrimaryViewer}
+                        onSelectSubmission={openSecondaryViewer}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div key={secondaryOutput?.path ?? secondaryOutput?.submissionId} className="mt-6">
+                      <Viewer
+                        data={secondaryOutput.data}
+                        title={`${secondaryOutput.studentName} (${secondaryOutput.studentNumber})`}
+                        navigationTarget={secondaryNavigationTarget}
+                        onClose={closeSecondaryViewer}
+                        onSelectSubmission={selectSubmissionFromSecondary}
+                        onClearNavigationTarget={clearSecondaryNavigationTarget}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0"> {/* LHS */}
-                  <div key={selectedOutput.path} className="mt-6">
-                    <Viewer
-                      data={secondaryOutput.data}
-                      title={`${secondaryOutput.studentName} (${secondaryOutput.studentNumber})`}
-                      navigationTarget={secondaryNavigationTarget}
-                      onSelectSubmission={selectSubmissionFromSecondary}
-                    />
-                  </div>
-                </div>
-              </div>
-            )
+              )}
+            </div>
           ) : null}
         </div>
       </div>
