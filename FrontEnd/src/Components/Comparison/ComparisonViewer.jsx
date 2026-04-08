@@ -44,6 +44,7 @@ const ComparisonViewer = ({ comparison, loading, outputs, selectedSubmissionId, 
               >
                 <p className="font-medium">{output.studentName}</p>
                 <p className="text-xs text-slate-500">Student Number: {output.studentNumber}</p>
+                <p className="text-xs text-slate-500">Source: {output.sourceLabel}</p>
                 <p className="text-xs text-slate-500">
                   Similarity: {formatSimilarityScore(output.data?.similarity_score)}
                 </p>

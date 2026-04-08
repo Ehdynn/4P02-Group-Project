@@ -306,6 +306,7 @@ const findNavigationSequence = (sequences, navigationTarget) => {
 const Viewer = ({
   data,
   title = "Comparison Output",
+  sourceLabel = null,
   navigationTarget = null,
   onSelectSubmission,
   onClearNavigationTarget = null,
@@ -544,6 +545,7 @@ const Viewer = ({
         <div>
           <h2 className="h2-large">{title}</h2>
           <p className="text-sm text-slate-600">Submission ID: {String(data.submission_id)}</p>
+          {sourceLabel ? <p className="text-sm text-slate-600">Source: {sourceLabel}</p> : null}
         </div>
         <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800">
           Similarity Score: {data.similarity_score.toFixed(2)}

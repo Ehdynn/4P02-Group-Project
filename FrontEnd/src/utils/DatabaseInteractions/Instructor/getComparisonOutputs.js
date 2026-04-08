@@ -35,7 +35,7 @@ async function getSubmissionsForComparison(aid, submissionIds, assignmentKey) {
 
   const { data, error } = await supabase
     .from("File_Submissions_New")
-    .select("id, student_info")
+    .select("id, student_info, repository_id")
     .eq("assignment_id", Number(aid))
     .in("id", normalizedSubmissionIds);
 
@@ -61,6 +61,7 @@ async function getSubmissionsForComparison(aid, submissionIds, assignmentKey) {
             studentNumber: assignmentKey
               ? await decryptValue(encryptedStudentNumber, assignmentKey)
               : encryptedStudentNumber,
+            repositoryId: String(row?.repository_id ?? "").trim() || null,
           },
         ];
       }),
@@ -113,6 +114,8 @@ export async function getComparisonOutputs(comparison, aid, assignmentKey) {
           submissionId: submission.id,
           studentName: submission.studentName || "Unknown Student",
           studentNumber: submission.studentNumber || "N/A",
+          sourceLabel: submission.repositoryId ? "Repository" : "Submission",
+          repositoryId: submission.repositoryId,
           data: JSON.parse(rawText),
         };
       } catch {

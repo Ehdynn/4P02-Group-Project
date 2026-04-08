@@ -8,7 +8,8 @@ export async function getNumberOfSubmissions(aid) {
   const { count, error: countError } = await supabase
     .from("File_Submissions_New")
     .select("*", { count: "exact", head: true })
-    .eq("assignment_id", Number(aid));
+    .eq("assignment_id", Number(aid))
+    .is("repository_id", null);
 
   if (countError) {
     throw new Error(`Failed to get submission count: ${countError.message}`);
@@ -17,7 +18,8 @@ export async function getNumberOfSubmissions(aid) {
   const { data, error: uniqueError } = await supabase
     .from("File_Submissions_New")
     .select("student_identity_key")
-    .eq("assignment_id", Number(aid));
+    .eq("assignment_id", Number(aid))
+    .is("repository_id", null);
 
   if (uniqueError) {
     throw new Error(`Failed to get unique student submission count: ${uniqueError.message}`);

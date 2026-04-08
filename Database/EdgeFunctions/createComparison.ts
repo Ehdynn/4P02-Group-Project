@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
 
     const { data: submissions, error: submissionError } = await dbClient
       .from("File_Submissions_New")
-      .select("id, created_at, student_identity_key")
+      .select("id, created_at, student_identity_key, repository_id")
       .eq("assignment_id", aid)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false });
@@ -129,10 +129,19 @@ Deno.serve(async (req) => {
     }
 
     const latestSubmissionIdsByStudent = new Map<string, string>();
+    const repositorySubmissionIds: string[] = [];
 
     for (const row of submissions ?? []) {
       const submissionId = String(row?.id ?? "").trim();
       if (!submissionId) {
+        continue;
+      }
+
+      const rowRepositoryId = String(row?.repository_id ?? "").trim();
+      if (rowRepositoryId) {
+        if (repositoryId && rowRepositoryId === repositoryId) {
+          repositorySubmissionIds.push(submissionId);
+        }
         continue;
       }
 
@@ -144,7 +153,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    const submissionsCompared = [...latestSubmissionIdsByStudent.values()];
+    const submissionsCompared = [
+      ...latestSubmissionIdsByStudent.values(),
+      ...repositorySubmissionIds,
+    ];
 
     const { data: comparison, error: comparisonError } = await dbClient
       .from("Comparisons")

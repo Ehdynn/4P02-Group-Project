@@ -244,6 +244,7 @@ const Comparison = () => {
                   <Viewer
                     data={selectedOutput.data}
                     title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                    sourceLabel={selectedOutput.sourceLabel}
                     onClose={closePrimaryViewer}
                     onSelectSubmission={openSecondaryViewer}
                   />
@@ -255,6 +256,7 @@ const Comparison = () => {
                       <Viewer
                         data={selectedOutput.data}
                         title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                        sourceLabel={selectedOutput.sourceLabel}
                         onClose={closePrimaryViewer}
                         onSelectSubmission={openSecondaryViewer}
                       />
@@ -265,6 +267,7 @@ const Comparison = () => {
                       <Viewer
                         data={secondaryOutput.data}
                         title={`${secondaryOutput.studentName} (${secondaryOutput.studentNumber})`}
+                        sourceLabel={secondaryOutput.sourceLabel}
                         navigationTarget={secondaryNavigationTarget}
                         onClose={closeSecondaryViewer}
                         onSelectSubmission={selectSubmissionFromSecondary}
