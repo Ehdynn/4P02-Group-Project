@@ -95,6 +95,7 @@ export async function submitAssignment(file, name, studentNumber, aid, assignmen
     p_student_name: encryptedStudentName,
     p_student_number: encryptedStudentNumber,
     p_student_identity_key: studentIdentityKey,
+    p_repository_id: null,
   });
 
   if (error) {
