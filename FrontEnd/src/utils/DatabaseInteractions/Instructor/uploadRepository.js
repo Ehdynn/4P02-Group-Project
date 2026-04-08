@@ -1,52 +1,17 @@
 import supabase from "../supabase";
 
-function getZipBaseName(file) {
-  const originalName = String(file?.name ?? "").trim();
-  if (!originalName.toLowerCase().endsWith(".zip")) {
-    return "";
-  }
-
-  return originalName.slice(0, -4).trim();
-}
-
-async function getAssignmentByKey(key) {
+async function getAssignmentById(aid) {
   const { data, error } = await supabase
     .from("Assignments")
     .select("id, key")
-    .eq("key", key)
+    .eq("id", Number(aid))
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Failed to validate assignment key: ${error.message}`);
+    throw new Error(`Failed to load assignment details: ${error.message}`);
   }
 
   return data ?? null;
-}
-
-async function resolveRepositoryAssignmentKey(file, aid) {
-  const inferredKey = getZipBaseName(file);
-  if (inferredKey) {
-    const matchedAssignment = await getAssignmentByKey(inferredKey);
-    if (matchedAssignment) {
-      return inferredKey;
-    }
-  }
-
-  const providedKey = window.prompt(
-    "Repository zip name is not a valid assignment key for this assignment. Enter the assignment key:",
-    "",
-  );
-
-  if (!providedKey?.trim()) {
-    throw new Error("Assignment key is required to upload this repository.");
-  }
-
-  const matchedAssignment = await getAssignmentByKey(providedKey.trim());
-  if (!matchedAssignment) {
-    throw new Error("The provided assignment key does not exist.");
-  }
-
-  return providedKey.trim();
 }
 
 export async function uploadRepository(aid, file) {
@@ -62,7 +27,12 @@ export async function uploadRepository(aid, file) {
     throw new Error("Repository uploads must be .zip files.");
   }
 
-  const assignmentKey = await resolveRepositoryAssignmentKey(file, aid);
+  const assignment = await getAssignmentById(aid);
+  const assignmentKey = String(assignment?.key ?? "").trim();
+  if (!assignmentKey) {
+    throw new Error("Assignment key could not be loaded for this assignment.");
+  }
+
   const repositoryFileName = `${assignmentKey}.zip`;
 
   const { data: repositoryRecord, error: insertError } = await supabase
@@ -116,6 +86,19 @@ export async function uploadRepository(aid, file) {
         ?? importResult?.error
         ?? "Failed to unpack repository into submissions.",
     );
+  }
+
+  if (Number(importResult?.imported ?? 0) <= 0) {
+    await supabase.storage
+      .from("Repositories")
+      .remove([filePath])
+      .catch(() => undefined);
+    await supabase
+      .from("Repositories")
+      .delete()
+      .eq("id", repositoryRecord.id);
+
+    throw new Error("Repository upload completed, but no submissions were imported from the archive.");
   }
 
   return {

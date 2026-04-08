@@ -158,6 +158,13 @@ Deno.serve(async (req) => {
       ...repositorySubmissionIds,
     ];
 
+    if (repositoryId && repositorySubmissionIds.length === 0) {
+      return new Response(JSON.stringify({ error: "The selected repository has no imported submissions for this assignment." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: comparison, error: comparisonError } = await dbClient
       .from("Comparisons")
       .insert({
