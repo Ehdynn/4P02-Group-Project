@@ -105,6 +105,16 @@ def get_pending_comparisons():
     return response.data or []
 
 
+def get_missing_token_submission_ids(assignment_id, submission_ids):
+    missing_submission_ids = []
+
+    for submission_id in submission_ids:
+        if not token_csv_exists(assignment_id, submission_id):
+            missing_submission_ids.append(str(submission_id))
+
+    return missing_submission_ids
+
+
 class MissingTokenCsvError(Exception):
     def __init__(self, submission_ids):
         self.submission_ids = submission_ids
@@ -127,6 +137,14 @@ async def wait_for_comparison_submissions(assignment_id, submission_ids):
 
     state = await get_assignment_state(assignment_id)
     pending_submission_ids = set(submission_ids)
+    await requeue_missing_submissions(
+        assignment_id,
+        await asyncio.to_thread(
+            get_missing_token_submission_ids,
+            assignment_id,
+            list(pending_submission_ids),
+        ),
+    )
     print(
         f"@wait Waiting for {len(pending_submission_ids)} submission token file(s) "
         f"for assignment {assignment_id}."
@@ -464,6 +482,21 @@ async def main():
                 assignment_id = comparison.get("aid")
                 if comparison_id is None or assignment_id is None:
                     continue
+                submission_ids = await asyncio.to_thread(
+                    get_submission_ids_for_comparison,
+                    comparison_id,
+                )
+                missing_submission_ids = await asyncio.to_thread(
+                    get_missing_token_submission_ids,
+                    assignment_id,
+                    submission_ids,
+                )
+                if missing_submission_ids:
+                    print(
+                        f"@startup Re-queueing {len(missing_submission_ids)} missing submission(s) "
+                        f"for assignment {assignment_id}: {missing_submission_ids}"
+                    )
+                    await requeue_missing_submissions(assignment_id, missing_submission_ids)
                 await enqueue_comparison_event(comparison_id, assignment_id)
                 print(f"@startup Queued pending comparison {comparison_id} for assignment {assignment_id}.")
         else:
