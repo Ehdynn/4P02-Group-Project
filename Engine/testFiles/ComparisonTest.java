@@ -127,4 +127,36 @@ public class ComparisonTest {
 
     }
 
+    @Test
+    public void testBoilerPlateDetection(){
+        StringTiling tiling = new StringTiling();
+        SimilarityScore simScore = new SimilarityScore();
+
+        List<Submission> database = new ArrayList<>();
+        database.add(submission2);
+
+        boolean[] boilerplateMask = tiling.getMatchedTokenMask(submission1, submission2, 5);
+
+        List<Sequence> results = tiling.tile(submission1, database, 5, boilerplateMask);
+        double score = simScore.getSimilarityScore(submission1.getTokens(), results);
+
+        assertEquals(0.00, score);
+    }
+
+    @Test
+    public void testEmptyBoilerplateArray(){
+        StringTiling tiling = new StringTiling();
+        SimilarityScore simScore = new SimilarityScore();
+
+        List<Submission> database = new ArrayList<>();
+        database.add(submission2);
+
+        boolean[] boilerplateMask = new boolean[submission1.getTokens().size()];
+
+        List<Sequence> results = tiling.tile(submission1, database, 5, boilerplateMask);
+        double score = simScore.getSimilarityScore(submission1.getTokens(), results);
+
+        assertEquals(100.00, score);
+    }
+
 }
