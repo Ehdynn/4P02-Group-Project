@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  getSeverityBadgeClassName,
+  normalizeSeverityLevel,
+} from "./severity";
 
 const noSpaceBefore = new Set([")", "]", "}", ",", ";", ".", ":"]);
 const noSpaceAfter = new Set(["(", "[", "{", ".", "!", "~"]);
@@ -373,7 +377,13 @@ const Viewer = ({
   }, [targetLineIndex]);
 
   useEffect(() => {
-    setActivePopup(null);
+    const timeoutId = window.setTimeout(() => {
+      setActivePopup(null);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [data.submission_id, navigationTarget]);
 
   useEffect(() => {
@@ -583,6 +593,17 @@ const Viewer = ({
           <span className="mt-1 block text-slate-300">
             This code matches code present in another submission.
           </span>
+          {normalizeSeverityLevel(activePopup.sequence?.severity_level) ? (
+            <span className="mt-2 block">
+              <span
+                className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${
+                  getSeverityBadgeClassName(normalizeSeverityLevel(activePopup.sequence?.severity_level))
+                }`}
+              >
+                Plagiarism Level: {normalizeSeverityLevel(activePopup.sequence?.severity_level)}
+              </span>
+            </span>
+          ) : null}
           <button
             type="button"
             onClick={() => {

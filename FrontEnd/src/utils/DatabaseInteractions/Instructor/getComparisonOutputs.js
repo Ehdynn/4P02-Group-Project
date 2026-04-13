@@ -1,4 +1,5 @@
 import supabase from "../supabase";
+import { normalizeSeverityLevel } from "../../../Components/Comparison/severity";
 
 async function decryptValue(value, key) {
   if (!value || !key) {
@@ -108,6 +109,14 @@ export async function getComparisonOutputs(comparison, aid, assignmentKey) {
       const rawText = await blob.text();
 
       try {
+        const parsedData = JSON.parse(rawText);
+        const similaritySequences = Array.isArray(parsedData?.similarity_sequences)
+          ? parsedData.similarity_sequences.map((sequence) => ({
+            ...sequence,
+            severity_level: normalizeSeverityLevel(sequence?.severity_level),
+          }))
+          : [];
+
         return {
           name: submission.fileName,
           path: filePath,
@@ -116,7 +125,10 @@ export async function getComparisonOutputs(comparison, aid, assignmentKey) {
           studentNumber: submission.studentNumber || "N/A",
           sourceLabel: submission.repositoryId ? "Repository" : "Submission",
           repositoryId: submission.repositoryId,
-          data: JSON.parse(rawText),
+          data: {
+            ...parsedData,
+            similarity_sequences: similaritySequences,
+          },
         };
       } catch {
         throw new Error(`Failed to parse ${filePath}: invalid JSON.`);
