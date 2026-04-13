@@ -3,11 +3,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import JSZip from "https://esm.sh/jszip@3.10.1";
 import CryptoJS from "npm:crypto-js";
 
+// CORS headers to allow requests from any origin and specify allowed headers and methods
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+// Type definitions
 
 type AssignmentRow = {
   id: number;
@@ -34,15 +37,19 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
+// Get the assignment id
 function parseAssignmentId(value: number | string | undefined | null) {
   const aid = typeof value === "string" ? Number(value) : value;
   return Number.isInteger(aid) && aid > 0 ? aid : null;
 }
 
+// Derive the key
 function deriveKey(key: string) {
   return CryptoJS.SHA256(key);
 }
 
+// Encrypt a value, this uses the same method as the encrypt / decrypt function
+// Just recreated to avoid extra edge function calls
 function encryptValue(value: string, key: string) {
   const secretKey = deriveKey(key);
   const iv = CryptoJS.lib.WordArray.random(128 / 8);
@@ -54,6 +61,7 @@ function encryptValue(value: string, key: string) {
   return `${iv.toString(CryptoJS.enc.Base64)}:${encrypted.toString()}`;
 }
 
+// Create the identity key for a student
 async function createStudentIdentityKey(studentNumber: string, secret: string) {
   const encoder = new TextEncoder();
   const cryptoKey = await crypto.subtle.importKey(
@@ -70,6 +78,7 @@ async function createStudentIdentityKey(studentNumber: string, secret: string) {
     .join("");
 }
 
+// Parse the submission identity from the file name
 function parseSubmissionIdentity(fileName: string) {
   const normalizedName = String(fileName ?? "").trim();
   if (!normalizedName.toLowerCase().endsWith(".zip")) {
@@ -91,6 +100,7 @@ function parseSubmissionIdentity(fileName: string) {
   return { studentName, studentNumber };
 }
 
+// Get a db client with authorization
 async function getAuthorizedClient(req: Request) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
@@ -127,6 +137,7 @@ async function getAuthorizedClient(req: Request) {
   return { dbClient, user };
 }
 
+// Get the assignment and verify the user has access to it
 async function getAuthorizedAssignment(
   dbClient: ReturnType<typeof createClient>,
   aid: number,
@@ -160,37 +171,47 @@ async function getAuthorizedAssignment(
   return { assignment };
 }
 
+// Main function to handle the import repository request
 Deno.serve(async (req: Request) => {
+
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Only allow POST requests for importing repositories
   if (req.method !== "POST") {
     return json({ error: "Method not allowed." }, 405);
   }
 
   try {
+
+    // Get the db client
     const authResult = await getAuthorizedClient(req);
     if ("error" in authResult) {
       return authResult.error;
     }
 
+    // Parse the request body as JSON and validate required fields
     const body = await req.json().catch(() => null) as {
       assignmentId?: number | string;
       repositoryId?: string | null;
     } | null;
 
+    // Get the assignment id and repository id from the request body
     const aid = parseAssignmentId(body?.assignmentId);
     const repositoryId = String(body?.repositoryId ?? "").trim();
     if (!aid || !repositoryId) {
       return json({ error: "assignmentId and repositoryId are required." }, 400);
     }
 
+    // Get the assignment and verify access
     const assignmentResult = await getAuthorizedAssignment(authResult.dbClient, aid, authResult.user.id);
     if ("error" in assignmentResult) {
       return assignmentResult.error;
     }
 
+    // ensure the repository id exists in the system and belongs to the assignment
     const { data: repository, error: repositoryError } = await authResult.dbClient
       .from("Repositories")
       .select("id, aid, repository_name")
@@ -202,6 +223,7 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Repository not found for this assignment." }, 404);
     }
 
+    // Download the repository zip file from storage
     const filePath = `${aid}/${repository.id}/${repository.repository_name}`;
     const { data: repositoryBlob, error: downloadError } = await authResult.dbClient.storage
       .from("Repositories")
@@ -211,24 +233,33 @@ Deno.serve(async (req: Request) => {
       return json({ error: `Failed to download repository zip: ${downloadError?.message ?? "Unknown error"}` }, 500);
     }
 
+    // get the identity secret from environment variables
     const identitySecret = Deno.env.get("STUDENT_IDENTITY_SECRET") ?? "";
     if (!identitySecret) {
       return json({ error: "Missing STUDENT_IDENTITY_SECRET." }, 500);
     }
 
+    // Load the repository zip file using JSZip
     const repositoryZip = await JSZip.loadAsync(await repositoryBlob.arrayBuffer());
     const importResults: Array<{ fileName: string; status: "imported" | "skipped" | "failed"; reason?: string }> = [];
 
+    // Get all file entries in the repository zip
     const entries = Object.values(repositoryZip.files)
       .filter((entry) => !entry.dir);
 
+    // Process each entry in the repository zip
     for (const entry of entries) {
+
+      // get the file name
       const entryName = entry.name.split("/").pop() ?? entry.name;
+
+      // Skip any non zip files
       if (!entryName.toLowerCase().endsWith(".zip")) {
         importResults.push({ fileName: entryName, status: "skipped", reason: "Not a zip submission." });
         continue;
       }
 
+      // Parse the student identity from the file name, if it fails, skip the file
       const identity = parseSubmissionIdentity(entryName);
       if (!identity) {
         importResults.push({
@@ -240,6 +271,7 @@ Deno.serve(async (req: Request) => {
       }
 
       try {
+        // Generate a new submission ID and encrypt the student information
         const submissionId = crypto.randomUUID();
         const encryptedStudentName = encryptValue(identity.studentName, assignmentResult.assignment.key);
         const encryptedStudentNumber = encryptValue(identity.studentNumber, assignmentResult.assignment.key);
@@ -248,6 +280,8 @@ Deno.serve(async (req: Request) => {
 
         const storedFileName = `${submissionId}.zip`;
         const submissionPath = `${aid}/${submissionId}/${storedFileName}`;
+
+        // Upload the submission zip file to storage
         const { error: uploadError } = await authResult.dbClient.storage
           .from("Submissions")
           .upload(submissionPath, innerZipBytes, { contentType: "application/zip", upsert: false });
@@ -256,6 +290,7 @@ Deno.serve(async (req: Request) => {
           throw new Error(`Failed to upload unpacked submission: ${uploadError.message}`);
         }
 
+        // Create a new submission record in the database for this imported submission
         const { error: insertError } = await authResult.dbClient.rpc("create_file_submission", {
           p_submission_id: submissionId,
           p_assignment_id: aid,
@@ -265,6 +300,7 @@ Deno.serve(async (req: Request) => {
           p_repository_id: repository.id,
         });
 
+        // If creating the submission record fails, delete the uploaded file to avoid orphaned files in storage
         if (insertError) {
           await authResult.dbClient.storage
             .from("Submissions")
@@ -275,6 +311,7 @@ Deno.serve(async (req: Request) => {
 
         importResults.push({ fileName: entryName, status: "imported" });
       } catch (error) {
+        // Handle any errors that occur during the processing of this entry, and add it to the log
         importResults.push({
           fileName: entryName,
           status: "failed",
@@ -283,10 +320,12 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Classify the entries
     const imported = importResults.filter((result) => result.status === "imported").length;
     const failed = importResults.filter((result) => result.status === "failed").length;
     const skipped = importResults.filter((result) => result.status === "skipped").length;
 
+    // return the results of the import
     return json({
       repositoryId: repository.id,
       imported,
@@ -295,6 +334,7 @@ Deno.serve(async (req: Request) => {
       results: importResults,
     });
   } catch (error) {
+    // Handle any unexpected errors that may occur during the process
     return json(
       { error: error instanceof Error ? error.message : "Unexpected error." },
       500,
