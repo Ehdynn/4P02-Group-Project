@@ -33,7 +33,7 @@ gateway = JavaGateway()
 # Access the entry point object exposed by the Java application
 entry_point = gateway.entry_point
 
-HEARTBEAT_INTERVAL_SECONDS = 10 * 60
+HEARTBEAT_INTERVAL_SECONDS = 15 * 60
 
 def make_assignment_state():
     return {
