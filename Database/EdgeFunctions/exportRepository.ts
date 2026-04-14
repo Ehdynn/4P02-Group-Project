@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import JSZip from "https://esm.sh/jszip@3.10.1";
 import CryptoJS from "npm:crypto-js";
 
+// CORS headers to allow requests from any origin and specify allowed headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -9,12 +10,14 @@ const corsHeaders = {
   "Access-Control-Expose-Headers": "Content-Disposition",
 };
 
+// Type definitions
+
 type AssignmentRow = {
   id: number;
   key: string;
   course: number;
 };
-
+ 
 type SubmissionRow = {
   id: string;
   created_at: string;
@@ -28,6 +31,12 @@ type ErrorResponse = {
   error: Response;
 };
 
+type DecryptedSubmissionRow = SubmissionRow & {
+  decryptedStudentName: string;
+  decryptedStudentNumber: string;
+};
+
+// Helper function to create a JSON response with appropriate headers
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -37,6 +46,8 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
+// Helper function to sanitize file names by replacing invalid characters and trimming length
+// Since decrypted student names could contain characters that are not safe for file names
 function sanitizeFileName(value: string | null | undefined, fallback: string) {
   return (value || fallback)
     .replace(/[\\/:*?"<>|]/g, "_")
@@ -44,15 +55,13 @@ function sanitizeFileName(value: string | null | undefined, fallback: string) {
     .slice(0, 120) || fallback;
 }
 
-type DecryptedSubmissionRow = SubmissionRow & {
-  decryptedStudentName: string;
-  decryptedStudentNumber: string;
-};
 
+// Derives the key from a string
 function deriveKey(key: string) {
   return CryptoJS.SHA256(key);
 }
 
+// Decrypts a value using AES decryption with the provided key
 function decryptValue(value: string | null | undefined, key: string) {
   const normalizedValue = String(value ?? "").trim();
   if (!normalizedValue) {
@@ -75,12 +84,14 @@ function decryptValue(value: string | null | undefined, key: string) {
   return decrypted.toString(CryptoJS.enc.Utf8).trim();
 }
 
+// Parses the assignment ID from the request body
 function parseAssignmentId(body: { assignmentId?: number | string } | null) {
   const assignmentId = body?.assignmentId;
   const aid = typeof assignmentId === "string" ? Number(assignmentId) : assignmentId;
   return Number.isInteger(aid) && aid > 0 ? aid : null;
 }
 
+// Create the export id based on the student name and number
 function getSubmissionExportId(submission: DecryptedSubmissionRow) {
   const studentName = String(submission.decryptedStudentName ?? "").trim();
   const studentNumber = String(submission.decryptedStudentNumber ?? "").trim();
@@ -92,6 +103,8 @@ function getSubmissionExportId(submission: DecryptedSubmissionRow) {
   return sanitizeFileName(studentName || studentNumber || submission.id, submission.id);
 }
 
+// Get the unique student identity key for a submission
+// Fallbacks present to preserve submissions from before this was added.
 function getStudentIdentityKey(submission: DecryptedSubmissionRow) {
   if (submission.decryptedStudentNumber) {
     return `number:${submission.decryptedStudentNumber}`;
@@ -104,6 +117,7 @@ function getStudentIdentityKey(submission: DecryptedSubmissionRow) {
   return `submission:${submission.id}`;
 }
 
+// Get only the latest submission for each student,
 function getLatestSubmissionsByStudent(submissions: DecryptedSubmissionRow[]) {
   const latestByStudent = new Map<string, DecryptedSubmissionRow>();
 
@@ -116,6 +130,7 @@ function getLatestSubmissionsByStudent(submissions: DecryptedSubmissionRow[]) {
   return Array.from(latestByStudent.values());
 }
 
+// Create and return an authorized db client
 async function getAuthorizedClient(req: Request) {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
@@ -152,6 +167,7 @@ async function getAuthorizedClient(req: Request) {
   return { dbClient, user };
 }
 
+// Get the assignment and verify the user has access to it as an instructor
 async function getAuthorizedAssignment(
   dbClient: ReturnType<typeof createClient>,
   aid: number,
@@ -185,32 +201,42 @@ async function getAuthorizedAssignment(
   return { assignment };
 }
 
+// Main handler 
 Deno.serve(async (req) => {
+
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Only allow POST requests to this endpoint
   if (req.method !== "POST") {
     return json({ error: "Method not allowed." }, 405);
   }
 
   try {
+    // Authenticate the request and get an authorized db client
     const authResult = await getAuthorizedClient(req);
     if ("error" in authResult) {
       return authResult.error;
     }
 
+    // Parse and validate the assignment ID from the request body
     const body = (await req.json().catch(() => null)) as { assignmentId?: number | string } | null;
     const aid = parseAssignmentId(body);
+
+    // If the assignment ID is invalid, return an error 
     if (!aid) {
       return json({ error: "Invalid assignmentId." }, 400);
     }
 
+    // Get the assignment and verify the user has access to it as an instructor
     const assignmentResult = await getAuthorizedAssignment(authResult.dbClient, aid, authResult.user.id);
     if ("error" in assignmentResult) {
       return assignmentResult.error;
     }
 
+    // Load all submissions for the assignment, decrypt student information, and get the latest submission for each student
     const { data: submissions, error: submissionsError } = await authResult.dbClient
       .from("File_Submissions_New")
       .select("id, created_at, student_info")
@@ -218,21 +244,25 @@ Deno.serve(async (req) => {
       .order("created_at", { ascending: false })
       .order("id", { ascending: false });
 
+    // If there was an error loading the submissions, return an error 
     if (submissionsError) {
       return json({ error: `Failed to load submissions: ${submissionsError.message}` }, 400);
     }
 
+    // Add decrypted student information to each submission
     const decryptedSubmissions = ((submissions ?? []) as SubmissionRow[]).map((submission) => ({
       ...submission,
       decryptedStudentName: decryptValue(submission.student_info?.student_name, assignmentResult.assignment.key),
       decryptedStudentNumber: decryptValue(submission.student_info?.student_number, assignmentResult.assignment.key),
     }));
 
+    // Get the latest submission for each student
     const latestSubmissions = getLatestSubmissionsByStudent(decryptedSubmissions);
     if (latestSubmissions.length === 0) {
       return json({ error: "No submissions found." }, 404);
     }
 
+    // Create a zip file with all of the latest submissions (1 per student)
     const zip = new JSZip();
     const usedFileNames = new Set<string>();
     for (const submission of latestSubmissions) {
@@ -258,9 +288,11 @@ Deno.serve(async (req) => {
       zip.file(exportFileName, new Uint8Array(content));
     }
 
+    // Generate the zip file
     const zipBytes = await zip.generateAsync({ type: "uint8array" });
     const zipName = `${sanitizeFileName(assignmentResult.assignment.key, `assignment-${aid}`)}.zip`;
 
+    // Return the zip file
     return new Response(zipBytes, {
       status: 200,
       headers: {
@@ -270,6 +302,7 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
+    // Handle any unexpected errors that may occur during the process
     return json(
       { error: error instanceof Error ? error.message : "Unexpected error." },
       500,

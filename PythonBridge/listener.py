@@ -33,6 +33,8 @@ gateway = JavaGateway()
 # Access the entry point object exposed by the Java application
 entry_point = gateway.entry_point
 
+HEARTBEAT_INTERVAL_SECONDS = 15 * 60
+
 def make_assignment_state():
     return {
         "condition": asyncio.Condition(),
@@ -225,6 +227,26 @@ async def requeue_missing_submissions(assignment_id, submission_ids):
     )
     for submission_id in submission_ids:
         await enqueue_submission_event(assignment_id, submission_id)
+
+
+def get_queue_status_snapshot():
+    return {
+        "comparison_queue_size": comparison_queue.qsize(),
+        "submission_queue_size": submission_queue.qsize(),
+        "tracked_assignments": len(submission_state),
+    }
+
+
+async def heartbeat_monitor():
+    while True:
+        await asyncio.sleep(HEARTBEAT_INTERVAL_SECONDS)
+        queue_status = get_queue_status_snapshot()
+        print(
+            "@health Listener is active and ready. "
+            f"Comparison queue: {queue_status['comparison_queue_size']}, "
+            f"submission queue: {queue_status['submission_queue_size']}, "
+            f"tracked assignments: {queue_status['tracked_assignments']}."
+        )
 
 '''
 Downloads the boiler plate file selected for a comparison, if one exists.
@@ -473,6 +495,7 @@ async def main():
         await client.connect()
         asyncio.create_task(consume_comparison())
         asyncio.create_task(consume_submission())
+        asyncio.create_task(heartbeat_monitor())
 
         pending_comparisons = await asyncio.to_thread(get_pending_comparisons)
         if pending_comparisons:
@@ -523,6 +546,7 @@ async def main():
         )
         await submissions_channel.subscribe()
         print(f"@startup Subscribed to inserts on 'Submissions'. Listening for changes...")
+        print("@startup Listener startup complete. Service is ready and active.")
 
         # Keep the program alive while waiting for events.
         await asyncio.Event().wait()
