@@ -18,6 +18,17 @@ public class ComparisonTest {
             "}\n" +
             "if (x > 10) { y = x-5; } //test \n/*test 1 2 3 4 5 6 7 8 9*/ 10 11 12 13 14 15";
 
+    String helloWorldModified = "public class HelloWorld {\n" +
+            "\n" +
+            "    // Your program begins with a call to main()\n" +
+            "    public static void main(String args[])\n" +
+            "    {\n" +
+            "        // Prints \"Hello test\" to the terminal window.\n" +
+            "        System.out.print(\"Hello 你 World\");\n" +
+            "    }\n" +
+            "}\n" +
+            "if (x > 10) { y = x-5; } //test \n/*test 1 2 3 4 5 6 7 8 9*/ 10 11 12 13 14 15";
+
     String empty = "";
 
     String codeHalf1 = "public class HelloWorld {\n" +
@@ -36,11 +47,13 @@ public class ComparisonTest {
     Lexer lexer_2 = new Lexer(empty);
     Lexer lexer_3 = new Lexer(codeHalf1);
     Lexer lexer_4 = new Lexer(codeHalf2);
+    Lexer lexer_5 = new Lexer(helloWorldModified);
 
     List<Token> tokens1 = lexer_1.tokenize();
     List<Token> tokens2 = lexer_2.tokenize();
     List<Token> tokens3 = lexer_3.tokenize();
     List<Token> tokens4 = lexer_4.tokenize();
+    List<Token> tokens5 = lexer_5.tokenize();
 
     Submission submission1 = new Submission(tokens1, "123");
     Submission submission2 = new Submission(tokens1, "456");
@@ -48,6 +61,7 @@ public class ComparisonTest {
     Submission submission4 = new Submission(tokens2, "456");
     Submission submission5 = new Submission(tokens3, "111");
     Submission submission6 = new Submission(tokens4, "222");
+    Submission submission7 = new Submission(tokens5, "555");
 
     @Test
     public void testIdentical(){
@@ -154,6 +168,21 @@ public class ComparisonTest {
         boolean[] boilerplateMask = new boolean[submission1.getTokens().size()];
 
         List<Sequence> results = tiling.tile(submission1, database, 5, boilerplateMask);
+        double score = simScore.getSimilarityScore(submission1.getTokens(), results);
+
+        assertEquals(100.00, score);
+    }
+
+    @Test
+    public void testDatabaseOrder(){
+        StringTiling tiling = new StringTiling();
+        SimilarityScore simScore = new SimilarityScore();
+
+        List<Submission> database = new ArrayList<>();
+        database.add(submission7);
+        database.add(submission2);
+
+        List<Sequence> results = tiling.tile(submission1, database, 5);
         double score = simScore.getSimilarityScore(submission1.getTokens(), results);
 
         assertEquals(100.00, score);

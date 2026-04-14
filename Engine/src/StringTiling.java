@@ -21,31 +21,32 @@ public class StringTiling {
         List<Sequence> matches = new ArrayList<>();
         boolean[] marked = new boolean[submission.size()];
 
-        for(Submission submissions: database){
-            //skips submission if it is the one being analyzed
-            if(current.getId().equals(submissions.getId()))
-                continue;
-
-            List<Token> comparison = submissions.getTokens();
             int numMatches = 1;
             // Iterative loop which finds the largest remaining common sequences
             while(numMatches != 0){
                 List<Sequence> subMatches = new ArrayList<>();
                 //array for keeping track of sequence starts, so two sequences of the same start and length aren't reused
                 List<Integer> matchStarts = new ArrayList<>();
-                List<Token> tempTokens = new ArrayList<>();
+
                 int lcs = tolerance;
 
-                for (int i = 0; i < submission.size(); i++) {
-                    if (marked[i] || isIgnored(ignoredTokens, i)) continue;
+                for(Submission submissions: database){
+                    //skips submission if it is the one being analyzed
+                    if(current.getId().equals(submissions.getId()))
+                        continue;
 
-                    for (int j = 0; j < comparison.size(); j++) {
+                    List<Token> comparison = submissions.getTokens();
 
-                        int n = 0;
+                    for (int i = 0; i < submission.size(); i++) {
+                        if (marked[i] || isIgnored(ignoredTokens, i)) continue;
 
-                        // Finds n next common tokens
-                        while (i + n < submission.size() &&
-                                j + n < comparison.size() &&
+                        for (int j = 0; j < comparison.size(); j++) {
+                            List<Token> tempTokens = new ArrayList<>();
+
+                            int n = 0;
+
+                            // Finds n next common tokens
+                            while (i + n < submission.size() && j + n < comparison.size() &&
                                 !marked[i + n] &&
                                 !isIgnored(ignoredTokens, i + n) &&
                                 submission.get(i + n).compareTo(comparison.get(j + n)) >= 0) {
@@ -81,9 +82,15 @@ public class StringTiling {
                             matchStarts.add(i);
                         }
 
+                        //skips ahead to avoid redundant iterations
+                        if (lcs > tolerance) {
+                            i += lcs - 1;
+                        }
+
                         tempTokens.clear();
                     }
                 }
+            }
 
                 // Marks all matched tokens and adds them to master list
                 for(Sequence s: subMatches){
@@ -95,7 +102,6 @@ public class StringTiling {
 
                 // Checks number of matches found this iteration, exits loop if 0
                 numMatches = subMatches.size();
-            }
         }
 
         return matches;
@@ -139,6 +145,11 @@ public class StringTiling {
                     } else if (n == lcs && !matchStarts.contains(i)) {
                         subMatches.add(new int[]{i, n});
                         matchStarts.add(i);
+                    }
+
+                    //skips ahead to avoid redundant iterations
+                    if (lcs > tolerance) {
+                        i += lcs - 1;
                     }
                 }
             }
