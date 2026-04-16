@@ -327,7 +327,6 @@ public class ComparisonTest {
         database.add(submission13);
         database.add(submission14);
 
-
         for(Submission s: database){
             List<Sequence> results = tiling.tile(s, database, 5);
             double score = simScore.getSimilarityScore(s.getTokens(), results);

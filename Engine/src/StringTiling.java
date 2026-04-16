@@ -31,7 +31,6 @@ public class StringTiling {
             // Iterative loop which finds the largest remaining common sequences
             while(numMatches != 0){
                 List<Sequence> subMatches = new ArrayList<>();
-                boolean[] subMarked = new boolean[submission.size()];
                 //array for keeping track of sequence starts, so two sequences of the same start and length aren't reused
                 int[] matchStarts = new int[submission.size()];
                 int matchStartsCounter = 1;
@@ -115,8 +114,18 @@ public class StringTiling {
 
                 // Marks all matched tokens and adds them to master list
                 for(Sequence s: subMatches){
-                    for(int k = 0; k < s.getLength(); k++){
-                        marked[s.getStart() + k] = true;
+                    boolean overlap = false;
+                    for(int k = s.getStart(); k < s.getStart() + s.getLength(); k++){
+                        if (marked[k]) {
+                            overlap = true;
+                            break;
+                        }
+                    }
+
+                    if(overlap) continue;
+
+                    for(int l = 0; l < s.getLength(); l++){
+                        marked[s.getStart() + l] = true;
                     }
                     matches.add(s);
                 }
