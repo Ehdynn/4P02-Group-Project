@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StringTiling {
 
@@ -16,31 +18,52 @@ public class StringTiling {
         return tile(current, database, tolerance, new boolean[current.getTokens().size()]);
     }
 
+    int tokenHash(Token t) {
+        return t.getType().hashCode();
+    }
+
     public List<Sequence> tile(Submission current, List<Submission> database, int tolerance, boolean[] ignoredTokens){
         List<Token> submission = current.getTokens();
         List<Sequence> matches = new ArrayList<>();
         boolean[] marked = new boolean[submission.size()];
-
-        for(Submission submissions: database){
-            //skips submission if it is the one being analyzed
-            if(current.getId().equals(submissions.getId()))
-                continue;
-
-            List<Token> comparison = submissions.getTokens();
 
             int numMatches = 1;
             // Iterative loop which finds the largest remaining common sequences
             while(numMatches != 0){
                 List<Sequence> subMatches = new ArrayList<>();
                 //array for keeping track of sequence starts, so two sequences of the same start and length aren't reused
-                List<Integer> matchStarts = new ArrayList<>();
+                int[] matchStarts = new int[submission.size()];
+                int matchStartsCounter = 1;
 
                 int lcs = tolerance;
 
+                for(Submission submissions: database){
+                    //skips submission if it is the one being analyzed
+                    if(current.getId().equals(submissions.getId()))
+                        continue;
+
+                    List<Token> comparison = submissions.getTokens();
+
+                    Map<Integer, List<Integer>> index = new HashMap<>();
+
+                    for (int j = 0; j < comparison.size(); j++) {
+                        int h = tokenHash(comparison.get(j));
+                        index.computeIfAbsent(h, k -> new ArrayList<>()).add(j);
+                    }
+
                     for (int i = 0; i < submission.size(); i++) {
                         if (marked[i] || isIgnored(ignoredTokens, i)) continue;
+                        if (i > 0 && !marked[i - 1]) continue;
 
-                        for (int j = 0; j < comparison.size(); j++) {
+                        int h = tokenHash(submission.get(i));
+                        List<Integer> candidates = index.get(h);
+
+                        if (candidates == null) continue;
+
+                        for (int j : candidates) {
+                            if (Math.min(submission.size() - i, comparison.size() - j) <= lcs)
+                                continue;
+
                             List<Token> tempTokens = new ArrayList<>();
 
                             int n = 0;
@@ -65,31 +88,32 @@ public class StringTiling {
                         // Adds largest sequence(s) to matches list
                         if(n > lcs){
                             subMatches.clear();
-                            matchStarts.clear();
+                            matchStartsCounter++;
                             lcs = n;
                             Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
                             for(Token t: tempTokens){
                                 newSequence.addToken(t);
                             }
                             subMatches.add(newSequence);
-                            matchStarts.add(i);
-                        } else if(n == lcs && !matchStarts.contains(i)){
+                            matchStarts[i] = matchStartsCounter;
+                        } else if(n == lcs && matchStarts[i] != matchStartsCounter){
                             Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
                             for(Token t: tempTokens){
                                 newSequence.addToken(t);
                             }
                             subMatches.add(newSequence);
-                            matchStarts.add(i);
+                            matchStarts[i] = matchStartsCounter;
                         }
+
+                        tempTokens.clear();
+                    }
 
                         //skips ahead to avoid redundant iterations
                         if (lcs > tolerance) {
                             i += lcs - 1;
                         }
-
-                        tempTokens.clear();
-                    }
                 }
+            }
 
                 // Marks all matched tokens and adds them to master list
                 for(Sequence s: subMatches){
@@ -101,7 +125,6 @@ public class StringTiling {
 
                 // Checks number of matches found this iteration, exits loop if 0
                 numMatches = subMatches.size();
-            }
         }
 
         return matches;
