@@ -31,6 +31,7 @@ public class StringTiling {
             // Iterative loop which finds the largest remaining common sequences
             while(numMatches != 0){
                 List<Sequence> subMatches = new ArrayList<>();
+                boolean[] subMarked = new boolean[submission.size()];
                 //array for keeping track of sequence starts, so two sequences of the same start and length aren't reused
                 int[] matchStarts = new int[submission.size()];
                 int matchStartsCounter = 1;
@@ -46,6 +47,7 @@ public class StringTiling {
 
                     Map<Integer, List<Integer>> index = new HashMap<>();
 
+                    //assigns tokens to hashmaps for faster lookup
                     for (int j = 0; j < comparison.size(); j++) {
                         int h = tokenHash(comparison.get(j));
                         index.computeIfAbsent(h, k -> new ArrayList<>()).add(j);
@@ -53,7 +55,6 @@ public class StringTiling {
 
                     for (int i = 0; i < submission.size(); i++) {
                         if (marked[i] || isIgnored(ignoredTokens, i)) continue;
-                        if (i > 0 && !marked[i - 1]) continue;
 
                         int h = tokenHash(submission.get(i));
                         List<Integer> candidates = index.get(h);
@@ -61,6 +62,7 @@ public class StringTiling {
                         if (candidates == null) continue;
 
                         for (int j : candidates) {
+                            //exits loop early if no point in continuing
                             if (Math.min(submission.size() - i, comparison.size() - j) <= lcs)
                                 continue;
 
@@ -73,45 +75,41 @@ public class StringTiling {
                                 !marked[i + n] &&
                                 !isIgnored(ignoredTokens, i + n) &&
                                 submission.get(i + n).compareTo(comparison.get(j + n)) >= 0) {
-                            Token copy = submission.get(i + n).copy();
-                            if(submission.get(i + n).compareTo(comparison.get(j + n)) == 1){
-                                //if token has identical type and value, assign full plagiarism value
-                                copy.setPlagiarismValue(1);
-                            }  else if (submission.get(i + n).compareTo(comparison.get(j + n)) == 0){
-                                //if token has identical type but different value, assign partial plagiarism value
-                                copy.setPlagiarismValue(0.9);
+                                Token copy = submission.get(i + n).copy();
+                                if(submission.get(i + n).compareTo(comparison.get(j + n)) == 1){
+                                    //if token has identical type and value, assign full plagiarism value
+                                    copy.setPlagiarismValue(1);
+                                }  else if (submission.get(i + n).compareTo(comparison.get(j + n)) == 0){
+                                    //if token has identical type but different value, assign partial plagiarism value
+                                    copy.setPlagiarismValue(0.9);
+                                }
+                                tempTokens.add(copy);
+                                n++;
                             }
-                            tempTokens.add(copy);
-                            n++;
-                        }
 
-                        // Adds largest sequence(s) to matches list
-                        if(n > lcs){
-                            subMatches.clear();
-                            matchStartsCounter++;
-                            lcs = n;
-                            Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
-                            for(Token t: tempTokens){
-                                newSequence.addToken(t);
+                            // Adds largest sequence(s) to matches list
+                            if(n > lcs){
+                                subMatches.clear();
+                                //match starts value updated so previous starts become invalid
+                                matchStartsCounter++;
+                                lcs = n;
+                                Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
+                                for(Token t: tempTokens){
+                                    newSequence.addToken(t);
+                                }
+                                subMatches.add(newSequence);
+                                matchStarts[i] = matchStartsCounter;
+                            } else if(n == lcs && matchStarts[i] != matchStartsCounter){
+                                Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
+                                for(Token t: tempTokens){
+                                    newSequence.addToken(t);
+                                }
+                                subMatches.add(newSequence);
+                                matchStarts[i] = matchStartsCounter;
                             }
-                            subMatches.add(newSequence);
-                            matchStarts[i] = matchStartsCounter;
-                        } else if(n == lcs && matchStarts[i] != matchStartsCounter){
-                            Sequence newSequence = new Sequence(i, n, submissions.getId(), j);
-                            for(Token t: tempTokens){
-                                newSequence.addToken(t);
-                            }
-                            subMatches.add(newSequence);
-                            matchStarts[i] = matchStartsCounter;
-                        }
 
                         tempTokens.clear();
                     }
-
-                        //skips ahead to avoid redundant iterations
-                        if (lcs > tolerance) {
-                            i += lcs - 1;
-                        }
                 }
             }
 

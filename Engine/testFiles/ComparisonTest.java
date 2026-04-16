@@ -312,6 +312,13 @@ public class ComparisonTest {
 
         List<Submission> database = new ArrayList<>();
 
+        database.add(submission1);
+        database.add(submission2);
+        database.add(submission3);
+        database.add(submission4);
+        database.add(submission5);
+        database.add(submission6);
+        database.add(submission7);
         database.add(submission8);
         database.add(submission9);
         database.add(submission10);
@@ -319,6 +326,7 @@ public class ComparisonTest {
         database.add(submission12);
         database.add(submission13);
         database.add(submission14);
+
 
         for(Submission s: database){
             List<Sequence> results = tiling.tile(s, database, 5);
