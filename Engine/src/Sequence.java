@@ -1,7 +1,10 @@
 import java.util.ArrayList;
 import java.util.List;
 
-/// Sequences of similar tokens that will be used to calculate the similarity score
+/** Sequence Class used in similarity score calculation and reports
+ *
+ * @Version 1.2 (April 23rd, 2026)
+ */
 public class Sequence {
     private int start;
     private int length;
