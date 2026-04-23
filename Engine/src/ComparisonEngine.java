@@ -11,7 +11,7 @@ public class ComparisonEngine {
     }
 
     /**Converts a token list into a token array
-     * @tokens token list to be converted
+     * @param tokens token list to be converted
      * @return token Array */
     public static Token[] tokensToArray(List<Token> tokens) {
         Token[] tokenArray = new Token[tokens.size()];
@@ -23,7 +23,13 @@ public class ComparisonEngine {
 
         return tokenArray;
     }
-    
+
+    /**Creates a comparrison JSON string
+     *
+     * @param submission submission to be compared
+     * @param sequences sequences that are suspicious
+     * @param similarityScore plagarized value
+     * @return JSON String */
     public String buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore) {
         FileHandler handler = new FileHandler();
         JSONObject comparisonJson = new JSONObject();
