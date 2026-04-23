@@ -1,5 +1,3 @@
-/*package whatever //do not write package name here */
-
 import py4j.GatewayServer;
 
 import java.io.File;
@@ -9,20 +7,32 @@ import java.util.List;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-
+/**  A Bridge between python and java
+*    Functions from this class may be called by the python script
+*    Relys on the py4j library
+*/
 class Bridge {
+    /**  Test function that returns the String "Yo mama" to be called by the Python script
+    *    @return "Yo mama"
+    */
     public String Message() { return "Yo mama"; }
     private String pythonData = "";
     FileHandler fileHandler = new FileHandler();
 
-
+    /**The main function
+    *    Starts the gateway through which the python script can connect. 
+    */
     public static void main(String[] args)
     {
         GatewayServer g = new GatewayServer(new Bridge());
         g.start();
         System.out.println("Gateway Server Started");
     }
-
+ 
+    /**Recieves data from python
+    *
+    * @data String sent from Python
+    */
     public void sendDataToJava(String data){
         this.pythonData = data;
         System.out.println(pythonData);
@@ -45,6 +55,11 @@ class Bridge {
         return out;
     }*/
 
+    /**  Returns token list to python from incoming byte data
+    *
+    * @fileData byte array representing the files that need to be tokenized. 
+    * @return a csv per file in the form of a string
+    */
     public String[] tokenize(byte[] fileData){
         ArrayList<String> tokenLists = new ArrayList<>();
         File archive = null;
@@ -82,6 +97,9 @@ class Bridge {
         return csvs;
     }
 
+    /** Sends to python a list of tokens representing the files sent from Python
+    * @fileData byte array representing the files that need to be tokenized
+    * @return String representing all tokens. Formatted as a csv. */
     public String tokenizeCondensed(byte[] fileData){
         StringBuilder tokenLists = new StringBuilder();
         File archive = null;
@@ -130,6 +148,10 @@ class Bridge {
         return tokenLists.toString();
     }
 
+    /**Checks if a file is a zip
+    * @fileData file to check
+    * @return True if the file is a Zip
+    */
     private boolean looksLikeZip(byte[] fileData) {
         return fileData != null
                 && fileData.length >= 4
@@ -139,6 +161,11 @@ class Bridge {
                 && (fileData[3] == 4 || fileData[3] == 6 || fileData[3] == 8);
     }
 
+    /** Allows the python script to compare a set of token lists for plagiarized parts
+    *
+    * @databaseCSVs token lists to be compaired
+    * @boilerplate code to be ignored in the comparisons 
+    * @return JSON of plagarized sections */
     public String getComparisonData(String databaseCSVs, String boilerplate){
         JSONArray databaseParser = new JSONArray(databaseCSVs);
         FileHandler handler = new FileHandler();
