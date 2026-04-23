@@ -13,15 +13,15 @@ import org.json.JSONArray;
 */
 class Bridge {
     /**  Test function that returns the String "Yo mama" to be called by the Python script
-    *    @return "Yo mama"
-    */
+     *    @return "Yo mama"
+     */
     public String Message() { return "Yo mama"; }
     private String pythonData = "";
     FileHandler fileHandler = new FileHandler();
 
     /**The main function
-    *    Starts the gateway through which the python script can connect. 
-    */
+     *    Starts the gateway through which the python script can connect. 
+     */
     public static void main(String[] args)
     {
         GatewayServer g = new GatewayServer(new Bridge());
@@ -30,9 +30,9 @@ class Bridge {
     }
  
     /**Recieves data from python
-    *
-    * @data String sent from Python
-    */
+     *
+     * @param data String sent from Python
+     */
     public void sendDataToJava(String data){
         this.pythonData = data;
         System.out.println(pythonData);
@@ -56,10 +56,10 @@ class Bridge {
     }*/
 
     /**  Returns token list to python from incoming byte data
-    *
-    * @fileData byte array representing the files that need to be tokenized. 
-    * @return a csv per file in the form of a string
-    */
+     *
+     * @param fileData byte array representing the files that need to be tokenized. 
+     * @return a csv per file in the form of a string
+     */
     public String[] tokenize(byte[] fileData){
         ArrayList<String> tokenLists = new ArrayList<>();
         File archive = null;
@@ -149,9 +149,9 @@ class Bridge {
     }
 
     /**Checks if a file is a zip
-    * @fileData file to check
-    * @return True if the file is a Zip
-    */
+     * @param fileData file to check
+     * @return True if the file is a Zip
+     */
     private boolean looksLikeZip(byte[] fileData) {
         return fileData != null
                 && fileData.length >= 4
@@ -162,10 +162,10 @@ class Bridge {
     }
 
     /** Allows the python script to compare a set of token lists for plagiarized parts
-    *
-    * @databaseCSVs token lists to be compaired
-    * @boilerplate code to be ignored in the comparisons 
-    * @return JSON of plagarized sections */
+     *
+     * @param databaseCSVs token lists to be compaired
+     * @param boilerplate code to be ignored in the comparisons 
+     * @return JSON of plagarized sections */
     public String getComparisonData(String databaseCSVs, String boilerplate){
         JSONArray databaseParser = new JSONArray(databaseCSVs);
         FileHandler handler = new FileHandler();
