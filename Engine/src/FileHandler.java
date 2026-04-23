@@ -262,6 +262,9 @@ public class FileHandler {
         return path.toFile();
     }
 
+    /**Deletes a file structure recursivelly
+     * 
+     * @param file file structure to delete */
     public void deleteRecursively(File file) throws IOException {
         if (file == null || !file.exists()) {
             return;
@@ -279,6 +282,12 @@ public class FileHandler {
         Files.deleteIfExists(file.toPath());
     }
 
+    /**Returns a list of files
+     * primarily for debugging
+     *
+     * @param dir directory to list files in
+     * @return a set of Strings with file names
+     */
     public Set<String> listFilesUsingDirectoryStream(String dir) throws IOException {
         Set<String> fileSet = new HashSet<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) {
