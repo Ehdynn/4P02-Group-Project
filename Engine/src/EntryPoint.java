@@ -4,12 +4,18 @@ import javax.xml.stream.events.EndElement;
 import java.util.LinkedList;
 import java.util.List;
 
+/**Gateway object for making a connection between python and Java
+*    Built on Py4J 
+*I believe this to be obsolete, but I fear God to much to remove it*/
 public class EntryPoint {
     String pythonData = "test nonsense";
+
+    //test function
     public String getData() {
         return "Data from Java";
     }
 
+    //Another test function
     public String getStringList() {
         List<String> list = new LinkedList<>();
         list.add("Item 1");
@@ -18,6 +24,11 @@ public class EntryPoint {
         return list.toString();
     }
 
+    /**Creates a token list from code given from Python
+    *
+    * @code Code to be tokenized
+    * @return token list in the form of a string
+    */
     public String getTokens(String code){
         Lexer lexer = new Lexer(code);
         List<Token> tokens = lexer.tokenize();
@@ -31,6 +42,7 @@ public class EntryPoint {
 
     }
 
+    //Test function
     public void sendDataToJava(String data){
         this.pythonData = data;
         System.out.println("From Python: \n" + pythonData);
