@@ -3,7 +3,7 @@ import java.util.List;
 
 /** Sequence Class used in similarity score calculation and reports
  *
- * @Version 1.2 (April 23rd, 2026)
+ * @version 1.2 (April 23rd, 2026)
  */
 public class Sequence {
     private int start;
@@ -60,6 +60,10 @@ public class Sequence {
         return submissionId;
     }
 
+    /** First token index in flagged submission
+     *
+     * @return  the index of the first token in the flagged submission
+     */
     public int getFlaggedStart() {
         return flaggedStart;
     }

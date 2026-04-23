@@ -8,12 +8,12 @@ import java.util.regex.Pattern;
  *  These tokens are used to reconstruct the report.
  *
  *
- *  Based on Enzo Jade's Tokenizer from the linked tutorial: https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f
+ *  Based on Enzo Jade's Tokenizer from the linked tutorial: <a href="https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f">...</a>
  *  Modified to support comments, Strings, and non-Java languages
  *  Modified to make Keywords not break the lexer if not the first keyword in a list
  *  Modified beyond recognition. 
  *
- * @Version 1.2.1 (March 8th, 2026)
+ * @version Version 1.2.1 (March 8th, 2026)
  */
 public class Lexer {
     private String input;
@@ -26,19 +26,27 @@ public class Lexer {
     private static final String PYTHON_KEYWORDS = "if|for|while|try|raise|class|def|with|break|continue|del|pass|assert|yield|return|import|from|match|case|bool|byte(array|s)|complex|dict|types|EllipsisType|float|frozenset|int|list|NoneType|NotImplementedType|range|set|str|tuple";
 
 
+    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given String input
+     *
+     * @param input Code to be tokenized
+     */
     public Lexer(String input){
         this.input = input;
         this.language = Language.Java;
         this.index = 0;
     }
 
+    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given Source Code input
+     *
+     * @param input Code to be tokenized
+     */
     public Lexer(SourceCode input){
         this.input = input.sourceCode();
         this.language = input.language();
         this.index = 0;
     }
 
-    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given String input
+    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given String input and language
      *
      * @param input Code to be tokenized
      * @param language Language of the code

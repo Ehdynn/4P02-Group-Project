@@ -1,5 +1,8 @@
 import java.util.List;
 
+/** User submissions, containing a list of tokens and an ID
+ *
+ */
 public class Submission {
     private List<Token> tokens;
     private String id;
@@ -14,17 +17,17 @@ public class Submission {
         this.id = id;
     }
 
-    /** The type of token
+    /** Returns the submissions tokenized code
      *
-     * @return  the TokenType of the Token
+     * @return The list of tokens
      */
     public List<Token> getTokens() {
         return tokens;
     }
 
-    /** The type of token
+    /** Returns the submission ID
      *
-     * @return  the TokenType of the Token
+     * @return The submission ID
      */
     public String getId() {
         return id;

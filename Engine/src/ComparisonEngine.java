@@ -6,6 +6,9 @@ import java.util.*;
 
 import static java.lang.Math.min;
 
+/** Allows comparison data to be condensed into a JSON
+ *
+ */
 public class ComparisonEngine {
     ComparisonEngine() {
     }

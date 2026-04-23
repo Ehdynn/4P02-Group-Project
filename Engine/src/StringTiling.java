@@ -3,22 +3,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/** Takes in an array of tokens and a list of token arrays, outputs a list containing sequences of identical tokens greater than a certain length.
+ *
+ *  Based on the Greedy-String-Tiling algorithm described on Louis Tarvin's linked website: <a href="https://louistarvin.uk/projects/plagiarism/">...</a>
+ *  Modified to only return the similar sequences of the first submission being compared.
+ *  Optimized based on this paper from Micheal J. Wise: <a href="https://www.researchgate.net/profile/Michael_Wise/publication/262763983_String_Similarity_via_Greedy_String_Tiling_and_Running_Karp-Rabin_Matching/links/59f03226aca272a2500141f4/String-Similarity-via-Greedy-String-Tiling-and-Running-Karp-Rabin-Matching.pdf">...</a>
+ *
+ * @version 1.3 (April 16th, 2026)
+ */
+
 public class StringTiling {
 
     /** Takes in an array of tokens and a list of token arrays, outputs a list containing sequences of identical tokens greater than a certain length.
-     *
-     *
-     *  Based on the Greedy-String-Tiling algorithm described on Louis Tarvin's linked website: https://louistarvin.uk/projects/plagiarism/
-     *  Modified to only return the similar sequences of the first submission being compared.
-     *
-     *  Optimized based on this paper from Micheal J. Wise: https://www.researchgate.net/profile/Michael_Wise/publication/262763983_String_Similarity_via_Greedy_String_Tiling_and_Running_Karp-Rabin_Matching/links/59f03226aca272a2500141f4/String-Similarity-via-Greedy-String-Tiling-and-Running-Karp-Rabin-Matching.pdf
      *  This variation does not take boilerplate code as a parameter
      *
      * @param current The current submission being analyzed for similarity
      * @param database The database of other submissions being checked against the current submission
      * @param tolerance The minimum length required for a code sequence to be flagged as similar
-     *
-     * @Version 1.3 (April 16th, 2026)
+     * @return a list of flagged sequences
      */
     public List<Sequence> tile(Submission current, List<Submission> database, int tolerance){
         return tile(current, database, tolerance, new boolean[current.getTokens().size()]);
@@ -27,18 +29,13 @@ public class StringTiling {
     /** Returns the hash value of the type parameter of a particular token
      *
      * @param t The token to be assigned to a HashMap
+     * @return Hash code
      */
     int tokenHash(Token t) {
         return t.getType().hashCode();
     }
 
     /** Takes in an array of tokens and a list of token arrays, outputs a list containing sequences of identical tokens greater than a certain length.
-     *
-     *
-     *  Based on the Greedy-String-Tiling algorithm described on Louis Tarvin's linked website: https://louistarvin.uk/projects/plagiarism/
-     *  Modified to only return the similar sequences of the first submission being compared.
-     *
-     *  Optimized based on this paper from Micheal J. Wise: https://www.researchgate.net/profile/Michael_Wise/publication/262763983_String_Similarity_via_Greedy_String_Tiling_and_Running_Karp-Rabin_Matching/links/59f03226aca272a2500141f4/String-Similarity-via-Greedy-String-Tiling-and-Running-Karp-Rabin-Matching.pdf
      *  This variation does take in boilerplate code as a parameter
      *
      * @param current The current submission being analyzed for similarity
@@ -46,7 +43,7 @@ public class StringTiling {
      * @param tolerance The minimum length required for a code sequence to be flagged as similar
      * @param ignoredTokens A mask corresponding to where boilerplate code is found in the current submission
      *
-     * @Version 1.3 (April 16th, 2026)
+     * @return a list of flagged sequences
      */
     public List<Sequence> tile(Submission current, List<Submission> database, int tolerance, boolean[] ignoredTokens){
         List<Token> submission = current.getTokens();
@@ -169,6 +166,8 @@ public class StringTiling {
      * @param current The current submission being analyzed for similarity
      * @param reference The submission being compared against the current submission
      * @param tolerance The minimum length required for a code sequence to be flagged as similar
+     *
+     * @return A boolean array of matching tokens
      */
     public boolean[] getMatchedTokenMask(Submission current, Submission reference, int tolerance) {
         List<Token> submission = current.getTokens();
@@ -237,6 +236,8 @@ public class StringTiling {
      *
      * @param ignoredTokens A boolean array indicating which tokens should be ignored by the tiling algorithm
      * @param index The index of a token within the current submission
+     *
+     * @return boolean
      */
     private boolean isIgnored(boolean[] ignoredTokens, int index) {
         return ignoredTokens != null && index >= 0 && index < ignoredTokens.length && ignoredTokens[index];
