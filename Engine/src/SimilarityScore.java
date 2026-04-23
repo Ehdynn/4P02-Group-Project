@@ -12,6 +12,12 @@ public class SimilarityScore {
         return getSimilarityScore(submission, sequences, new boolean[submission.size()]);
     }
 
+    /**Gets the similarity score of a token list 
+     *
+     * @param submission token list to be compared
+     * @param sequences list of sequences of tokens to be compared to 
+     * @param ignoredTokens flags for each token in submission on whether or not to have them be compared
+     * return similarity score as a double */
     public double getSimilarityScore(List<Token> submission, List<Sequence> sequences, boolean[] ignoredTokens){
         double plagarismValues = 0;
         double submissionLength = 0;
