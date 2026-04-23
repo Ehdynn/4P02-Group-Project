@@ -323,6 +323,10 @@ public class Lexer {
         return tokens;
     }
 
+    /**Rips student info from starting comment
+     * Not reliable, not used
+     * @param input code to collect student name from
+     * @return String with student info */
     public String getStudentInfo(String input){
         String out = "";
         int startingIndex = input.indexOf("/*") + 2;
