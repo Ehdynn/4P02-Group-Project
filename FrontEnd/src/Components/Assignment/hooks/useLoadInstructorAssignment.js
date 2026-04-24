@@ -7,15 +7,21 @@ export function useLoadInstructorAssignment(aid, setFormData){
   const [error, setError] = useState("");
   const [notFound, setNotFound] = useState(false);
 
+  // Load assignment details when component mounts or aid changes
   useEffect(() => {
     let cancelled = false;
 
     async function loadAssignment() {
       try {
+        // Reset state before loading
         setLoading(true);
         setError("");
         setNotFound(false);
+
+        // Fetch assignment details
         const data = await getAssignmentDetails(aid);
+
+        // If the component is still mounted, update state with fetched data
         if (!cancelled) {
           setDetails(data);
           setFormData({name: data.name || "", dueDate:data.due_date ? data.due_date.slice(0, 16) : "", description: data.description || ""})

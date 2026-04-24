@@ -6,6 +6,8 @@ import { uploadRepository } from "../../utils/DatabaseInteractions/Instructor/up
 
 const defaultMode = "none";
 
+// Helper functions to format labels
+
 function formatUploadLabel(upload, index) {
   const fileName = String(upload?.file_name ?? "").trim() || `Upload ${index + 1}`;
   const timestamp = upload?.created_at
@@ -47,6 +49,7 @@ const ComparisonModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Load boiler plate uploads and repositories when modal opens
   useEffect(() => {
     if (!isOpen || !aid) {
       return;
@@ -102,6 +105,7 @@ const ComparisonModal = ({
     return null;
   }
 
+  // Handle form submission
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
@@ -110,6 +114,8 @@ const ComparisonModal = ({
       let boilerPlateFileId = null;
       let repositoryId = null;
 
+      // Validate inputs based on selected modes and perform uploads if necessary
+      
       if (mode === "existing") {
         if (!selectedUploadId) {
           throw new Error("Please select a previously uploaded boiler plate file.");
