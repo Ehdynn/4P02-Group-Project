@@ -4,6 +4,8 @@ import {
   normalizeSeverityLevel,
 } from "./severity";
 
+const MAX_INLINE_TOKENS = 25000;
+
 const noSpaceBefore = new Set([")", "]", "}", ",", ";", ".", ":"]);
 const noSpaceAfter = new Set(["(", "[", "{", ".", "!", "~"]);
 const highlightPalettes = [
@@ -316,8 +318,12 @@ const Viewer = ({
   onClearNavigationTarget = null,
   onClose = null,
 }) => {
-  const flaggedTokenMap = getFlaggedTokenMap(data.tokens, data.similarity_sequences);
-  const codeLines = buildFormattedCodeLines(data.tokens);
+  const tokens = Array.isArray(data?.tokens) ? data.tokens : [];
+  const similaritySequences = Array.isArray(data?.similarity_sequences) ? data.similarity_sequences : [];
+  const tokenCount = tokens.length;
+  const isTooLargeForInlineViewer = tokenCount > MAX_INLINE_TOKENS;
+  const flaggedTokenMap = isTooLargeForInlineViewer ? [] : getFlaggedTokenMap(tokens, similaritySequences);
+  const codeLines = isTooLargeForInlineViewer ? [] : buildFormattedCodeLines(tokens);
   const lineRefs = useRef([]);
   const viewerBodyRef = useRef(null);
   const [activePopup, setActivePopup] = useState(null);
@@ -338,16 +344,16 @@ const Viewer = ({
   const mirroredNavigationSequence = (
     navigationTarget &&
     String(navigationTarget.submissionId) === String(data.submission_id)
-  )
-    ? findNavigationSequence(data.similarity_sequences, navigationTarget)
+  ) && !isTooLargeForInlineViewer
+    ? findNavigationSequence(similaritySequences, navigationTarget)
     : null;
   const targetTokenStart = (
     navigationTarget &&
     String(navigationTarget.submissionId) === String(data.submission_id)
-  )
+  ) && !isTooLargeForInlineViewer
     ? exactTargetSequenceStart
       ?? mirroredNavigationSequence?.sequence_start
-      ?? findMatchingSequenceStart(data.tokens, targetSequenceTokens)
+      ?? findMatchingSequenceStart(tokens, targetSequenceTokens)
     : null;
   const targetLineIndex = getTargetLineIndex(codeLines, targetTokenStart);
   const targetLineRange = getTargetLineRange(
@@ -504,7 +510,7 @@ const Viewer = ({
             (() => {
               const palette = getHighlightPalette(segment.highlightKey);
               const matchingSequence = getMatchingSequence(
-                data.similarity_sequences,
+                similaritySequences,
                 segment.highlightKey,
                 segment.startTokenIndex,
               );
@@ -561,22 +567,29 @@ const Viewer = ({
           Similarity Score: {data.similarity_score.toFixed(2)}
         </div>
       </div>
-      <div
-        ref={viewerBodyRef}
-        className="mt-3 h-128 overflow-auto rounded-xl border border-slate-200 bg-slate-950"
-        onMouseDown={() => {
-          setActivePopup(null);
-          if (navigationTarget && onClearNavigationTarget) {
-            onClearNavigationTarget();
-          }
-        }}
-      >
-        <pre className="min-h-full min-w-full px-5 pb-24 pt-5 text-sm leading-7 text-slate-100">
-          <code className="block min-w-full w-max">
-            {codeLines.map((line, lineIndex) => renderLine(line, lineIndex))}
-          </code>
-        </pre>
-      </div>
+      {isTooLargeForInlineViewer ? (
+        <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-950">
+          This submission is too large to render safely in the browser.
+          The inline viewer supports up to {MAX_INLINE_TOKENS.toLocaleString()} tokens, and this submission has {tokenCount.toLocaleString()}.
+        </div>
+      ) : (
+        <div
+          ref={viewerBodyRef}
+          className="mt-3 h-128 overflow-auto rounded-xl border border-slate-200 bg-slate-950"
+          onMouseDown={() => {
+            setActivePopup(null);
+            if (navigationTarget && onClearNavigationTarget) {
+              onClearNavigationTarget();
+            }
+          }}
+        >
+          <pre className="min-h-full min-w-full px-5 pb-24 pt-5 text-sm leading-7 text-slate-100">
+            <code className="block min-w-full w-max">
+              {codeLines.map((line, lineIndex) => renderLine(line, lineIndex))}
+            </code>
+          </pre>
+        </div>
+      )}
       {activePopup ? (
         <div
           className="fixed z-30 min-w-56 rounded-lg border border-slate-700 bg-slate-900 p-3 text-xs text-slate-100 shadow-xl"
@@ -610,7 +623,7 @@ const Viewer = ({
               onSelectSubmission(activePopup.highlightKey, {
                 submissionId: activePopup.highlightKey,
                 sourceSubmissionId: data.submission_id,
-                sourceSequenceTokens: data.tokens.slice(
+                sourceSequenceTokens: tokens.slice(
                   activePopup.sequence?.sequence_start ?? activePopup.segmentStartTokenIndex,
                   (activePopup.sequence?.sequence_start ?? activePopup.segmentStartTokenIndex)
                     + (activePopup.sequence?.sequence_length ?? 1),

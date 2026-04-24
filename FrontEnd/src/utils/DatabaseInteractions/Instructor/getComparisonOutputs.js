@@ -1,6 +1,45 @@
 import supabase from "../supabase";
 import { normalizeSeverityLevel } from "../../../Components/Comparison/severity";
 
+const downloadComparisonOutputBlob = async (filePath) => {
+  let blob;
+  let downloadError;
+
+  try {
+    const response = await supabase.storage
+      .from("Comparisons")
+      .download(filePath);
+    blob = response.data;
+    downloadError = response.error;
+    if (downloadError || !blob) {
+      throw new Error(downloadError?.message ?? "Unknown error");
+    }
+  } catch (error) {
+    throw new Error(`Failed to download ${filePath}: ${error.message ?? "{}"}`);
+  }
+
+  return blob;
+};
+
+const parseComparisonOutput = (rawText, filePath) => {
+  try {
+    const parsedData = JSON.parse(rawText);
+    const similaritySequences = Array.isArray(parsedData?.similarity_sequences)
+      ? parsedData.similarity_sequences.map((sequence) => ({
+        ...sequence,
+        severity_level: normalizeSeverityLevel(sequence?.severity_level),
+      }))
+      : [];
+
+    return {
+      ...parsedData,
+      similarity_sequences: similaritySequences,
+    };
+  } catch {
+    throw new Error(`Failed to parse ${filePath}: invalid JSON.`);
+  }
+};
+
 async function decryptValue(value, key) {
   if (!value || !key) {
     return "";
@@ -89,50 +128,21 @@ export async function getComparisonOutputs(comparison, aid, assignmentKey) {
 
   const downloads = await Promise.allSettled(
     submissions.map(async (submission) => {
-      let blob;
-      let downloadError;
       const filePath = `${folderPath}/${submission.fileName}`;
-      try {
-        const response = await supabase.storage
-          .from("Comparisons")
-          .download(filePath);
-        blob = response.data;
-        downloadError = response.error;
-        if (downloadError || !blob) {
-          throw new Error(downloadError?.message ?? "Unknown error");
-        }
-      } catch (error) {
-        throw new Error(`Failed to download ${filePath}: ${error.message ?? "{}"}`);
-      }
-      
-
+      const blob = await downloadComparisonOutputBlob(filePath);
       const rawText = await blob.text();
+      const parsedData = parseComparisonOutput(rawText, filePath);
 
-      try {
-        const parsedData = JSON.parse(rawText);
-        const similaritySequences = Array.isArray(parsedData?.similarity_sequences)
-          ? parsedData.similarity_sequences.map((sequence) => ({
-            ...sequence,
-            severity_level: normalizeSeverityLevel(sequence?.severity_level),
-          }))
-          : [];
-
-        return {
-          name: submission.fileName,
-          path: filePath,
-          submissionId: submission.id,
-          studentName: submission.studentName || "Unknown Student",
-          studentNumber: submission.studentNumber || "N/A",
-          sourceLabel: submission.repositoryId ? "Repository" : "Submission",
-          repositoryId: submission.repositoryId,
-          data: {
-            ...parsedData,
-            similarity_sequences: similaritySequences,
-          },
-        };
-      } catch {
-        throw new Error(`Failed to parse ${filePath}: invalid JSON.`);
-      }
+      return {
+        name: submission.fileName,
+        path: filePath,
+        submissionId: submission.id,
+        studentName: submission.studentName || "Unknown Student",
+        studentNumber: submission.studentNumber || "N/A",
+        sourceLabel: submission.repositoryId ? "Repository" : "Submission",
+        repositoryId: submission.repositoryId,
+        similarityScore: Number(parsedData?.similarity_score),
+      };
     }),
   );
 
@@ -155,4 +165,15 @@ export async function getComparisonOutputs(comparison, aid, assignmentKey) {
   }
 
   return outputs;
+}
+
+export async function getComparisonOutputData(outputPath) {
+  const normalizedPath = String(outputPath ?? "").trim();
+  if (!normalizedPath) {
+    throw new Error("Missing comparison output path.");
+  }
+
+  const blob = await downloadComparisonOutputBlob(normalizedPath);
+  const rawText = await blob.text();
+  return parseComparisonOutput(rawText, normalizedPath);
 }

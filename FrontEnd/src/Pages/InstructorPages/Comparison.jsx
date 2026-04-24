@@ -5,7 +5,10 @@ import ComparisonViewer from "../../Components/Comparison/ComparisonViewer";
 import ComparisonStats from "../../Components/Comparison/ComparisonStats";
 import Viewer from "../../Components/Comparison/Viewer";
 import { getComparisons } from "../../utils/DatabaseInteractions/Instructor/getComparisons";
-import { getComparisonOutputs } from "../../utils/DatabaseInteractions/Instructor/getComparisonOutputs";
+import {
+  getComparisonOutputData,
+  getComparisonOutputs,
+} from "../../utils/DatabaseInteractions/Instructor/getComparisonOutputs";
 import getAssignmentDetails from "../../utils/DatabaseInteractions/Instructor/getAssignmentDetails";
 import useUser from "../../context/useUser";
 
@@ -17,11 +20,16 @@ const Comparison = () => {
   const [assignmentName, setAssignmentName] = useState("");
   const [assignmentKey, setAssignmentKey] = useState("");
   const [comparisonOutputs, setComparisonOutputs] = useState([]);
+  const [outputDataByPath, setOutputDataByPath] = useState({});
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
   const [secondarySelected, setSecondarySelected] = useState(null);
   const [secondaryNavigationTarget, setSecondaryNavigationTarget] = useState(null);
   const [outputsLoading, setOutputsLoading] = useState(false);
   const [outputsError, setOutputsError] = useState("");
+  const [selectedOutputLoading, setSelectedOutputLoading] = useState(false);
+  const [selectedOutputError, setSelectedOutputError] = useState("");
+  const [secondaryOutputLoading, setSecondaryOutputLoading] = useState(false);
+  const [secondaryOutputError, setSecondaryOutputError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const viewerSectionRef = useRef(null);
@@ -85,6 +93,8 @@ const Comparison = () => {
 
   const selectedOutput = comparisonOutputs.find((output) => output.submissionId === selectedSubmissionId) ?? null;
   const secondaryOutput = comparisonOutputs.find((output) => output.submissionId === secondarySelected) ?? null;
+  const selectedOutputData = selectedOutput ? outputDataByPath[selectedOutput.path] ?? null : null;
+  const secondaryOutputData = secondaryOutput ? outputDataByPath[secondaryOutput.path] ?? null : null;
 
   useEffect(() => {
     if (!shouldScrollToViewerRef.current || !selectedOutput) {
@@ -101,11 +111,16 @@ const Comparison = () => {
     async function loadComparisonOutputs() {
       if (!selectedComparison?.id || !isSelectedComparisonCompleted) {
         setComparisonOutputs([]);
+        setOutputDataByPath({});
         setSelectedSubmissionId(null);
         setSecondarySelected(null);
         setSecondaryNavigationTarget(null);
         setOutputsError("");
         setOutputsLoading(false);
+        setSelectedOutputLoading(false);
+        setSelectedOutputError("");
+        setSecondaryOutputLoading(false);
+        setSecondaryOutputError("");
         return;
       }
 
@@ -116,6 +131,7 @@ const Comparison = () => {
 
         if (!cancelled) {
           setComparisonOutputs(outputs);
+          setOutputDataByPath({});
           setSelectedSubmissionId((currentSelectedId) => {
             if (currentSelectedId && outputs.some((output) => output.submissionId === currentSelectedId)) {
               return currentSelectedId;
@@ -137,6 +153,7 @@ const Comparison = () => {
       } catch (err) {
         if (!cancelled) {
           setComparisonOutputs([]);
+          setOutputDataByPath({});
           setSelectedSubmissionId(null);
           setSecondarySelected(null);
           setSecondaryNavigationTarget(null);
@@ -154,6 +171,96 @@ const Comparison = () => {
       cancelled = true;
     };
   }, [aid, assignmentKey, isSelectedComparisonCompleted, selectedComparison?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSelectedOutputData() {
+      if (!selectedOutput?.path) {
+        setSelectedOutputLoading(false);
+        setSelectedOutputError("");
+        return;
+      }
+
+      if (outputDataByPath[selectedOutput.path]) {
+        setSelectedOutputLoading(false);
+        setSelectedOutputError("");
+        return;
+      }
+
+      try {
+        setSelectedOutputLoading(true);
+        setSelectedOutputError("");
+        const outputData = await getComparisonOutputData(selectedOutput.path);
+
+        if (!cancelled) {
+          setOutputDataByPath((current) => (
+            current[selectedOutput.path]
+              ? current
+              : { ...current, [selectedOutput.path]: outputData }
+          ));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSelectedOutputError(err instanceof Error ? err.message : "Failed to load comparison output.");
+        }
+      } finally {
+        if (!cancelled) {
+          setSelectedOutputLoading(false);
+        }
+      }
+    }
+
+    loadSelectedOutputData();
+    return () => {
+      cancelled = true;
+    };
+  }, [outputDataByPath, selectedOutput?.path]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSecondaryOutputData() {
+      if (!secondaryOutput?.path) {
+        setSecondaryOutputLoading(false);
+        setSecondaryOutputError("");
+        return;
+      }
+
+      if (outputDataByPath[secondaryOutput.path]) {
+        setSecondaryOutputLoading(false);
+        setSecondaryOutputError("");
+        return;
+      }
+
+      try {
+        setSecondaryOutputLoading(true);
+        setSecondaryOutputError("");
+        const outputData = await getComparisonOutputData(secondaryOutput.path);
+
+        if (!cancelled) {
+          setOutputDataByPath((current) => (
+            current[secondaryOutput.path]
+              ? current
+              : { ...current, [secondaryOutput.path]: outputData }
+          ));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSecondaryOutputError(err instanceof Error ? err.message : "Failed to load comparison output.");
+        }
+      } finally {
+        if (!cancelled) {
+          setSecondaryOutputLoading(false);
+        }
+      }
+    }
+
+    loadSecondaryOutputData();
+    return () => {
+      cancelled = true;
+    };
+  }, [outputDataByPath, secondaryOutput?.path]);
 
   function selectSubmission(submissionId, secondaryId, navigationTarget = null){
     if(submissionId){
@@ -241,38 +348,56 @@ const Comparison = () => {
             <div ref={viewerSectionRef}>
               {!secondarySelected ? (
                 <div key={selectedOutput.path} className="mt-6">
-                  <Viewer
-                    data={selectedOutput.data}
-                    title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
-                    sourceLabel={selectedOutput.sourceLabel}
-                    onClose={closePrimaryViewer}
-                    onSelectSubmission={openSecondaryViewer}
-                  />
+                  {selectedOutputLoading ? (
+                    <div className="box-wrapper">Loading selected submission...</div>
+                  ) : selectedOutputError ? (
+                    <p className="error">{selectedOutputError}</p>
+                  ) : selectedOutputData ? (
+                    <Viewer
+                      data={selectedOutputData}
+                      title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                      sourceLabel={selectedOutput.sourceLabel}
+                      onClose={closePrimaryViewer}
+                      onSelectSubmission={openSecondaryViewer}
+                    />
+                  ) : null}
                 </div>
               ) : (
                 <div className="flex w-full space-x-5 flex-col md:flex-row">
                   <div className="flex-1 min-w-0">
                     <div key={selectedOutput.path} className="mt-6">
-                      <Viewer
-                        data={selectedOutput.data}
-                        title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
-                        sourceLabel={selectedOutput.sourceLabel}
-                        onClose={closePrimaryViewer}
-                        onSelectSubmission={openSecondaryViewer}
-                      />
+                      {selectedOutputLoading ? (
+                        <div className="box-wrapper">Loading selected submission...</div>
+                      ) : selectedOutputError ? (
+                        <p className="error">{selectedOutputError}</p>
+                      ) : selectedOutputData ? (
+                        <Viewer
+                          data={selectedOutputData}
+                          title={`${selectedOutput.studentName} (${selectedOutput.studentNumber})`}
+                          sourceLabel={selectedOutput.sourceLabel}
+                          onClose={closePrimaryViewer}
+                          onSelectSubmission={openSecondaryViewer}
+                        />
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div key={secondaryOutput?.path ?? secondaryOutput?.submissionId} className="mt-6">
-                      <Viewer
-                        data={secondaryOutput.data}
-                        title={`${secondaryOutput.studentName} (${secondaryOutput.studentNumber})`}
-                        sourceLabel={secondaryOutput.sourceLabel}
-                        navigationTarget={secondaryNavigationTarget}
-                        onClose={closeSecondaryViewer}
-                        onSelectSubmission={selectSubmissionFromSecondary}
-                        onClearNavigationTarget={clearSecondaryNavigationTarget}
-                      />
+                      {secondaryOutputLoading ? (
+                        <div className="box-wrapper">Loading matching submission...</div>
+                      ) : secondaryOutputError ? (
+                        <p className="error">{secondaryOutputError}</p>
+                      ) : secondaryOutputData ? (
+                        <Viewer
+                          data={secondaryOutputData}
+                          title={`${secondaryOutput.studentName} (${secondaryOutput.studentNumber})`}
+                          sourceLabel={secondaryOutput.sourceLabel}
+                          navigationTarget={secondaryNavigationTarget}
+                          onClose={closeSecondaryViewer}
+                          onSelectSubmission={selectSubmissionFromSecondary}
+                          onClearNavigationTarget={clearSecondaryNavigationTarget}
+                        />
+                      ) : null}
                     </div>
                   </div>
                 </div>
