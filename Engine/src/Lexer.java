@@ -4,16 +4,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Takes in code in the form of a String, outputs a list of Tokens that categorizes and orders each piece of code.
- *  These tokens are used for comparisons for plagiarism detection.
- *  These tokens are used to reconstruct the report.
+ *  These tokens will be used for comparisons for plagiarism detection.
+ *  These tokens will be used to reconstruct the report later.
  *
  *
- *  Based on Enzo Jade's Tokenizer from the linked tutorial: <a href="https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f">...</a>
+ *  Based on Enzo Jade's Tokenizer from the linked tutorial: https://medium.com/@enzojade62/step-by-step-building-a-lexer-in-java-for-tokenizing-source-code-ac4f1d91326f
  *  Modified to support comments, Strings, and non-Java languages
  *  Modified to make Keywords not break the lexer if not the first keyword in a list
- *  Modified beyond recognition. 
  *
- * @version Version 1.2.1 (March 8th, 2026)
+ * @Version 1.2.1 (March 8th, 2026)
  */
 public class Lexer {
     private String input;
@@ -26,27 +25,19 @@ public class Lexer {
     private static final String PYTHON_KEYWORDS = "if|for|while|try|raise|class|def|with|break|continue|del|pass|assert|yield|return|import|from|match|case|bool|byte(array|s)|complex|dict|types|EllipsisType|float|frozenset|int|list|NoneType|NotImplementedType|range|set|str|tuple";
 
 
-    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given String input
-     *
-     * @param input Code to be tokenized
-     */
     public Lexer(String input){
         this.input = input;
         this.language = Language.Java;
         this.index = 0;
     }
 
-    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given Source Code input
-     *
-     * @param input Code to be tokenized
-     */
     public Lexer(SourceCode input){
         this.input = input.sourceCode();
         this.language = input.language();
         this.index = 0;
     }
 
-    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given String input and language
+    /** Creates a Lexer (also known as a tokenizer) that can be used to tokenize the given String input
      *
      * @param input Code to be tokenized
      * @param language Language of the code
@@ -95,6 +86,7 @@ public class Lexer {
      *  Compares the current string to the regular expressions representing the different types of Tokens.
      *  Does not identify strings, chars or keywords. Those must be done independently, later with the correctKeywords,
      *  correctCharacters, and correctKeywords functions.
+     *  TODO Need to make this more resilient. Currently handles errors poorly
      *
      * @return  null if something fails, token made from next token of code otherwise
      */
@@ -113,14 +105,13 @@ public class Lexer {
         }
 
         String[] tokenPatterns = {
-                "[a-zA-Z_][a-zA-Z0-9_]*",   // Identifiers
+                "\\p{L}[\\p{L}0-9_~-\\uDDEF`]*",      // Identifiers
                 "\\d+",                     // Literals
                 "//[a-zA-Z0-9_]*",          // Single-Line Comments
                 "/\\*[a-zA-Z0-9_]*",        // Multi-Line Comments
                 "\\*/",                     // Comment End
                 "[+/*=<>!?&|^~:%@-]",       // Operators
-                "[.,;()$#\\[\\]{}\"'\\\\]", // Punctuation
-                "\\p{all}"                  // Catch-All for missing unicode characters. Should only appear as parts of strings. Also identifiers. Abuses Matcher using a greedy algorithm. 
+                "[.,;()$#\\[\\]{}\"'\\\\]",  // Punctuation
         };
 
         TokenType[] tokenTypes = {
@@ -130,8 +121,7 @@ public class Lexer {
                 TokenType.MULTI_LINE_COMMENT,
                 TokenType.COMMENT_END,
                 TokenType.OPERATOR,
-                TokenType.PUNCTUATION,
-                TokenType.IDENTIFIER
+                TokenType.PUNCTUATION
         };
 
         for (int i = 0; i < tokenPatterns.length; i++) {
@@ -241,7 +231,7 @@ public class Lexer {
 
     /**Rewrites the type of any tokens that fit within the requirements to be a keyword token.
      * The token must not be part of a string token, and must fit within the language appropriate keyword regex.
-     * Also identifies and corrects any occurrences of null in C, CPP and Java, and converts said tokens into Literals.
+     * Also identifies and corrects any occurrences of null in C and Java, and converts said tokens into Literals.
      *
      * @param tokens    List of tokens to modify
      * @return  updated List
@@ -252,7 +242,6 @@ public class Lexer {
             case Java -> keywords = JAVA_KEYWORDS;
             case C -> keywords = C_KEYWORDS;
             case Python -> keywords = PYTHON_KEYWORDS;
-            case CPP -> keywords = CPP_KEYWORDS;
             default -> keywords = "";
         }
 
@@ -263,7 +252,7 @@ public class Lexer {
             if(token.getType() == TokenType.IDENTIFIER){
                 String s = token.getValue();
                 if(s.matches(keywords))token.updateType(TokenType.KEYWORD);
-                else if (s.equals("null") && (language == Language.Java || language == Language.C || language == Language.CPP)) token.updateType(TokenType.LITERAL);
+                else if (s.equals("null") && (language == Language.Java || language == Language.C)) token.updateType(TokenType.LITERAL);
             }
 
         }
@@ -299,25 +288,7 @@ public class Lexer {
 
         for(ArrayList<Token> list : StringTokens){
             String tokenValue = "";
-            int index;
-            if (list.isEmpty()) {
-                index = -1;
-                for (int i = 0; i < tokens.size() - 1; i++) {
-                    if (tokens.get(i).getValue().equals("\"") && tokens.get(i + 1).getValue().equals("\"")) {
-                        index = i;
-                        tokens.remove(i + 1);
-                        tokens.remove(i);
-                        break;
-                    }
-                }
-
-                if (index != -1) {
-                    tokens.add(index, new Token(TokenType.LITERAL, ""));
-                }
-                continue;
-            }
-
-            index = tokens.indexOf(list.getFirst());
+            int index = tokens.indexOf(list.getFirst());
             for(int i = 0; i < list.size(); i++){
                 Token token = list.get(i);
                 tokens.remove(token);
@@ -331,10 +302,6 @@ public class Lexer {
         return tokens;
     }
 
-    /**Rips student info from starting comment
-     * Not reliable, not used
-     * @param input code to collect student name from
-     * @return String with student info */
     public String getStudentInfo(String input){
         String out = "";
         int startingIndex = input.indexOf("/*") + 2;

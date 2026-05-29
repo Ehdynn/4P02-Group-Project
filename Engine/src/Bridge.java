@@ -1,3 +1,5 @@
+/*package whatever //do not write package name here */
+
 import py4j.GatewayServer;
 
 import java.io.File;
@@ -7,32 +9,20 @@ import java.util.List;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-/**  A Bridge between python and java
-*    Functions from this class may be called by the python script
-*    Relys on the py4j library
-*/
+
 class Bridge {
-    /**  Test function that returns the String "Yo mama" to be called by the Python script
-     *    @return "Yo mama"
-     */
     public String Message() { return "Yo mama"; }
     private String pythonData = "";
     FileHandler fileHandler = new FileHandler();
 
-    /**The main function
-     *    Starts the gateway through which the python script can connect. 
-     */
+
     public static void main(String[] args)
     {
         GatewayServer g = new GatewayServer(new Bridge());
         g.start();
         System.out.println("Gateway Server Started");
     }
- 
-    /**Recieves data from python
-     *
-     * @param data String sent from Python
-     */
+
     public void sendDataToJava(String data){
         this.pythonData = data;
         System.out.println(pythonData);
@@ -55,11 +45,6 @@ class Bridge {
         return out;
     }*/
 
-    /**  Returns token list to python from incoming byte data
-     *
-     * @param fileData byte array representing the files that need to be tokenized. 
-     * @return a csv per file in the form of a string
-     */
     public String[] tokenize(byte[] fileData){
         ArrayList<String> tokenLists = new ArrayList<>();
         File archive = null;
@@ -67,8 +52,7 @@ class Bridge {
         try {
             archive = fileHandler.writeBytesToFile(fileData, "temp");
             extractedDir = fileHandler.unzipFile(archive);
-            List<String> fileNames = new ArrayList<>(fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath()));
-            Collections.sort(fileNames);
+            Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath());
 
             for(String s: fileNames) {
                 String extension = fileHandler.getFileExtension(s);
@@ -97,21 +81,16 @@ class Bridge {
         return csvs;
     }
 
-    /** Sends to python a list of tokens representing the files sent from Python
-    * @fileData byte array representing the files that need to be tokenized
-    * @return String representing all tokens. Formatted as a csv. */
     public String tokenizeCondensed(byte[] fileData){
         StringBuilder tokenLists = new StringBuilder();
         File archive = null;
         File extractedDir = null;
-        boolean wroteHeader = false;
 
         try {
             if (looksLikeZip(fileData)) {
                 archive = fileHandler.writeBytesToFile(fileData, "temp");
                 extractedDir = fileHandler.unzipFile(archive);
-                List<String> fileNames = new ArrayList<>(fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath()));
-                Collections.sort(fileNames);
+                Set<String> fileNames = fileHandler.listFilesUsingDirectoryStream(extractedDir.getPath());
 
                 for (String s : fileNames) {
                     String extension = fileHandler.getFileExtension(s);
@@ -120,12 +99,7 @@ class Bridge {
                         File sourceFile = new File(extractedDir.getPath() + "/" + s);
                         SourceCode sourceCode = fileHandler.getSourceCode(sourceFile);
                         Lexer lexer = new Lexer(sourceCode.sourceCode());
-                        if (!wroteHeader) {
-                            tokenLists.append(fileHandler.getTokenListCSV(lexer.tokenize()));
-                            wroteHeader = true;
-                        } else {
-                            tokenLists.append(fileHandler.getHeadlessTokenListCSV(lexer.tokenize()));
-                        }
+                        tokenLists.append(fileHandler.getTokenListCSV(lexer.tokenize()));
                     }
                 }
             } else {
@@ -148,10 +122,6 @@ class Bridge {
         return tokenLists.toString();
     }
 
-    /**Checks if a file is a zip
-     * @param fileData file to check
-     * @return True if the file is a Zip
-     */
     private boolean looksLikeZip(byte[] fileData) {
         return fileData != null
                 && fileData.length >= 4
@@ -161,11 +131,6 @@ class Bridge {
                 && (fileData[3] == 4 || fileData[3] == 6 || fileData[3] == 8);
     }
 
-    /** Allows the python script to compare a set of token lists for plagiarized parts
-     *
-     * @param databaseCSVs token lists to be compaired
-     * @param boilerplate code to be ignored in the comparisons 
-     * @return JSON of plagarized sections */
     public String getComparisonData(String databaseCSVs, String boilerplate){
         JSONArray databaseParser = new JSONArray(databaseCSVs);
         FileHandler handler = new FileHandler();
@@ -173,15 +138,6 @@ class Bridge {
         SimilarityScore score = new SimilarityScore();
         ComparisonEngine comparison = new ComparisonEngine();
         List<Submission> database = new ArrayList<Submission>();
-        Submission boilerplateSubmission = null;
-
-        String normalizedBoilerplate = boilerplate == null ? "" : boilerplate.trim();
-        if (!normalizedBoilerplate.isEmpty()) {
-            List<Token> boilerplateTokens = handler.getTokensFromFile(normalizedBoilerplate);
-            if (!boilerplateTokens.isEmpty()) {
-                boilerplateSubmission = new Submission(boilerplateTokens, "__boilerplate__");
-            }
-        }
 
         for (int i = 0; i < databaseParser.length(); i++) {
             JSONObject obj = databaseParser.getJSONObject(i);
@@ -202,12 +158,9 @@ class Bridge {
         JSONArray comparisonData = new JSONArray();
 
         for(Submission s: database){
-            boolean[] boilerplateMask = boilerplateSubmission == null
-                    ? new boolean[s.getTokens().size()]
-                    : tiling.getMatchedTokenMask(s, boilerplateSubmission, 5);
-            List<Sequence> flaggedSequences = tiling.tile(s, database, 5, boilerplateMask);
+            List<Sequence> flaggedSequences = tiling.tile(s, database, 5);
 
-            double similarityScore = score.getSimilarityScore(s.getTokens(), flaggedSequences, boilerplateMask);
+            double similarityScore = score.getSimilarityScore(s.getTokens(), flaggedSequences);
 
             comparisonData.put(new JSONObject(comparison.buildComparisonData(s, flaggedSequences, similarityScore)));
         }

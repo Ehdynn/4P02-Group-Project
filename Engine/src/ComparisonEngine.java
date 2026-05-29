@@ -6,16 +6,10 @@ import java.util.*;
 
 import static java.lang.Math.min;
 
-/** Allows comparison data to be condensed into a JSON
- *
- */
 public class ComparisonEngine {
     ComparisonEngine() {
     }
 
-    /**Converts a token list into a token array
-     * @param tokens token list to be converted
-     * @return token Array */
     public static Token[] tokensToArray(List<Token> tokens) {
         Token[] tokenArray = new Token[tokens.size()];
         int i = 0;
@@ -27,12 +21,6 @@ public class ComparisonEngine {
         return tokenArray;
     }
 
-    /**Creates a comparrison JSON string
-     *
-     * @param submission submission to be compared
-     * @param sequences sequences that are suspicious
-     * @param similarityScore plagarized value
-     * @return JSON String */
     public String buildComparisonData(Submission submission, List<Sequence> sequences, double similarityScore) {
         FileHandler handler = new FileHandler();
         JSONObject comparisonJson = new JSONObject();
@@ -57,18 +45,7 @@ public class ComparisonEngine {
             sequenceJson.put("sequence_start", s.getStart());
             sequenceJson.put("sequence_length", s.getLength());
             sequenceJson.put("flagged_submission", s.getSubmissionId());
-            sequenceJson.put("flagged_sequence_start", s.getFlaggedStart());
             sequenceJson.put("flagged_code", handler.getTokenListCSV(s.getTokens()));
-
-            SeverityLevel severityLevel = s.getSeverityLevel();
-
-            if(severityLevel == SeverityLevel.LOW){
-                sequenceJson.put("severity_level", "Low");
-            } else if(severityLevel == SeverityLevel.MEDIUM){
-                sequenceJson.put("severity_level", "Medium");
-            } else if(severityLevel == SeverityLevel.HIGH){
-                sequenceJson.put("severity_level", "High");
-            }
             sequenceArray.put(sequenceJson);
         }
 
